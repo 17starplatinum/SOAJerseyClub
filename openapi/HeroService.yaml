@@ -1,0 +1,649 @@
+openapi: 3.1.0
+info:
+  title: Hero service REST endpoints
+  description: This is the first part of our assignment in our course 'Service-Oriented Architecture' where we generate Swagger documentation before implementing it in practice.
+  version: 1.0.2
+servers:
+  - url: https://localhost:15478/api/v1/heroes
+paths:
+  /teams:
+    get:
+      summary: Find all teams.
+      description: |
+        **Get all teams** in the collection in the form of a list.
+      operationId: getTeams
+      parameters:
+        - name: sort
+          in: query
+          description: Array of fields used for **sorting**. "-" is used for sorting in **descending** order. If queries and deletion request are provided for one of these fields, independent of "-", an error will be returned.
+          required: false
+          explode: true
+          schema:
+            type: array
+            default: id
+            enum:
+              - id
+              - name
+              - size
+              - -id
+              - -name
+              - -size
+            example:
+              - -name
+              - size
+        - name: filter
+          in: query
+          required: false
+          description: |
+            Array of fields used for **filtering**. Each element must contain the name of the filterable field and the filtering method in square parentheses, as well as the value that will be used for filtering. An _invalid_ value will result in an **error response**. Below is a list of available operations and their code values, their descriptions and available datatypes for said operations.
+            ![absolute dandadan](https://media1.tenor.com/m/n_rDQ8ulxIYAAAAd/dandadan-dandadan-anime.gif)
+            | **Operation**         | **Code** | **Description**                                                                                                               | **Datatype**      |
+            |-----------------------|----------|-------------------------------------------------------------------------------------------------------------------------------|-------------------|
+            | Equal                 | eq       | Filters objects by their chosen field and returns objects which have a value equal to the provided                            | String, int, long |
+            | Not equal             | neq      | Filters objects by their chosen field and returns objects which have a value not equal to the provided                        | String, int, long |
+            | Greater than          | gt       | Filters objects by their chosen field and returns objects which have a value greater than the provided                        | int, long         |
+            | Lesser than           | lt       | Filters objects by their chosen field and returns objects which have a value lesser than the provided                         | int, long         |
+            | Greater than or equal | gte      | Filters objects by their chosen field and returns objects which have a value greater than or equal to the provided            | int, long         |
+            | Lesser than or equal  | lte      | Filters objects by their chosen field and returns objects which have a value lesser than or equal to the provided             | int, long         |
+            | Substring search      | like     | Filters objects by their chosen field and returns objects which have a value matched using substring search with the provided | String, int, long |
+          schema:
+            type: array
+            items:
+              type: string
+              examples:
+                - 'size[eq]=2'
+                - 'name[eq]=Sigma'
+              pattern: '^((?:id|size)\[(?:eq|neq|gt|lt|gte|lte|like)\]|(name)\[(?:eq|neq|like)\])=.+$'
+            example:
+              - 'name[eq]=Sigma'
+              - 'size[neq]=2'
+              - 'size[gt]=5'
+              - 'size[lte]=9'
+          style: form
+          explode: true
+        - name: page
+          in: query
+          required: false
+          description: |
+            Specifies the **page number to be paginated**. If used without the "pageSize" parameter, the page size will be **10** by default. If _none_ of the parameters "page" and "pageSize" are used, then **all** human beings will be returned.
+          schema:
+            type: integer
+            default: 1
+            exclusiveMinimum: 0
+        - name: pageSize
+          in: query
+          required: false
+          description: |
+            Specifies the **page size**. If used _without the "page" parameter_, the **first** page will be displayed by default. If _none_ of the parameters "page" and "pageSize" are used, then **all** human beings will be returned.
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+      tags:
+        - Teams
+      responses:
+        '200':
+          description: Returns an **array** of teams based on specified parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamPaginatedSchema'
+        '400':
+          description: One or more query parameters are _invalid_.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              examples:
+                invalidSort:
+                  summary: Invalid sort field
+                  value:
+                    code: 400
+                    message: "Invalid 'sort' value: 'freakOff' is not a sortable field"
+                    time: 2025-09-03T19:14:07.339Z
+                invalidPage:
+                  summary: Invalid page number
+                  value:
+                    code: 400
+                    message: "Invalid 'page': must be >= 0, got -1"
+                    time: 2025-09-03T19:14:07.874Z
+                invalidFilter:
+                  summary: Invalid filter pattern
+                  value:
+                    code: 400
+                    message: "Invalid 'filter' format: expected 'field[op]=value', got 'name(eq)John'"
+                    time: 2025-09-03T19:14:07.642Z
+        '500':
+          $ref: './HumanBeingService.yaml#/components/responses/InternalError'
+        default:
+          description: Returns an error response in the form of **error code, message and time**.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+    post:
+      summary: Add a new team.
+      description: |
+        **Add** a new team with valid fields.
+      operationId: addTeam
+      tags:
+        - Teams
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamDTOSchema'
+      responses:
+        '200':
+          description: Returns the momentarily added team.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamFullSchema'
+        '400':
+          description: Request body is _missing_ or _malformed JSON_.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 400
+                message: "Malformed JSON body or missing required fields"
+                time: 2025-09-03T19:14:07.006Z
+        '422':
+          description: _Validation failed_ for input data.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              examples:
+                emptyName:
+                  summary: Name is empty
+                  value:
+                    code: 422
+                    message: "Validation failed: 'name' must be non-empty"
+                    time: 2025-09-03T19:14:07.696Z
+                teamSizeTooLow:
+                  summary: Team size is too small
+                  value:
+                    code: 422
+                    message: "Validation failed: 'size' minimum value is 2, got 1"
+                    time: 2025-09-03T19:14:07.804Z
+        '500':
+          $ref: './HumanBeingService.yaml#/components/responses/InternalError'
+        default:
+          description: Returns an error response in the form of **error code, message and time**.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+  /teams/{id}:
+    get:
+      summary: Get existing team by given ID.
+      description: Get a singular team via their ID.
+      operationId: getTeam
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID via which a team will be found.
+          schema:
+            type: integer
+            format: int64
+            exclusiveMinimum: 0
+            examples: [ 228 ]
+      tags:
+        - Teams
+      responses:
+        '200':
+          description: Returns team by given ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamFullSchema'
+        '400':
+          description: The path parameter 'id' is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 400
+                message: "Invalid id: expected a positive integer, got 0"
+                time: 2025-09-03T19:14:07.362Z
+        '404':
+          description: Team with the given ID does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 404
+                message: "Team not found with id=228"
+                time: 2025-09-03T19:14:07.629Z
+        '500':
+          $ref: './HumanBeingService.yaml#/components/responses/InternalError'
+        default:
+          description: Returns an error response in the form of error code, message and time.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+    put:
+      summary: Update an existing team by their ID.
+      description: |
+        **Update** a specific team's fields by their ID.
+      operationId: updateTeam
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID via which a team will be updated.
+          schema:
+            type: integer
+            format: int64
+            exclusiveMinimum: 0
+            examples: [ 67 ]
+      tags:
+        - Teams
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamDTOSchema'
+      responses:
+        '200':
+          description: Returns the updated team.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamFullSchema'
+        '400':
+          description: The path parameter 'id' is _invalid_ or _body is malformed_.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              examples:
+                invalidId:
+                  summary: Invalid ID
+                  value:
+                    code: 400
+                    message: "Invalid 'id': expected positive integer, got -5"
+                    time: 2025-09-03T19:14:07.782Z
+                malformedBody:
+                  summary: Malformed JSON body
+                  value:
+                    code: 400
+                    message: "Malformed JSON body"
+                    time: 2025-09-03T19:14:07.336Z
+        '404':
+          description: Team with the given ID _does not exist_.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 404
+                message: "Cannot update: team with id=67 not found"
+                time: 2025-09-03T19:14:07.001Z
+        '422':
+          description: _Validation failed_ for input data.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 422
+                message: "Validation failed: 'size' must be > 1"
+                time: 2025-09-03T19:14:07.942Z
+        '500':
+          $ref: './HumanBeingService.yaml#/components/responses/InternalError'
+        default:
+          description: Returns an error response in the form of **error code, message and time**.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+    delete:
+      summary: Deletes a team by their ID.
+      description: |
+        **Deletes** a team (and their associated objects) by their given ID.
+      operationId: deleteHumanBeing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID via which a team will be found.
+          schema:
+            type: integer
+            format: int64
+            exclusiveMinimum: 0
+            examples: [ 228 ]
+      tags:
+        - Teams
+      responses:
+        '204':
+          description: No content indicating successful deletion of a team.
+        '400':
+          description: The path parameter 'id' is _invalid_.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 400
+                message: "Invalid id: expected positive integer, got 0"
+                time: 2025-09-03T19:14:07.024Z
+        '404':
+          description: Team with the given ID _does not exist_.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 404
+                message: "Cannot delete: team with id=228 not found"
+                time: 2025-09-03T19:14:07.501Z
+        '500':
+          $ref: './HumanBeingService.yaml#/components/responses/InternalError'
+        default:
+          description: Returns an error response in the form of **error code, message and time**.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+  /teams/{id}/add:
+    patch:
+      summary: Assign a human being to a team.
+      description: |
+        For a team with id = {id}, **assign** a team to a human being in the request who is not in one at the moment.
+      operationId: addHumanBeingToTeam
+      tags:
+        - Teams
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Team ID is a positive 64-bit integer.
+          schema:
+            type: integer
+            format: int64
+            exclusiveMinimum: 0
+        - name: humanId
+          in: query
+          required: true
+          description: ID of a human being.
+          schema:
+            type: integer
+            format: int64
+            exclusiveMinimum: 0
+      responses:
+        '200':
+          description: Returns an array of updated HumanBeings (team members who were assigned to the team)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './HumanBeingService.yaml#/components/schemas/HumanBeingFullSchema'
+        '400':
+          description: The path parameter 'id' or 'humanId' is _invalid_.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 400
+                message: "Invalid 'id': expected positive integer, got 0."
+                time: 2025-09-03T19:14:07Z
+        '404':
+          description: Team _not found_ in this or the upstream Human Being service.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 404
+                message: "Team not found: no team with id=123 exists."
+                time: 2025-09-03T19:14:07Z
+        '502':
+          $ref: '#/components/responses/UpstreamBadGateway'
+        '503':
+          $ref: '#/components/responses/UpstreamServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/UpstreamGatewayTimeout'
+        '500':
+          description: |
+            *Unexpected server error* in Hero service.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 500
+                message: "Unexpected error in Hero service while adding a team member."
+                time: 2025-09-03T19:14:07Z
+        default:
+          description: Returns an error response in the form of **error code, message and time**.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+  /search/{real-hero-only}:
+    get:
+      summary: Find heroes (all or only real ones).
+      description: Returns an array of all heroes or only **real** ones (realHero == true). This service calls the upstream Human Being service (/population/human-beings) and returns the corresponding set.
+      operationId: heroesSearch
+      tags:
+        - Heroes
+      parameters:
+        - name: real-hero-only
+          in: path
+          required: true
+          description: If true, return only realHero == true. If false, return all the heroes.
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Array of HumanBeing objects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './HumanBeingService.yaml#/components/schemas/HumanBeingFullSchema'
+        '400':
+          description: The path parameter 'real-hero-only' is _invalid_.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 400
+                message: "Invalid 'real-hero-only' value: expected boolean (true|false)."
+                time: 2025-09-03T19:14:07Z
+        '502':
+          $ref: '#/components/responses/UpstreamBadGateway'
+        '503':
+          $ref: '#/components/responses/UpstreamServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/UpstreamGatewayTimeout'
+        '500':
+          description: _Unexpected server error_ in Hero service.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 500
+                message: "Unexpected error in Hero service while processing the request."
+                time: 2025-09-03T19:14:07Z
+        default:
+          description: Returns an error response in the form of error code, message and time.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+  /team/{team-id}/car/add:
+    patch:
+      summary: Assign red "Lada Kalina" to team members without cars.
+      description: For a team with id = {team-id}, **assign a red Lada Kalina** to all heroes who do not have a car (car == null). The operation calls the Human Being service and updates the corresponding objects.
+      operationId: heroesTeamCarAdd
+      tags:
+        - Heroes
+      parameters:
+        - name: team-id
+          in: path
+          required: true
+          description: Team ID is a positive integer.
+          schema:
+            type: integer
+            format: int64
+            exclusiveMinimum: 0
+      responses:
+        '200':
+          description: Returns an array of updated HumanBeings (team members to whom the car was added)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './HumanBeingService.yaml#/components/schemas/HumanBeingFullSchema'
+        '400':
+          description: The path parameter 'team-id' is _invalid_.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 400
+                message: "Invalid 'team-id': expected positive integer, got 0."
+                time: 2025-09-03T19:14:07Z
+        '404':
+          description: Team _not found_ in the upstream Human Being service.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 404
+                message: "Team not found: no team with id=123 exists."
+                time: 2025-09-03T19:14:07Z
+        '502':
+          $ref: '#/components/responses/UpstreamBadGateway'
+        '503':
+          $ref: '#/components/responses/UpstreamServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/UpstreamGatewayTimeout'
+        '500':
+          description: _Unexpected server error_ in Hero service.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 500
+                message: "Unexpected error in Hero service while updating team cars."
+                time: 2025-09-03T19:14:07Z
+        default:
+          description: Returns an error response in the form of **error code, message and time**.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+components:
+  schemas:
+    TeamDTOSchema:
+      type: object
+      properties:
+        name:
+          type: string
+          examples: [ Bratva ]
+        size:
+          type: integer
+          format: int32
+          exclusiveMinimum: 1
+          examples: [ 5 ]
+          description: The size of team of heroes
+    TeamFullSchema:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              exclusiveMinimum: 0
+              examples: [ 1488 ]
+              description: ID of a team
+        - $ref: '#/components/schemas/TeamDTOSchema'
+    TeamPaginatedSchema:
+      type: object
+      properties:
+        teams:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamFullSchema'
+        page:
+          type: integer
+          default: null
+          description: "Page number (nullable if not paginated)"
+        pageSize:
+          type: integer
+          default: null
+          description: "Page size (nullable if not paginated)"
+        totalPages:
+          type: integer
+          default: null
+          description: "Total pages (nullable if not paginated)"
+        totalCount:
+          type: integer
+          default: null
+          description: "Total count (nullable if not paginated)"
+  responses:
+    HeroServiceUnavailable:
+      description: Hero service is overloaded or under maintenance.
+      headers:
+        Retry-After:
+          description: Seconds or HTTP-date after which to retry.
+          schema: { type: string }
+      content:
+        application/json:
+          schema:
+            $ref: './HumanBeingService.yaml#/components/schemas/Error'
+          example:
+            code: 503
+            message: "Hero service is temporarily unavailable. Please retry later."
+            time: 2025-09-03T19:14:07Z
+    UpstreamBadGateway:
+      description: The upstream Human Being service returned an invalid response or failed the request.
+      content:
+        application/json:
+          schema:
+            $ref: './HumanBeingService.yaml#/components/schemas/Error'
+          example:
+            code: 502
+            message: "Upstream error: Human Being service responded with 5xx while processing the request."
+            time: 2025-09-03T19:14:07Z
+    UpstreamServiceUnavailable:
+      description: The upstream Human Being service is unavailable or overloaded.
+      content:
+        application/json:
+          schema:
+            $ref: './HumanBeingService.yaml#/components/schemas/Error'
+          example:
+            code: 503
+            message: "Upstream unavailable: Human Being service is down or not accepting requests."
+            time: 2025-09-03T19:14:07Z
+    UpstreamGatewayTimeout:
+      description: The upstream Human Being service did not respond in time.
+      content:
+        application/json:
+          schema:
+            $ref: './HumanBeingService.yaml#/components/schemas/Error'
+          example:
+            code: 504
+            message: "Upstream timeout: no response from Human Being service within 5 seconds."
+            time: 2025-09-03T19:14:07Z
