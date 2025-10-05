@@ -1,5 +1,6 @@
-import type {HumanBeingPaginatedSchema} from '../types';
+// import type {HumanBeingPaginatedSchema} from '../types';
 import { stubHumanBeings } from '../stubData';
+import type {HumanBeingPaginatedSchema} from "../humanBeingAPI.ts";
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 

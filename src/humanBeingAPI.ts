@@ -10,6 +10,8 @@
  * ---------------------------------------------------------------
  */
 
+import type {TeamDTOSchema} from "./heroServiceAPI.ts";
+
 export enum Color {
   RED = "RED",
   BLUE = "BLUE",
@@ -45,7 +47,7 @@ export interface HumanBeingDTOSchema {
    */
   impactSpeed?: number;
   weaponType?: WeaponType | null;
-  team?: null;
+  team?: TeamDTOSchema | null;
   mood?: Mood;
   car?: Car | null;
 }

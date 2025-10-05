@@ -1,6 +1,7 @@
 import {motion} from "framer-motion";
-import {type HumanBeingFullSchema, Mood, WeaponType} from "../types";
+// import {type HumanBeingFullSchema, Mood, WeaponType} from "../types";
 import React, {useState} from "react";
+import {type HumanBeingFullSchema, Mood, WeaponType} from "../humanBeingAPI.ts";
 
 interface Props {
     human: HumanBeingFullSchema;
@@ -162,8 +163,8 @@ const Panel = ({human}: Props) => {
                         </>
                     )}
 
-                    <div>Coordinates: ({human.coordinates.x}, {human.coordinates.y})</div>
-                    <div>Created: {formatDate(human.creationDate)}</div>
+                    {human.coordinates && <div>Coordinates: ({human.coordinates.x}, {human.coordinates.y})</div>}
+                    {human.creationDate && <div>Created: {formatDate(human.creationDate)}</div>}
                 </div>
             </motion.div>
         </motion.div>

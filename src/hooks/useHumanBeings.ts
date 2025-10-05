@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import type {HumanBeingFullSchema} from '../types';
+// import type {HumanBeingFullSchema} from '../types';
 import { HumanBeingService } from '../service/HumanBeingService.ts';
+import type {HumanBeingFullSchema} from "../humanBeingAPI.ts";
 
 export const useHumanBeings = () => {
     const [humanBeings, setHumanBeings] = useState<HumanBeingFullSchema[]>([]);
