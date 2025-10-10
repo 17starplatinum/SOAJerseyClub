@@ -1,36 +1,37 @@
+// components/Panel.tsx
 import {motion} from "framer-motion";
-// import {type HumanBeingFullSchema, Mood, WeaponType} from "../types";
 import React, {useState} from "react";
 import {type HumanBeingFullSchema, Mood, WeaponType} from "../humanBeingAPI.ts";
 
 interface Props {
     human: HumanBeingFullSchema;
+    onDelete?: () => void;
 }
 
-const Panel = ({human}: Props) => {
+const Panel = ({human, onDelete}: Props) => {
     const [isHovered, setIsHovered] = useState(false);
     const getWeaponImage = (weaponType: WeaponType | null) => {
         switch (weaponType) {
             case WeaponType.AXE:
-                return "/axe.png";
+                return "./axe.png";
             case WeaponType.SHOTGUN:
-                return "/shotgun.png";
+                return "./shotgun.png";
             case WeaponType.MACHINE_GUN:
-                return "/machine_gun.png";
+                return "./machine_gun.png";
         }
     };
     const getMoodImage = (mood: Mood | null) => {
         switch (mood) {
             case Mood.SADNESS:
-                return "/sadness.png";
+                return "./sadness.png";
             case Mood.SORROW:
-                return "/sorrow.png";
+                return "./sorrow.png";
             case Mood.GLOOM:
-                return "/gloom.png";
+                return "./gloom.png";
             case Mood.APATHY:
-                return "/apathy.png";
+                return "./apathy.png";
             case Mood.RAGE:
-                return "/rage.png";
+                return "./rage.png";
         }
     };
 
@@ -42,7 +43,8 @@ const Panel = ({human}: Props) => {
         position: "relative",
         width: "400px",
         transition: "all 0.3s ease",
-        cursor: "pointer"
+        cursor: "pointer",
+        background: "#fff899",
     };
 
     const formatDate = (dateString: string) => {
@@ -61,24 +63,20 @@ const Panel = ({human}: Props) => {
                 display: "flex",
                 justifyContent: "center",
                 fontSize: "24px",
-                maxWidth: "min-content"
+                maxWidth: "min-content",
             }}
         >
             <motion.div
                 initial={false}
                 animate={{
                     y: isHovered ? -10 : 0,
-                    scale: isHovered ? 1.02 : 1
+                    scale: isHovered ? 1.02 : 1,
                 }}
                 transition={{
-                    times: [0, 0.9, 1]
+                    times: [0, 0.9, 1],
                 }}
             >
-                <div
-                    style={cardStyle}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                >
+                <div style={cardStyle} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
                     <div style={{display: "flex"}}>
                         {human.mood && (
                             <div>
@@ -88,7 +86,7 @@ const Panel = ({human}: Props) => {
                                     transition={{
                                         delay: 0.2,
                                         duration: 0.5,
-                                        ease: [0.175, 0.885, 0.42, 1.2]
+                                        ease: [0.175, 0.885, 0.42, 1.2],
                                     }}
                                     height="128"
                                     src={getMoodImage(human.mood)}
@@ -97,40 +95,57 @@ const Panel = ({human}: Props) => {
                                 />
                             </div>
                         )}
-                        <div style={{
-                            marginLeft: "30px",
-                            maxWidth: "240px",
-                            fontSize: "32px",
-                            overflowX: "auto"
-                        }}>{human.name}</div>
+                        <div
+                            style={{
+                                marginLeft: "30px",
+                                maxWidth: "240px",
+                                fontSize: "32px",
+                                overflowX: "auto",
+                            }}
+                        >
+                            {human.name}
+                        </div>
                     </div>
-                    <div>Real Hero: <img src={human.realHero ? "/true.png" : "/false.png"}
-                                         alt={human.realHero ? "true" : "false"}
-                                         title={human.realHero ? "true" : "false"}
-                                         height="40px"
-                                         style={{
-                                             transform: human.realHero ? "translate(5px, -10px)" : "translate(5px, -5px)",
-                                             position: "absolute"
-                                         }}/>
+                    <div>
+                        Real Hero:{" "}
+                        <img
+                            src={human.realHero ? "./true.png" : "./false.png"}
+                            alt={human.realHero ? "true" : "false"}
+                            title={human.realHero ? "true" : "false"}
+                            height="40px"
+                            style={{
+                                transform: human.realHero ? "translate(5px, -10px)" : "translate(5px, -5px)",
+                                position: "absolute",
+                            }}
+                        />
                     </div>
-                    <div>Has Toothpick: <img src={human.hasToothpick ? "/true.png" : "/false.png"}
-                                             alt={human.hasToothpick ? "true" : "false"}
-                                             title={human.hasToothpick ? "true" : "false"}
-                                             height="40px"
-                                             style={{
-                                                 transform: human.hasToothpick ? "translate(5px, -10px)" : "translate(5px, -5px)",
-                                                 position: "absolute"
-                                             }}/>
+                    <div>
+                        Has Toothpick:{" "}
+                        <img
+                            src={human.hasToothpick ? "./true.png" : "./false.png"}
+                            alt={human.hasToothpick ? "true" : "false"}
+                            title={human.hasToothpick ? "true" : "false"}
+                            height="40px"
+                            style={{
+                                transform: human.hasToothpick ? "translate(5px, -10px)" : "translate(5px, -5px)",
+                                position: "absolute",
+                            }}
+                        />
                     </div>
                     <div>Impact Speed: {human.impactSpeed}</div>
                     <div>Team: {human.team?.name || "No team"}</div>
 
                     {human.weaponType && (
-                        <div style={{
-                            transform: human.weaponType === WeaponType.MACHINE_GUN ? "translate(200px, -80px)" : "translate(250px, -110px)",
-                            position: "absolute",
-                            zIndex: 1
-                        }}>
+                        <div
+                            style={{
+                                transform:
+                                    human.weaponType === WeaponType.MACHINE_GUN
+                                        ? "translate(200px, -90px)"
+                                        : "translate(250px, -110px)",
+                                position: "absolute",
+                                zIndex: 1,
+                            }}
+                        >
                             <motion.img
                                 initial={{opacity: 0, y: -20}}
                                 animate={{
@@ -163,8 +178,38 @@ const Panel = ({human}: Props) => {
                         </>
                     )}
 
-                    {human.coordinates && <div>Coordinates: ({human.coordinates.x}, {human.coordinates.y})</div>}
-                    {human.creationDate && <div>Created: {formatDate(human.creationDate)}</div>}
+                    {human.coordinates && (
+                        <div>
+                            Coordinates: ({human.coordinates.x}, {human.coordinates.y})
+                        </div>
+                    )}
+                    <div style={{display: "flex", justifyContent: "space-between"}}>
+                        {human.creationDate && <div>Created: {formatDate(human.creationDate)}</div>}
+                        <motion.button
+                            initial={{
+                                boxShadow: "none"
+                            }}
+                            whileHover={{
+                                y: -5,
+                                scale: 1.01,
+                                boxShadow: "0 10px 10px #8c5f66"
+                            }}
+                            transition={{
+                                times: [0, 0.9, 1]
+                            }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete?.();
+                            }}
+                            style={{
+                                background: "#dc3545",
+                                padding: "6px 10px",
+                            }}
+                            title="Удалить"
+                        >
+                            Удалить
+                        </motion.button>
+                    </div>
                 </div>
             </motion.div>
         </motion.div>

@@ -1,33 +1,38 @@
-// import type {HumanBeingPaginatedSchema} from '../types';
-import { stubHumanBeings } from '../stubData';
-import type {HumanBeingPaginatedSchema} from "../humanBeingAPI.ts";
+import type { HumanBeingPaginatedSchema } from "../humanBeingAPI.ts";
+import { Api } from "../humanBeingAPI.ts";
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export interface UiFilter {
+    id: number;
+    field: string;
+    operation: string;
+    value: string;
+}
+
+const api = new Api({
+    baseUrl: "https://localhost:15478/api/v1",
+});
+
+const toApiFilters = (filters: UiFilter[]): string[] => {
+    return filters.map((f) => `${f.field}[${f.operation}]=${f.value}`);
+};
 
 export const HumanBeingService = {
     async getHumanBeings(
-        sort?: string[],
-        filter?: string[],
         page?: number,
-        pageSize?: number
+        pageSize?: number,
+        filters: UiFilter[] = []
     ): Promise<HumanBeingPaginatedSchema> {
+        const query: Record<string, unknown> = {};
+        if (page && page > 0) query.page = page;
+        if (pageSize && pageSize > 0) query.pageSize = pageSize;
+        const filterArr = toApiFilters(filters);
+        if (filterArr.length > 0) query.filter = filterArr;
 
-        await delay(500);
+        const { data } = await api.humanBeings.getHumanBeings(query);
+        return data;
+    },
 
-        if (Math.random() < 0.1) {
-            throw {
-                code: 500,
-                message: "Internal server error: unexpected failure",
-                time: new Date().toISOString()
-            };
-        }
-
-        return {
-            humanBeingGetResponseDtos: stubHumanBeings,
-            page: page || 1,
-            pageSize: pageSize || stubHumanBeings.length,
-            totalPages: 1,
-            totalCount: stubHumanBeings.length
-        };
-    }
+    async deleteHumanBeing(id: number): Promise<void> {
+        await api.humanBeings.deleteHumanBeing(id);
+    },
 };

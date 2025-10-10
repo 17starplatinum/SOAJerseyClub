@@ -4,10 +4,16 @@ import {motion} from "framer-motion";
 
 interface Props {
     name: string;
+    onRemove: () => void;
 }
 
-const FilterBox = ({name}: Props) => {
+const FilterBox = ({name, onRemove}: Props) => {
     const [isHovered, setIsHovered] = useState(false);
+
+    const handleClick = () => {
+        onRemove();
+    };
+
     return (
         <div style={{margin: "5px 25px"}}>
             <motion.div
@@ -16,16 +22,18 @@ const FilterBox = ({name}: Props) => {
                     display: "inline-block",
                     filter: isHovered ? "drop-shadow(0 10px 10px #8c5f66)" : "none",
                     transition: "filter 0.3s ease",
-                    cursor: "pointer",
+                    cursor: "pointer"
                 }}
                 initial={false}
-                animate={{
-                    y: isHovered ? -5 : 0,
-                    scale: isHovered ? 1.01 : 1
+                whileHover={{
+                    y: -5,
+                    scale: 1.01
                 }}
                 transition={{
                     times: [0, 0.9, 1]
-                }}>
+                }}
+                onClick={handleClick}
+            >
                 <div
                     className={"skew"}
                     style={{fontSize: "25px", zIndex: 1}}
@@ -39,4 +47,4 @@ const FilterBox = ({name}: Props) => {
     )
 }
 
-export default FilterBox
+export default FilterBox;

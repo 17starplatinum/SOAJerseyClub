@@ -1,4 +1,4 @@
-import {type HumanBeingFullSchema, WeaponType, Mood, Color } from './types';
+import {Color, type HumanBeingFullSchema, Mood, WeaponType} from "./humanBeingAPI.ts";
 
 export const stubHumanBeings: HumanBeingFullSchema[] = [
     {

@@ -50,7 +50,7 @@ const ScrollToTopButton = () => {
             aria-label="Прокрутить наверх"
         >
             <img
-                src="/arrow.png"
+                src="./arrow.png"
                 alt="Вверх"
                 style={{
                     height: "128px",

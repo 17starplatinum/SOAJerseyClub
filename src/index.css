@@ -3,7 +3,7 @@
     font-weight: 400;
 
     color: rgba(0, 0, 0, 0.87);
-    background-color: #fff899;
+    background: repeating-linear-gradient(45deg, #fff899, #fff899 70px, #fff785 70px, #fff785 140px);
 
     font-synthesis: none;
     font-family: "Comic Sans MS", "Comic Sans", sans-serif;
@@ -12,6 +12,35 @@
     -moz-osx-font-smoothing: grayscale;
 
     scrollbar-color: #fff899 #f2cc0c;
+    overflow-x: hidden !important;
+}
 
-    overflow-y: scroll;
+html{
+    overflow-y: hidden;
+}
+
+body{
+    overflow-y: auto;
+    height: 100vh;
+    width: 99.5vw;
+    scrollbar-gutter: stable;
+}
+
+.animate__animated.animate__fadeInDown,
+.animate__animated.animate__fadeOutUp {
+    --animate-duration: 0.3s;
+    animation-duration: var(--animate-duration);
+}
+
+.custom-swal {
+    border: 4px solid black;
+    border-radius: 0;
+}
+
+button {
+    cursor: pointer;
+    font-family: Comic Sans MS, Comic Sans, sans-serif;
+    font-size: 18px;
+    border: none;
+    color: white;
 }

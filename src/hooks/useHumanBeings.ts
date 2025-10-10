@@ -1,46 +1,98 @@
-import { useState, useEffect } from 'react';
-// import type {HumanBeingFullSchema} from '../types';
-import { HumanBeingService } from '../service/HumanBeingService.ts';
-import type {HumanBeingFullSchema} from "../humanBeingAPI.ts";
+import { useState, useEffect, useCallback } from "react";
+import { HumanBeingService, type UiFilter } from "../service/HumanBeingService.ts";
+import type { HumanBeingFullSchema } from "../humanBeingAPI.ts";
 
-export const useHumanBeings = () => {
+export const useHumanBeings = (initialFilters: UiFilter[] = []) => {
     const [humanBeings, setHumanBeings] = useState<HumanBeingFullSchema[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const saved = localStorage.getItem('humanBeings');
-        if (saved) {
-            try {
-                setHumanBeings(JSON.parse(saved));
-            } catch (e) {
-                console.error('Ошибка загрузки из localStorage:', e);
-                localStorage.removeItem('humanBeings');
-            }
-        }
-    }, []);
+    const [page, setPage] = useState<number>(() => {
+        const saved = localStorage.getItem("humanBeingsPage");
+        return saved ? Number(saved) : 1;
+    });
+    const [pageSize, setPageSize] = useState<number>(() => {
+        const saved = localStorage.getItem("humanBeingsPageSize");
+        return saved ? Number(saved) : 10;
+    });
+    const [totalPages, setTotalPages] = useState<number>(1);
+    const [totalCount, setTotalCount] = useState<number>(0);
 
-    useEffect(() => {
-        if (humanBeings.length > 0) {
-            localStorage.setItem('humanBeings', JSON.stringify(humanBeings));
-        }
-    }, [humanBeings]);
+    const [filters, setFilters] = useState<UiFilter[]>(initialFilters);
 
-    const loadHumanBeings = async () => {
+    const loadHumanBeings = useCallback(async () => {
         setLoading(true);
         setError(null);
-
         try {
-            const response = await HumanBeingService.getHumanBeings();
-            setHumanBeings(response.humanBeingGetResponseDtos);
+            const resp = await HumanBeingService.getHumanBeings(page, pageSize, filters);
+            setHumanBeings(resp.humanBeingGetResponseDtos ?? []);
+            setTotalPages(resp.totalPages ?? 1);
+            setTotalCount(resp.totalCount ?? 0);
+
+            if (page > (resp.totalPages ?? 1) && (resp.totalPages ?? 1) > 0) {
+                setPage(resp.totalPages ?? 1);
+            }
         } catch (err: any) {
-            const errorMessage = err?.message || 'Неизвестная ошибка';
+            const errorMessage = err?.message || "Неизвестная ошибка";
             setError(errorMessage);
-            alert(`Ошибка загрузки: ${errorMessage}`);
+        } finally {
+            setLoading(false);
+        }
+    }, [page, pageSize, filters]);
+
+    useEffect(() => {
+        loadHumanBeings();
+    }, [loadHumanBeings]);
+
+    useEffect(() => {
+        localStorage.setItem("humanBeingsPage", String(page));
+    }, [page]);
+
+    useEffect(() => {
+        localStorage.setItem("humanBeingsPageSize", String(pageSize));
+    }, [pageSize]);
+
+    const updateFilters = (newFilters: UiFilter[]) => {
+        setFilters(newFilters);
+        localStorage.setItem("humanBeingsFilters", JSON.stringify(newFilters));
+        setPage(1);
+    };
+
+    const deleteHumanBeing = async (id: number) => {
+        setLoading(true);
+        setError(null);
+        try {
+            await HumanBeingService.deleteHumanBeing(id);
+            const resp = await HumanBeingService.getHumanBeings(page, pageSize, filters);
+            const items = resp.humanBeingGetResponseDtos ?? [];
+            if (items.length === 0 && page > 1) {
+                setPage((p) => Math.max(1, p - 1));
+            } else {
+                setHumanBeings(items);
+                setTotalPages(resp.totalPages ?? 1);
+                setTotalCount(resp.totalCount ?? 0);
+            }
+        } catch (err: any) {
+            const errorMessage = err?.message || "Неизвестная ошибка";
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
     };
 
-    return { humanBeings, loading, error, loadHumanBeings };
+    return {
+        humanBeings,
+        loading,
+        error,
+        page,
+        pageSize,
+        totalPages,
+        totalCount,
+        setPage,
+        setPageSize,
+        loadHumanBeings,
+        filters,
+        updateFilters,
+        deleteHumanBeing,
+    };
 };
