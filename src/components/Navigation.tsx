@@ -13,8 +13,8 @@ const Navigation: React.FC = () => {
 
     return (
         <nav style={navStyle}>
-            <NavigationLink to="/page1" title="Человеческие существа"/>
-            <NavigationLink to="/page2" title="Команды"/>
+            <NavigationLink to="/page1" title="Human Beings"/>
+            <NavigationLink to="/page2" title="Teams"/>
         </nav>
     );
 };

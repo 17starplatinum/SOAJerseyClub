@@ -1,4 +1,4 @@
-import type { HumanBeingPaginatedSchema } from "../humanBeingAPI.ts";
+import type {HumanBeingDTOSchema, HumanBeingFullSchema, HumanBeingPaginatedSchema} from "../humanBeingAPI.ts";
 import { Api } from "../humanBeingAPI.ts";
 
 export interface UiFilter {
@@ -34,5 +34,15 @@ export const HumanBeingService = {
 
     async deleteHumanBeing(id: number): Promise<void> {
         await api.humanBeings.deleteHumanBeing(id);
+    },
+
+    async addHumanBeing(data: HumanBeingDTOSchema): Promise<HumanBeingFullSchema> {
+        const { data: response } = await api.humanBeings.addHumanBeing(data);
+        return response;
+    },
+
+    async updateHumanBeing(id: number, data: HumanBeingDTOSchema): Promise<HumanBeingFullSchema> {
+        const { data: response } = await api.humanBeings.updateHumanBeing(id, data);
+        return response;
     },
 };

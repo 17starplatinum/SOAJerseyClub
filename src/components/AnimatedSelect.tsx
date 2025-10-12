@@ -1,9 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 
 export interface SelectOption {
     value: string;
-    label: string;
+    label: string | ReactNode;
 }
 
 interface AnimatedSelectProps {
@@ -19,7 +19,7 @@ const AnimatedSelect = ({
                             value,
                             onChange,
                             options,
-                            placeholder = "Выберите...",
+                            placeholder = "Select...",
                             disabled = false,
                             width = "100%"
                         }: AnimatedSelectProps) => {
@@ -44,14 +44,12 @@ const AnimatedSelect = ({
         const rect = selectRef.current.getBoundingClientRect();
         const spaceBelow = window.innerHeight - rect.bottom;
         const spaceAbove = rect.top;
-        const estimatedDropdownHeight = 200; // Примерная высота выпадающего списка
+        const estimatedDropdownHeight = 200;
 
-        // Если места снизу недостаточно, но сверху достаточно - открываем вверх
         if (spaceBelow < estimatedDropdownHeight && spaceAbove >= estimatedDropdownHeight) {
             return 'up';
         }
 
-        // В остальных случаях открываем вниз
         return 'down';
     };
 
@@ -59,7 +57,6 @@ const AnimatedSelect = ({
         if (disabled) return;
 
         if (!isOpen) {
-            // Перед открытием вычисляем направление
             setDropdownDirection(calculateDropdownDirection());
         }
         setIsOpen(!isOpen);
@@ -118,7 +115,10 @@ const AnimatedSelect = ({
                     color: value ? 'var(--color-dark)' : '#9ca3af',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--spacing-sm)'
                 }}>
                     {selectedOption ? selectedOption.label : placeholder}
                 </span>
@@ -174,7 +174,10 @@ const AnimatedSelect = ({
                                     color: option.value === value ? 'var(--color-light)' : 'var(--color-dark)',
                                     fontFamily: 'var(--font-family-primary)',
                                     fontSize: 'var(--font-size-sm)',
-                                    transition: 'all var(--transition-fast)'
+                                    transition: 'all var(--transition-fast)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 'var(--spacing-sm)'
                                 }}
                                 whileHover={{
                                     backgroundColor: option.value === value ? '#2563eb' : '#f3f4f6'

@@ -6,9 +6,10 @@ import "../variables.css";
 interface Props {
     human: HumanBeingFullSchema;
     onDelete?: () => void;
+    onEdit?: (human: HumanBeingFullSchema) => void;
 }
 
-const Panel = ({human, onDelete}: Props) => {
+const Panel = ({ human, onDelete, onEdit }: Props) => {
     const [isHovered, setIsHovered] = useState(false);
 
     const getWeaponImage = (weaponType: WeaponType | null) => {
@@ -45,7 +46,7 @@ const Panel = ({human, onDelete}: Props) => {
         boxShadow: isHovered ? "var(--shadow-card)" : "none",
         padding: "var(--spacing-sm)",
         position: "relative",
-        width: "400px",
+        width: "320px",
         transition: "all var(--transition-normal) ease",
         cursor: "pointer",
         background: "var(--color-background-primary)",
@@ -54,6 +55,10 @@ const Panel = ({human, onDelete}: Props) => {
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString("ru-RU");
+    };
+
+    const handleClick = () => {
+        onEdit?.(human);
     };
 
     return (
@@ -69,7 +74,9 @@ const Panel = ({human, onDelete}: Props) => {
                 justifyContent: "center",
                 fontSize: "var(--font-size-general)",
                 maxWidth: "min-content",
+                cursor: onEdit ? 'pointer' : 'default'
             }}
+            onClick={handleClick}
         >
             <motion.div
                 initial={false}
@@ -93,7 +100,7 @@ const Panel = ({human, onDelete}: Props) => {
                                         duration: 0.5,
                                         ease: [0.175, 0.885, 0.42, 1.2],
                                     }}
-                                    height="128"
+                                    height="102"
                                     src={getMoodImage(human.mood)}
                                     alt={human.mood}
                                     title={human.mood}
@@ -112,12 +119,12 @@ const Panel = ({human, onDelete}: Props) => {
                         </div>
                     </div>
                     <div>
-                        Real Hero:{" "}
+                        Real Hero:
                         <img
                             src={human.realHero ? "./true.png" : "./false.png"}
                             alt={human.realHero ? "true" : "false"}
                             title={human.realHero ? "true" : "false"}
-                            height="40px"
+                            height="32px"
                             style={{
                                 transform: human.realHero ? "translate(5px, -10px)" : "translate(5px, -5px)",
                                 position: "absolute",
@@ -125,12 +132,12 @@ const Panel = ({human, onDelete}: Props) => {
                         />
                     </div>
                     <div>
-                        Has Toothpick:{" "}
+                        Has Toothpick:
                         <img
                             src={human.hasToothpick ? "./true.png" : "./false.png"}
                             alt={human.hasToothpick ? "true" : "false"}
                             title={human.hasToothpick ? "true" : "false"}
-                            height="40px"
+                            height="32px"
                             style={{
                                 transform: human.hasToothpick ? "translate(5px, -10px)" : "translate(5px, -5px)",
                                 position: "absolute",
@@ -145,8 +152,8 @@ const Panel = ({human, onDelete}: Props) => {
                             style={{
                                 transform:
                                     human.weaponType === WeaponType.MACHINE_GUN
-                                        ? "translate(200px, -90px)"
-                                        : "translate(250px, -110px)",
+                                        ? "translate(160px, -56px)"
+                                        : "translate(200px, -80px)",
                                 position: "absolute",
                                 zIndex: 1,
                             }}
@@ -166,7 +173,7 @@ const Panel = ({human, onDelete}: Props) => {
                                         duration: 1.3,
                                     },
                                 }}
-                                height="128"
+                                height="102"
                                 src={getWeaponImage(human.weaponType)}
                                 alt={human.weaponType}
                                 title={human.weaponType}
@@ -211,9 +218,9 @@ const Panel = ({human, onDelete}: Props) => {
                                 padding: "var(--spacing-xs) var(--spacing-sm)",
                                 fontSize: "var(--font-size-general)"
                             }}
-                            title="Удалить"
+                            title="Delete"
                         >
-                            Удалить
+                            Delete
                         </motion.button>
                     </div>
                 </div>

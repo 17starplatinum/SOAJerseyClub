@@ -16,8 +16,8 @@
 
     --font-family-primary: "Comic Sans MS", "Comic Sans", sans-serif;
     --font-family-accent: 'BadaBoom', Arial, sans-serif;
-    --font-size-general: 22px;
-    --font-size-accent: 26px;
+    --font-size-general: 18px;
+    --font-size-accent: 21px;
     --font-size-xl: 82px;
     --font-size-2xl: 96px;
     --line-height-base: 1.5;
@@ -48,6 +48,11 @@ button, select, input {
     font-size: var(--font-size-general);
     border: var(--border-width) var(--border-style) var(--color-black);
     border-radius: var(--border-radius);
+}
+
+label{
+    font-family: var(--font-family-primary);
+    font-size: var(--font-size-general);
 }
 
 button {

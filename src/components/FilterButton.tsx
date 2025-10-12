@@ -23,7 +23,7 @@ const FilterButton = ({ currentFilters, onFiltersUpdate }: FilterButtonProps) =>
 
     const handleOpenDialog = () => {
         MySwal.fire({
-            title: `<p style="font-size: var(--font-size-xl); margin: 0; margin-bottom: -40px; font-family: var(--font-family-accent); color: var(--color-accent)">ФИЛЬТРЫ</p>`,
+            title: `<p style="font-size: var(--font-size-xl); margin: 0; margin-bottom: -40px; font-family: var(--font-family-accent); color: var(--color-accent)">Filters</p>`,
             html: <FilterDialog currentFilters={currentFilters} onSave={onFiltersUpdate} />,
             showConfirmButton: false,
             showCancelButton: false,
@@ -72,7 +72,7 @@ const FilterButton = ({ currentFilters, onFiltersUpdate }: FilterButtonProps) =>
                         onMouseEnter={() => setIsHovered(true)}
                         onMouseLeave={() => setIsHovered(false)}
                     >
-                        ФИЛЬТРЫ
+                        FILTERS
                     </div>
                 </motion.div>
             </div>

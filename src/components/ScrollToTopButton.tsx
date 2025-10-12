@@ -47,11 +47,11 @@ const ScrollToTopButton = () => {
         <button
             style={buttonStyle}
             onClick={handleScrollToTop}
-            aria-label="Прокрутить наверх"
+            aria-label="Scroll to top"
         >
             <img
                 src="./arrow.png"
-                alt="Вверх"
+                alt="Up"
                 style={{
                     height: "128px",
                     transform: "rotate(180deg)"

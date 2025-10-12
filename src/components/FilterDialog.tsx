@@ -170,7 +170,7 @@ const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
                     value={currentFilter.value || ''}
                     onChange={value => setCurrentFilter(prev => ({...prev, value}))}
                     options={enumOptions}
-                    placeholder="Выберите значение"
+                    placeholder="Select value"
                 />
             );
         }
@@ -185,8 +185,8 @@ const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
                 onChange={e => setCurrentFilter(prev => ({...prev, value: e.target.value}))}
                 placeholder={
                     fieldType === 'boolean' && operation === 'like'
-                        ? "Введите 'true' или 'false'"
-                        : "Введите значение"
+                        ? "Enter 'true' or 'false'"
+                        : "Enter value"
                 }
                 style={{
                     padding: 'var(--spacing-sm)',
@@ -224,7 +224,7 @@ const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
                             value: ''
                         }))}
                         options={fieldOptions}
-                        placeholder="Выберите поле"
+                        placeholder="Select field"
                     />
 
                     {/* Операция */}
@@ -245,7 +245,7 @@ const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
                                         value: ''
                                     }))}
                                     options={operationOptions}
-                                    placeholder="Выберите операцию"
+                                    placeholder="Select operation"
                                 />
                             </motion.div>
                         )}
@@ -270,7 +270,7 @@ const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
                         onClick={handleAddFilter}
                         disabled={!currentFilter.field || !currentFilter.operation || !currentFilter.value}
                     >
-                        Добавить фильтр
+                        Add filter
                     </Button>
                 </div>
             </div>
@@ -281,7 +281,7 @@ const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
                     marginBottom: 'var(--spacing-sm)',
                     fontSize: 'var(--font-size-general)'
                 }}>
-                    Активные фильтры ({filters.length})
+                    Active filters ({filters.length})
                 </h4>
 
                 <div style={{minHeight: '60px'}}>
@@ -300,7 +300,7 @@ const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
                                     fontSize: 'var(--font-size-general)'
                                 }}
                             >
-                                Нет активных фильтров
+                                No active filters
                             </motion.p>
                         ) : (
                             filters.map(filter => (
@@ -361,10 +361,10 @@ const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
 
             <div style={{display: 'flex', justifyContent: 'center', gap: 'var(--spacing-sm)'}}>
                 <Button variant="gray" onClick={() => Swal && Swal.close()}>
-                    Отмена
+                    Cancel
                 </Button>
                 <Button variant="success" onClick={handleSave}>
-                    Применить фильтры
+                    Apply filters
                 </Button>
             </div>
         </div>

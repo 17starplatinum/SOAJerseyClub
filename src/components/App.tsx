@@ -59,6 +59,8 @@ const App: React.FC = () => {
             </AnimatePresence>
 
             <ScrollToTopButton/>
+
+            <footer style={{height: "20px"}}></footer>
         </div>
     );
 };
