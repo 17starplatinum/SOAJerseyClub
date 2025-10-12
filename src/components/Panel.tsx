@@ -1,7 +1,7 @@
-// components/Panel.tsx
 import {motion} from "framer-motion";
 import React, {useState} from "react";
 import {type HumanBeingFullSchema, Mood, WeaponType} from "../humanBeingAPI.ts";
+import "../variables.css";
 
 interface Props {
     human: HumanBeingFullSchema;
@@ -10,6 +10,7 @@ interface Props {
 
 const Panel = ({human, onDelete}: Props) => {
     const [isHovered, setIsHovered] = useState(false);
+
     const getWeaponImage = (weaponType: WeaponType | null) => {
         switch (weaponType) {
             case WeaponType.AXE:
@@ -20,6 +21,7 @@ const Panel = ({human, onDelete}: Props) => {
                 return "./machine_gun.png";
         }
     };
+
     const getMoodImage = (mood: Mood | null) => {
         switch (mood) {
             case Mood.SADNESS:
@@ -36,15 +38,18 @@ const Panel = ({human, onDelete}: Props) => {
     };
 
     const cardStyle: React.CSSProperties = {
-        margin: "15px",
-        border: human.realHero ? "6px ridge #e13d60" : "solid black 6px",
-        boxShadow: isHovered ? "0 10px 15px #8c5f66" : "none",
-        padding: "10px",
+        margin: "var(--spacing-md)",
+        border: human.realHero ?
+            "var(--border-width-thick) var(--border-style-ridge) var(--color-accent)" :
+            "var(--border-width-thick) var(--border-style) var(--color-black)",
+        boxShadow: isHovered ? "var(--shadow-card)" : "none",
+        padding: "var(--spacing-sm)",
         position: "relative",
         width: "400px",
-        transition: "all 0.3s ease",
+        transition: "all var(--transition-normal) ease",
         cursor: "pointer",
-        background: "#fff899",
+        background: "var(--color-background-primary)",
+        fontSize: "var(--font-size-general)"
     };
 
     const formatDate = (dateString: string) => {
@@ -62,7 +67,7 @@ const Panel = ({human, onDelete}: Props) => {
             style={{
                 display: "flex",
                 justifyContent: "center",
-                fontSize: "24px",
+                fontSize: "var(--font-size-general)",
                 maxWidth: "min-content",
             }}
         >
@@ -97,9 +102,9 @@ const Panel = ({human, onDelete}: Props) => {
                         )}
                         <div
                             style={{
-                                marginLeft: "30px",
+                                marginLeft: "var(--spacing-2xl)",
                                 maxWidth: "240px",
-                                fontSize: "32px",
+                                fontSize: "var(--font-size-accent)",
                                 overflowX: "auto",
                             }}
                         >
@@ -192,7 +197,7 @@ const Panel = ({human, onDelete}: Props) => {
                             whileHover={{
                                 y: -5,
                                 scale: 1.01,
-                                boxShadow: "0 10px 10px #8c5f66"
+                                boxShadow: "var(--shadow-hover)"
                             }}
                             transition={{
                                 times: [0, 0.9, 1]
@@ -202,8 +207,9 @@ const Panel = ({human, onDelete}: Props) => {
                                 onDelete?.();
                             }}
                             style={{
-                                background: "#dc3545",
-                                padding: "6px 10px",
+                                background: "var(--color-accent)",
+                                padding: "var(--spacing-xs) var(--spacing-sm)",
+                                fontSize: "var(--font-size-general)"
                             }}
                             title="Удалить"
                         >

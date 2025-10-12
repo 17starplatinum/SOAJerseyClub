@@ -5,6 +5,8 @@ import {motion} from "framer-motion";
 import FilterBox from "../components/FilterBox.tsx";
 import FilterButton from "../components/FilterButton.tsx";
 import {type Filter, getOperationSymbol} from "../components/FilterDialog.tsx";
+import AnimatedSelect from "../components/AnimatedSelect";
+import "../variables.css";
 
 const HumanBeingsPage: React.FC = () => {
     const [filters, setFilters] = useState<Filter[]>(() => {
@@ -38,12 +40,6 @@ const HumanBeingsPage: React.FC = () => {
         localStorage.setItem("humanBeingsFilters", JSON.stringify(filters));
     }, [filters]);
 
-    const removeFilter = (id: number) => {
-        const newFilters = filters.filter((filter) => filter.id !== id);
-        setFilters(newFilters);
-        updateFilters(newFilters);
-    };
-
     const onFiltersUpdate = (newFilters: Filter[]) => {
         setFilters(newFilters);
         updateFilters(newFilters);
@@ -58,11 +54,18 @@ const HumanBeingsPage: React.FC = () => {
     };
 
     const handlePageSizeChange = (newSize: number) => {
-        // Рассчитываем новый номер страницы так, чтобы сохранить позицию данных
         const newPage = Math.min(Math.ceil(((page - 1) * pageSize + 1) / newSize), totalPages);
         setPageSize(newSize);
         setPage(Math.max(1, newPage));
     };
+
+    // Опции для выбора размера страницы
+    const pageSizeOptions = [
+        { value: "5", label: "5" },
+        { value: "10", label: "10" },
+        { value: "20", label: "20" },
+        { value: "50", label: "50" }
+    ];
 
     return (
         <>
@@ -74,7 +77,6 @@ const HumanBeingsPage: React.FC = () => {
                             <FilterBox
                                 key={filter.id}
                                 name={`${filter.field} ${getOperationSymbol(filter.operation)} ${filter.value}`}
-                                onRemove={() => removeFilter(filter.id)}
                             />
                         ))}
                     </div>
@@ -82,7 +84,7 @@ const HumanBeingsPage: React.FC = () => {
             </section>
 
             <section>
-                <div style={{padding: "20px"}}>
+                <div style={{padding: "var(--spacing-lg)"}}>
                     <motion.button
                         onClick={loadHumanBeings}
                         disabled={loading}
@@ -92,16 +94,17 @@ const HumanBeingsPage: React.FC = () => {
                         whileHover={{
                             y: loading ? 0 : -5,
                             scale: loading ? 1 : 1.01,
-                            boxShadow: loading ? "" : "0 10px 10px #8c5f66"
+                            boxShadow: loading ? "" : "var(--shadow-hover)"
                         }}
                         transition={{
                             times: [0, 0.9, 1]
                         }}
                         style={{
-                            padding: "10px 20px",
-                            backgroundColor: loading ? "#ccc" : "#007bff",
+                            padding: "var(--spacing-sm) var(--spacing-lg)",
+                            backgroundColor: loading ? "var(--color-disabled)" : "var(--color-primary)",
                             cursor: loading ? "not-allowed" : "pointer",
                             minWidth: "150px",
+                            fontSize: "var(--font-size-general)"
                         }}
                     >
                         {loading ? "Загрузка..." : "Обновить"}
@@ -109,7 +112,11 @@ const HumanBeingsPage: React.FC = () => {
 
                     {error && (
                         <motion.div initial={{opacity: 0}} animate={{opacity: 1}}
-                                    style={{color: "red", marginTop: "10px"}}>
+                                    style={{
+                                        color: "var(--color-accent)",
+                                        marginTop: "var(--spacing-sm)",
+                                        fontSize: "var(--font-size-general)"
+                                    }}>
                             Ошибка: {error}
                         </motion.div>
                     )}
@@ -119,26 +126,31 @@ const HumanBeingsPage: React.FC = () => {
                         ))}
                     </div>
                 </div>
-                <div style={{display: "flex", gap: 16, justifyContent: "center", marginBottom: 12}}>
-                    <div>
-                        <label>
-                            Page size:{" "}
-                            <select
-                                value={pageSize}
-                                onChange={(e) => {
-                                    const newSize = Number(e.target.value);
-                                    handlePageSizeChange(newSize);
-                                }}
-                            >
-                                <option value={5}>5</option>
-                                <option value={10}>10</option>
-                                <option value={20}>20</option>
-                                <option value={50}>50</option>
-                            </select>
+                <div style={{
+                    display: "flex",
+                    gap: "var(--spacing-md)",
+                    justifyContent: "center",
+                    marginBottom: "12px",
+                    fontSize: "var(--font-size-general)",
+                    alignItems: "center"
+                }}>
+                    <div style={{display: "flex", alignItems: "center", gap: "var(--spacing-sm)"}}>
+                        <label style={{whiteSpace: "nowrap"}}>
+                            Page size:
                         </label>
+                        <AnimatedSelect
+                            value={pageSize.toString()}
+                            onChange={(newValue) => {
+                                const newSize = Number(newValue);
+                                handlePageSizeChange(newSize);
+                            }}
+                            options={pageSizeOptions}
+                            width="100px"
+                            disabled={loading}
+                        />
                     </div>
 
-                    <div>
+                    <div style={{whiteSpace: "nowrap"}}>
                         Всего: {totalCount} • Страница: {page} / {Math.max(totalPages, 1)}
                     </div>
 
@@ -147,16 +159,22 @@ const HumanBeingsPage: React.FC = () => {
                             boxShadow: "none"
                         }}
                         whileHover={{
-                            y: -5,
-                            scale: 1.01,
-                            boxShadow: "0 10px 10px #8c5f66"
+                            y: (loading || page <= 1) ? 0 : -5,
+                            scale: (loading || page <= 1) ? 1 : 1.01,
+                            boxShadow: (loading || page <= 1) ? "none" : "var(--shadow-hover)"
                         }}
                         transition={{
                             times: [0, 0.9, 1]
                         }}
                         onClick={handlePrev}
                         disabled={loading || page <= 1}
-                        style={{backgroundColor: "#007bff"}}
+                        style={{
+                            padding: "var(--spacing-sm) var(--spacing-md)",
+                            backgroundColor: (loading || page <= 1) ? "var(--color-disabled)" : "var(--color-primary)",
+                            cursor: (loading || page <= 1) ? "not-allowed" : "pointer",
+                            fontSize: "var(--font-size-general)",
+                            minWidth: "80px"
+                        }}
                     >
                         Назад
                     </motion.button>
@@ -165,16 +183,22 @@ const HumanBeingsPage: React.FC = () => {
                             boxShadow: "none"
                         }}
                         whileHover={{
-                            y: -5,
-                            scale: 1.01,
-                            boxShadow: "0 10px 10px #8c5f66"
+                            y: (loading || page >= totalPages) ? 0 : -5,
+                            scale: (loading || page >= totalPages) ? 1 : 1.01,
+                            boxShadow: (loading || page >= totalPages) ? "none" : "var(--shadow-hover)"
                         }}
                         transition={{
                             times: [0, 0.9, 1]
                         }}
                         onClick={handleNext}
                         disabled={loading || page >= totalPages}
-                        style={{backgroundColor: "#007bff"}}
+                        style={{
+                            padding: "var(--spacing-sm) var(--spacing-md)",
+                            backgroundColor: (loading || page >= totalPages) ? "var(--color-disabled)" : "var(--color-primary)",
+                            cursor: (loading || page >= totalPages) ? "not-allowed" : "pointer",
+                            fontSize: "var(--font-size-general)",
+                            minWidth: "80px"
+                        }}
                     >
                         Вперед
                     </motion.button>

@@ -24,6 +24,7 @@ const AnimatedSelect = ({
                             width = "100%"
                         }: AnimatedSelectProps) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [dropdownDirection, setDropdownDirection] = useState<'down' | 'up'>('down');
     const selectRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -37,12 +38,54 @@ const AnimatedSelect = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const calculateDropdownDirection = () => {
+        if (!selectRef.current) return 'down';
+
+        const rect = selectRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        const estimatedDropdownHeight = 200; // Примерная высота выпадающего списка
+
+        // Если места снизу недостаточно, но сверху достаточно - открываем вверх
+        if (spaceBelow < estimatedDropdownHeight && spaceAbove >= estimatedDropdownHeight) {
+            return 'up';
+        }
+
+        // В остальных случаях открываем вниз
+        return 'down';
+    };
+
+    const handleToggle = () => {
+        if (disabled) return;
+
+        if (!isOpen) {
+            // Перед открытием вычисляем направление
+            setDropdownDirection(calculateDropdownDirection());
+        }
+        setIsOpen(!isOpen);
+    };
+
     const selectedOption = options.find(opt => opt.value === value);
 
     const handleSelect = (optionValue: string) => {
         onChange(optionValue);
         setIsOpen(false);
     };
+
+    const dropdownVariants = {
+        down: {
+            initial: { opacity: 0, scale: 0.8, y: -10 },
+            animate: { opacity: 1, scale: 1, y: 0 },
+            exit: { opacity: 0, scale: 0.8, y: -10 }
+        },
+        up: {
+            initial: { opacity: 0, scale: 0.8, y: 10 },
+            animate: { opacity: 1, scale: 1, y: 0 },
+            exit: { opacity: 0, scale: 0.8, y: 10 }
+        }
+    };
+
+    const currentVariants = dropdownVariants[dropdownDirection];
 
     return (
         <div
@@ -52,25 +95,27 @@ const AnimatedSelect = ({
         >
             <motion.div
                 className="select-trigger"
-                onClick={() => !disabled && setIsOpen(!isOpen)}
+                onClick={handleToggle}
                 whileHover={!disabled ? { scale: 1.02 } : {}}
                 whileTap={!disabled ? { scale: 0.98 } : {}}
                 style={{
-                    padding: '8px 12px',
-                    background: 'white',
+                    padding: 'var(--spacing-sm) var(--spacing-md)',
+                    background: 'var(--color-light)',
                     cursor: disabled ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    fontFamily: "Comic Sans MS, Comic Sans, sans-serif",
-                    fontSize: "18px",
+                    fontFamily: 'var(--font-family-primary)',
+                    fontSize: 'var(--font-size-general)',
                     opacity: disabled ? 0.6 : 1,
                     minHeight: '40px',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
+                    border: 'var(--border-width) var(--border-style) black',
+                    borderRadius: 'var(--border-radius)'
                 }}
             >
                 <span style={{
-                    color: value ? '#374151' : '#9ca3af',
+                    color: value ? 'var(--color-dark)' : '#9ca3af',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap'
@@ -83,7 +128,7 @@ const AnimatedSelect = ({
                     width="16"
                     height="16"
                     viewBox="0 0 24 24"
-                    style={{ flexShrink: 0, marginLeft: '8px' }}
+                    style={{ flexShrink: 0, marginLeft: 'var(--spacing-sm)' }}
                 >
                     <path fill="currentColor" d="M7 10l5 5 5-5z"/>
                 </motion.svg>
@@ -92,22 +137,25 @@ const AnimatedSelect = ({
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.8, y: -10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.8, y: -10 }}
+                        initial={currentVariants.initial}
+                        animate={currentVariants.animate}
+                        exit={currentVariants.exit}
                         transition={{ duration: 0.2 }}
                         style={{
                             position: 'absolute',
-                            top: '100%',
+                            [dropdownDirection === 'down' ? 'top' : 'bottom']: '100%',
                             left: 0,
                             right: 0,
-                            background: 'white',
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                            marginTop: '4px',
+                            background: 'var(--color-light)',
+                            boxShadow: 'var(--shadow-dropdown)',
+                            marginTop: dropdownDirection === 'down' ? 'var(--spacing-xs)' : 0,
+                            marginBottom: dropdownDirection === 'up' ? 'var(--spacing-xs)' : 0,
                             overflow: 'hidden',
                             zIndex: 1000,
                             maxHeight: '200px',
-                            overflowY: 'auto'
+                            overflowY: 'auto',
+                            border: 'var(--border-width) var(--border-style) black',
+                            borderRadius: 'var(--border-radius)'
                         }}
                     >
                         {options.map((option, index) => (
@@ -119,14 +167,14 @@ const AnimatedSelect = ({
                                 className={`select-option ${option.value === value ? 'selected' : ''}`}
                                 onClick={() => handleSelect(option.value)}
                                 style={{
-                                    padding: '10px 12px',
+                                    padding: 'var(--spacing-sm) var(--spacing-md)',
                                     cursor: 'pointer',
                                     borderBottom: '1px solid #f3f4f6',
-                                    background: option.value === value ? '#3b82f6' : 'white',
-                                    color: option.value === value ? 'white' : '#374151',
-                                    fontFamily: "Comic Sans MS, Comic Sans, sans-serif",
-                                    fontSize: "16px",
-                                    transition: 'all 0.2s'
+                                    background: option.value === value ? 'var(--color-primary)' : 'var(--color-light)',
+                                    color: option.value === value ? 'var(--color-light)' : 'var(--color-dark)',
+                                    fontFamily: 'var(--font-family-primary)',
+                                    fontSize: 'var(--font-size-sm)',
+                                    transition: 'all var(--transition-fast)'
                                 }}
                                 whileHover={{
                                     backgroundColor: option.value === value ? '#2563eb' : '#f3f4f6'

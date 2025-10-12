@@ -1,7 +1,8 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import {motion, AnimatePresence} from 'framer-motion';
+import {useState} from 'react';
 import Swal from "sweetalert2";
 import AnimatedSelect, {type SelectOption} from './AnimatedSelect';
+import Button from './Button';
 
 export interface Filter {
     id: number;
@@ -45,18 +46,18 @@ export const getOperationSymbol = (operation: string) => {
 
 const FILTER_CONFIG = {
     fields: [
-        { value: 'id', label: 'Id', type: 'number' },
-        { value: 'name', label: 'Name', type: 'string' },
-        { value: 'coordinates.x', label: 'Coordinates X', type: 'number' },
-        { value: 'coordinates.y', label: 'Coordinates Y', type: 'number' },
-        { value: 'impactSpeed', label: 'Impact Speed', type: 'number' },
-        { value: 'realHero', label: 'Real Hero', type: 'boolean' },
-        { value: 'hasToothpick', label: 'Has Toothpick', type: 'boolean' },
-        { value: 'weaponType', label: 'Weapon Type', type: 'enum' },
-        { value: 'mood', label: 'Mood', type: 'enum' },
-        { value: 'car.model', label: 'Car model', type: 'string' },
-        { value: 'car.cool', label: 'Car cool', type: 'boolean' },
-        { value: 'car.color', label: 'Car color', type: 'enum' },
+        {value: 'id', label: 'Id', type: 'number'},
+        {value: 'name', label: 'Name', type: 'string'},
+        {value: 'coordinates.x', label: 'Coordinates X', type: 'number'},
+        {value: 'coordinates.y', label: 'Coordinates Y', type: 'number'},
+        {value: 'impactSpeed', label: 'Impact Speed', type: 'number'},
+        {value: 'realHero', label: 'Real Hero', type: 'boolean'},
+        {value: 'hasToothpick', label: 'Has Toothpick', type: 'boolean'},
+        {value: 'weaponType', label: 'Weapon Type', type: 'enum'},
+        {value: 'mood', label: 'Mood', type: 'enum'},
+        {value: 'car.model', label: 'Car model', type: 'string'},
+        {value: 'car.cool', label: 'Car cool', type: 'boolean'},
+        {value: 'car.color', label: 'Car color', type: 'enum'},
     ],
     operations: {
         string: ['eq', 'neq', 'like'],
@@ -66,7 +67,7 @@ const FILTER_CONFIG = {
     }
 };
 
-const FilterDialog = ({ currentFilters, onSave }: FilterDialogProps) => {
+const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
     const [filters, setFilters] = useState<Filter[]>(currentFilters);
     const [currentFilter, setCurrentFilter] = useState<Partial<Filter>>({});
 
@@ -131,28 +132,28 @@ const FilterDialog = ({ currentFilters, onSave }: FilterDialogProps) => {
         if (fieldType === 'boolean' && operation !== 'like') {
             return (
                 <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    style={{ display: 'flex', alignItems: 'center', gap: '20px' }}
+                    initial={{opacity: 0, y: 10}}
+                    animate={{opacity: 1, y: 0}}
+                    exit={{opacity: 0, y: -10}}
+                    style={{display: 'flex', alignItems: 'center', gap: 'var(--spacing-lg)'}}
                 >
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                    <label style={{display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer'}}>
                         <input
                             type="radio"
                             name="booleanValue"
                             checked={currentFilter.value === 'true'}
-                            onChange={() => setCurrentFilter(prev => ({ ...prev, value: 'true' }))}
-                            style={{ width: 'auto' }}
+                            onChange={() => setCurrentFilter(prev => ({...prev, value: 'true'}))}
+                            style={{width: 'auto'}}
                         />
                         True
                     </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer' }}>
+                    <label style={{display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer'}}>
                         <input
                             type="radio"
                             name="booleanValue"
                             checked={currentFilter.value === 'false'}
-                            onChange={() => setCurrentFilter(prev => ({ ...prev, value: 'false' }))}
-                            style={{ width: 'auto' }}
+                            onChange={() => setCurrentFilter(prev => ({...prev, value: 'false'}))}
+                            style={{width: 'auto'}}
                         />
                         False
                     </label>
@@ -162,12 +163,12 @@ const FilterDialog = ({ currentFilters, onSave }: FilterDialogProps) => {
 
         if (fieldType === 'enum' && operation !== 'like') {
             const enumValues = getEnumValues(currentFilter.field);
-            const enumOptions: SelectOption[] = enumValues.map(value => ({ value, label: value }));
+            const enumOptions: SelectOption[] = enumValues.map(value => ({value, label: value}));
 
             return (
                 <AnimatedSelect
                     value={currentFilter.value || ''}
-                    onChange={value => setCurrentFilter(prev => ({ ...prev, value }))}
+                    onChange={value => setCurrentFilter(prev => ({...prev, value}))}
                     options={enumOptions}
                     placeholder="Выберите значение"
                 />
@@ -176,29 +177,29 @@ const FilterDialog = ({ currentFilters, onSave }: FilterDialogProps) => {
 
         return (
             <motion.input
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
+                initial={{opacity: 0, y: 10}}
+                animate={{opacity: 1, y: 0}}
+                exit={{opacity: 0, y: -10}}
                 type="text"
                 value={currentFilter.value || ''}
-                onChange={e => setCurrentFilter(prev => ({ ...prev, value: e.target.value }))}
+                onChange={e => setCurrentFilter(prev => ({...prev, value: e.target.value}))}
                 placeholder={
                     fieldType === 'boolean' && operation === 'like'
                         ? "Введите 'true' или 'false'"
                         : "Введите значение"
                 }
                 style={{
-                    padding: '8px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    fontFamily: "Comic Sans MS, Comic Sans, sans-serif",
-                    fontSize: "18px",
+                    padding: 'var(--spacing-sm)',
+                    fontFamily: 'var(--font-family-primary)',
+                    fontSize: 'var(--font-size-general)',
                     width: '100%',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
+                    border: 'var(--border-width) var(--border-style) black',
+                    borderRadius: 'var(--border-radius)'
                 }}
                 whileFocus={{
                     scale: 1.02,
-                    borderColor: '#3b82f6',
+                    borderColor: 'var(--color-primary)',
                     boxShadow: '0 0 0 2px rgba(59, 130, 246, 0.1)'
                 }}
             />
@@ -206,9 +207,13 @@ const FilterDialog = ({ currentFilters, onSave }: FilterDialogProps) => {
     };
 
     return (
-        <div style={{ minWidth: '300px', padding: '20px' }}>
-            <div style={{ marginBottom: '20px', padding: '15px', fontSize: '24px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{minWidth: '300px', padding: 'var(--spacing-lg)'}}>
+            <div style={{
+                marginBottom: 'var(--spacing-lg)',
+                padding: 'var(--spacing-md)',
+                fontSize: 'var(--font-size-general)'
+            }}>
+                <div style={{display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)'}}>
                     {/* Поле выбора */}
                     <AnimatedSelect
                         value={currentFilter.field || ''}
@@ -227,10 +232,10 @@ const FilterDialog = ({ currentFilters, onSave }: FilterDialogProps) => {
                         {currentFilter.field && (
                             <motion.div
                                 key="operation-select"
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.3 }}
+                                initial={{opacity: 0, height: 0}}
+                                animate={{opacity: 1, height: 'auto'}}
+                                exit={{opacity: 0, height: 0}}
+                                transition={{duration: 0.3}}
                             >
                                 <AnimatedSelect
                                     value={currentFilter.operation || ''}
@@ -251,62 +256,48 @@ const FilterDialog = ({ currentFilters, onSave }: FilterDialogProps) => {
                         {currentFilter.operation && (
                             <motion.div
                                 key="value-input"
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.3 }}
+                                initial={{opacity: 0, height: 0}}
+                                animate={{opacity: 1, height: 'auto'}}
+                                exit={{opacity: 0, height: 0}}
+                                transition={{duration: 0.3}}
                             >
                                 {renderValueInput()}
                             </motion.div>
                         )}
                     </AnimatePresence>
 
-                    <motion.button
-                        initial={{ boxShadow: "none" }}
-                        whileHover={{
-                            y: -5,
-                            scale: 1.01,
-                            boxShadow: "0 10px 10px #8c5f66"
-                        }}
-                        whileTap={{ scale: 0.95 }}
-                        transition={{ times: [0, 0.9, 1] }}
+                    <Button
                         onClick={handleAddFilter}
                         disabled={!currentFilter.field || !currentFilter.operation || !currentFilter.value}
-                        style={{
-                            padding: '8px 16px',
-                            backgroundColor: '#007bff',
-                            border: 'none',
-                            borderRadius: '6px',
-                            color: 'white',
-                            cursor: 'pointer',
-                            fontFamily: "Comic Sans MS, Comic Sans, sans-serif",
-                            fontSize: "16px",
-                            opacity: (!currentFilter.field || !currentFilter.operation || !currentFilter.value) ? 0.6 : 1
-                        }}
                     >
                         Добавить фильтр
-                    </motion.button>
+                    </Button>
                 </div>
             </div>
 
-            <div style={{ marginBottom: '20px' }}>
-                <h4 style={{ fontFamily: "Comic Sans MS, Comic Sans, sans-serif", marginBottom: '10px' }}>
+            <div style={{marginBottom: 'var(--spacing-lg)'}}>
+                <h4 style={{
+                    fontFamily: 'var(--font-family-primary)',
+                    marginBottom: 'var(--spacing-sm)',
+                    fontSize: 'var(--font-size-general)'
+                }}>
                     Активные фильтры ({filters.length})
                 </h4>
 
-                <div style={{ minHeight: '60px' }}>
+                <div style={{minHeight: '60px'}}>
                     <AnimatePresence mode="popLayout">
                         {filters.length === 0 ? (
                             <motion.p
                                 key="no-filters"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
+                                initial={{opacity: 0, y: 20}}
+                                animate={{opacity: 1, y: 0}}
+                                exit={{opacity: 0, y: -20}}
                                 style={{
-                                    fontFamily: "Comic Sans MS, Comic Sans, sans-serif",
+                                    fontFamily: 'var(--font-family-primary)',
                                     textAlign: 'center',
-                                    padding: '20px',
-                                    color: '#6b7280'
+                                    padding: 'var(--spacing-lg)',
+                                    color: 'var(--color-gray)',
+                                    fontSize: 'var(--font-size-general)'
                                 }}
                             >
                                 Нет активных фильтров
@@ -315,8 +306,8 @@ const FilterDialog = ({ currentFilters, onSave }: FilterDialogProps) => {
                             filters.map(filter => (
                                 <motion.div
                                     key={filter.id}
-                                    initial={{ opacity: 0, scale: 0.8, height: 0 }}
-                                    animate={{ opacity: 1, scale: 1, height: 'auto' }}
+                                    initial={{opacity: 0, scale: 0.8, height: 0}}
+                                    animate={{opacity: 1, scale: 1, height: 'auto'}}
                                     exit={{
                                         opacity: 0,
                                         scale: 0.8,
@@ -324,39 +315,39 @@ const FilterDialog = ({ currentFilters, onSave }: FilterDialogProps) => {
                                         marginTop: 0,
                                         marginBottom: 0
                                     }}
-                                    transition={{ duration: 0.3 }}
+                                    transition={{duration: 0.3}}
                                     layout
                                     style={{
                                         display: 'flex',
                                         justifyContent: 'space-between',
                                         alignItems: 'center',
-                                        padding: '10px',
+                                        padding: 'var(--spacing-sm)',
                                         margin: '5px 0',
-                                        backgroundColor: '#f2cc0c',
-                                        borderRadius: '6px',
-                                        fontFamily: "Comic Sans MS, Comic Sans, sans-serif",
-                                        overflow: 'hidden'
+                                        backgroundColor: 'var(--color-secondary)',
+                                        fontFamily: 'var(--font-family-primary)',
+                                        overflow: 'hidden',
+                                        fontSize: 'var(--font-size-general)'
                                     }}
                                 >
-                                    <span style={{ flex: 1 }}>
-                                        <strong>{filter.field}</strong> {getOperationSymbol(filter.operation)} {filter.value}
-                                    </span>
+                                  <span style={{flex: 1}}>
+                                    <strong>{filter.field}</strong> {getOperationSymbol(filter.operation)} {filter.value}
+                                  </span>
                                     <motion.button
                                         onClick={() => removeFilter(filter.id)}
-                                        whileHover={{ scale: 1.2 }}
-                                        whileTap={{ scale: 0.9 }}
+                                        whileHover={{scale: 1.2}}
+                                        whileTap={{scale: 0.9}}
                                         style={{
                                             background: 'none',
-                                            border: 'none',
-                                            color: '#dc3545',
+                                            color: 'var(--color-accent)',
                                             cursor: 'pointer',
-                                            fontSize: '24px',
+                                            fontSize: 'var(--font-size-general)',
                                             width: '30px',
                                             height: '30px',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
-                                            flexShrink: 0
+                                            flexShrink: 0,
+                                            border: 'none'
                                         }}
                                     >
                                         ×
@@ -368,53 +359,13 @@ const FilterDialog = ({ currentFilters, onSave }: FilterDialogProps) => {
                 </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                <motion.button
-                    initial={{ boxShadow: "none" }}
-                    whileHover={{
-                        y: -5,
-                        scale: 1.01,
-                        boxShadow: "0 10px 10px #8c5f66"
-                    }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ times: [0, 0.9, 1] }}
-                    onClick={() => Swal && Swal.close()}
-                    style={{
-                        padding: '8px 16px',
-                        backgroundColor: '#6c757d',
-                        border: 'none',
-                        borderRadius: '6px',
-                        color: 'white',
-                        cursor: 'pointer',
-                        fontFamily: "Comic Sans MS, Comic Sans, sans-serif",
-                        fontSize: "16px"
-                    }}
-                >
+            <div style={{display: 'flex', justifyContent: 'center', gap: 'var(--spacing-sm)'}}>
+                <Button variant="gray" onClick={() => Swal && Swal.close()}>
                     Отмена
-                </motion.button>
-                <motion.button
-                    initial={{ boxShadow: "none" }}
-                    whileHover={{
-                        y: -5,
-                        scale: 1.01,
-                        boxShadow: "0 10px 10px #8c5f66"
-                    }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ times: [0, 0.9, 1] }}
-                    onClick={handleSave}
-                    style={{
-                        padding: '8px 16px',
-                        backgroundColor: '#28a745',
-                        border: 'none',
-                        borderRadius: '6px',
-                        color: 'white',
-                        cursor: 'pointer',
-                        fontFamily: "Comic Sans MS, Comic Sans, sans-serif",
-                        fontSize: "16px"
-                    }}
-                >
+                </Button>
+                <Button variant="success" onClick={handleSave}>
                     Применить фильтры
-                </motion.button>
+                </Button>
             </div>
         </div>
     );

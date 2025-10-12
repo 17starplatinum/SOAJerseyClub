@@ -1,7 +1,8 @@
-import FilterBox from "./FilterBox.tsx";
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import FilterDialog from './FilterDialog.tsx';
+import {useState} from "react";
+import {motion} from "framer-motion";
 
 const MySwal = withReactContent(Swal);
 
@@ -18,15 +19,17 @@ interface FilterButtonProps {
 }
 
 const FilterButton = ({ currentFilters, onFiltersUpdate }: FilterButtonProps) => {
+    const [isHovered, setIsHovered] = useState(false);
+
     const handleOpenDialog = () => {
         MySwal.fire({
-            title: '<p style="font-size: 64px; margin: 0; margin-bottom: -40px; font-family: BadaBoom, Arial, sans-serif; color: #e13d60">ФИЛЬТРЫ</p>',
+            title: `<p style="font-size: var(--font-size-xl); margin: 0; margin-bottom: -40px; font-family: var(--font-family-accent); color: var(--color-accent)">ФИЛЬТРЫ</p>`,
             html: <FilterDialog currentFilters={currentFilters} onSave={onFiltersUpdate} />,
             showConfirmButton: false,
             showCancelButton: false,
             allowOutsideClick: true,
             allowEscapeKey: true,
-            background: "repeating-linear-gradient(45deg, #fff899, #fff899 50px, #fff785 50px, #fff785 100px)",
+            background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
             showClass: {
                 popup: 'animate__animated animate__fadeInDown'
             },
@@ -40,11 +43,40 @@ const FilterButton = ({ currentFilters, onFiltersUpdate }: FilterButtonProps) =>
     };
 
     return (
-        <>
-            <div onClick={handleOpenDialog}>
-                <FilterBox name={"ФИЛЬТРЫ"} onRemove={() => {}} />
+        <div onClick={handleOpenDialog}>
+            <div style={{margin: "5px 25px"}}>
+                <motion.div
+                    style={{
+                        position: "relative",
+                        display: "inline-block",
+                        filter: isHovered ? `drop-shadow(var(--shadow-hover))` : "none",
+                        transition: `filter var(--transition-normal) ease`,
+                        cursor: "pointer"
+                    }}
+                    initial={false}
+                    whileHover={{
+                        y: -5,
+                        scale: 1.01
+                    }}
+                    transition={{
+                        times: [0, 0.9, 1]
+                    }}
+                >
+                    <div
+                        className={"skew"}
+                        style={{
+                            fontSize: "var(--font-size-accent)",
+                            zIndex: 1,
+                            fontFamily: "var(--font-family-primary)"
+                        }}
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                    >
+                        ФИЛЬТРЫ
+                    </div>
+                </motion.div>
             </div>
-        </>
+        </div>
     );
 };
 

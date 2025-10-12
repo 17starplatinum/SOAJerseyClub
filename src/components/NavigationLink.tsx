@@ -4,22 +4,24 @@ import React from "react";
 
 const NavigationLink: React.FC<{ to: string, title: string }> = ({to, title}) => {
     const linkStyle: React.CSSProperties = {
-        margin: "0 20px",
+        margin: "0 var(--spacing-lg)",
         textDecoration: "none",
-        fontSize: "96px",
-        fontFamily: "BadaBoom, Arial, sans-serif",
+        fontSize: "var(--font-size-2xl)",
+        fontFamily: "var(--font-family-accent)",
         fontWeight: "500",
-        padding: "10px 20px",
+        padding: "var(--spacing-sm) var(--spacing-lg)",
         position: "relative"
     };
+
     const inactiveLinkStyle: React.CSSProperties = {
         ...linkStyle,
-        transition: "all 0.3s ease",
-        fontSize: "82px"
+        transition: "all var(--transition-normal) ease",
+        fontSize: "var(--font-size-xl)"
     };
+
     const activeLinkStyle: React.CSSProperties = {
         ...linkStyle,
-        transition: "all 0.3s ease"
+        transition: "all var(--transition-normal) ease"
     };
 
     return (
@@ -33,11 +35,11 @@ const NavigationLink: React.FC<{ to: string, title: string }> = ({to, title}) =>
                 >
                     <motion.span
                         style={{
-                            color: isActive ? "#e13d60" : "#6c757d",
+                            color: isActive ? "var(--color-accent)" : "var(--color-gray)",
                             position: "relative",
                             zIndex: 1
                         }}
-                        whileHover={{color: isActive ? "#e13d60" : "#495057"}}
+                        whileHover={{color: isActive ? "var(--color-accent)" : "#495057"}}
                         transition={{duration: 0.2}}
                     >
                         {title}
@@ -48,4 +50,4 @@ const NavigationLink: React.FC<{ to: string, title: string }> = ({to, title}) =>
     )
 }
 
-export default NavigationLink
+export default NavigationLink;

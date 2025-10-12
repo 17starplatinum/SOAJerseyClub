@@ -1,29 +1,29 @@
+@import './variables.css';
+
 :root {
-    line-height: 1.5;
+    line-height: var(--line-height-base);
     font-weight: 400;
-
     color: rgba(0, 0, 0, 0.87);
-    background: repeating-linear-gradient(45deg, #fff899, #fff899 70px, #fff785 70px, #fff785 140px);
-
+    background: repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 70px, var(--color-background-secondary) 70px, var(--color-background-secondary) 140px);
     font-synthesis: none;
-    font-family: "Comic Sans MS", "Comic Sans", sans-serif;
+    font-family: var(--font-family-primary);
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-
-    scrollbar-color: #fff899 #f2cc0c;
+    scrollbar-color: var(--color-background-primary) var(--color-secondary);
     overflow-x: hidden !important;
 }
 
-html{
+html {
     overflow-y: hidden;
 }
 
-body{
+body {
     overflow-y: auto;
     height: 100vh;
     width: 99.5vw;
     scrollbar-gutter: stable;
+    font-size: var(--font-size-general);
 }
 
 .animate__animated.animate__fadeInDown,
@@ -33,14 +33,6 @@ body{
 }
 
 .custom-swal {
-    border: 4px solid black;
-    border-radius: 0;
-}
-
-button {
-    cursor: pointer;
-    font-family: Comic Sans MS, Comic Sans, sans-serif;
-    font-size: 18px;
-    border: none;
-    color: white;
+    border: var(--border-width) var(--border-style) var(--color-black);
+    border-radius: var(--border-radius);
 }

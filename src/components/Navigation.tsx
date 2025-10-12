@@ -1,13 +1,14 @@
 import React from "react";
 import '../fonts.css';
+import '../variables.css';
 import NavigationLink from "./NavigationLink.tsx";
 
 const Navigation: React.FC = () => {
     const navStyle: React.CSSProperties = {
         display: "flex",
         justifyContent: "center",
-        paddingTop: "20px",
-        minHeight:"170px"
+        paddingTop: "var(--spacing-lg)",
+        minHeight: "170px"
     };
 
     return (
