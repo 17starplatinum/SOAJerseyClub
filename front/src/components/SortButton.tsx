@@ -1,30 +1,23 @@
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-import FilterDialog from './FilterDialog.tsx';
-import {useState} from "react";
-import {motion} from "framer-motion";
+import SortDialog, { type SortRule } from './SortDialog.tsx';
+import { useState } from "react";
+import { motion } from "framer-motion";
 
 const MySwal = withReactContent(Swal);
 
-interface Filter {
-    id: number;
-    field: string;
-    operation: string;
-    value: string;
+interface SortButtonProps {
+    currentSorts: SortRule[];
+    onSortsUpdate: (sorts: SortRule[]) => void;
 }
 
-interface FilterButtonProps {
-    currentFilters: Filter[];
-    onFiltersUpdate: (filters: Filter[]) => void;
-}
-
-const FilterButton = ({ currentFilters, onFiltersUpdate }: FilterButtonProps) => {
+const SortButton = ({ currentSorts, onSortsUpdate }: SortButtonProps) => {
     const [isHovered, setIsHovered] = useState(false);
 
     const handleOpenDialog = () => {
         MySwal.fire({
-            title: `<p style="font-size: var(--font-size-xl); margin: 0; margin-bottom: -40px; font-family: var(--font-family-accent); color: var(--color-accent)">Filters</p>`,
-            html: <FilterDialog currentFilters={currentFilters} onSave={onFiltersUpdate} />,
+            title: `<p style="font-size: var(--font-size-xl); margin: 0; margin-bottom: -40px; font-family: var(--font-family-accent); color: var(--color-accent)">Sorting</p>`,
+            html: <SortDialog currentSorts={currentSorts} onSave={onSortsUpdate} />,
             showConfirmButton: false,
             showCancelButton: false,
             allowOutsideClick: true,
@@ -44,7 +37,7 @@ const FilterButton = ({ currentFilters, onFiltersUpdate }: FilterButtonProps) =>
 
     return (
         <div onClick={handleOpenDialog}>
-            <div style={{margin: "5px 25px"}}>
+            <div style={{ margin: "5px 25px" }}>
                 <motion.div
                     style={{
                         position: "relative",
@@ -63,7 +56,7 @@ const FilterButton = ({ currentFilters, onFiltersUpdate }: FilterButtonProps) =>
                     }}
                 >
                     <div
-                        className={"filter_box"}
+                        className={"sort_box"}
                         style={{
                             fontSize: "var(--font-size-accent)",
                             zIndex: 1,
@@ -72,7 +65,7 @@ const FilterButton = ({ currentFilters, onFiltersUpdate }: FilterButtonProps) =>
                         onMouseEnter={() => setIsHovered(true)}
                         onMouseLeave={() => setIsHovered(false)}
                     >
-                        FILTERS
+                        SORTING
                     </div>
                 </motion.div>
             </div>
@@ -80,4 +73,4 @@ const FilterButton = ({ currentFilters, onFiltersUpdate }: FilterButtonProps) =>
     );
 };
 
-export default FilterButton;
+export default SortButton;

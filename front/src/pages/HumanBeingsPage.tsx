@@ -12,6 +12,9 @@ import CreateHumanBeingDialog from '../components/CreateHumanBeingDialog.tsx';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from "sweetalert2";
 import type {HumanBeingFullSchema} from "../humanBeingAPI.ts";
+import type {SortRule} from "../components/SortDialog.tsx";
+import SortButton from "../components/SortButton.tsx";
+import SortBox from "../components/SortBox.tsx";
 
 const MySwal = withReactContent(Swal);
 
@@ -19,20 +22,17 @@ const MySwal = withReactContent(Swal);
 const HumanBeingsPage: React.FC = () => {
     const [filters, setFilters] = useState<Filter[]>(() => {
         const savedFilters = localStorage.getItem("humanBeingsFilters");
-        if (savedFilters) {
-            try {
-                return JSON.parse(savedFilters);
-            } catch {
-                return [];
-            }
-        }
-        return [];
+        return savedFilters ? JSON.parse(savedFilters) : [];
+    });
+
+    const [sorts, setSorts] = useState<SortRule[]>(() => {
+        const savedSorts = localStorage.getItem("humanBeingsSorts");
+        return savedSorts ? JSON.parse(savedSorts) : [];
     });
 
     const {
         humanBeings,
         loading,
-        error,
         page,
         pageSize,
         totalPages,
@@ -42,8 +42,8 @@ const HumanBeingsPage: React.FC = () => {
         loadHumanBeings,
         updateFilters,
         deleteHumanBeing,
-        updateHumanBeing,
-    } = useHumanBeings(filters);
+        updateSorts,
+    } = useHumanBeings(filters, sorts);
 
     useEffect(() => {
         localStorage.setItem("humanBeingsFilters", JSON.stringify(filters));
@@ -52,6 +52,11 @@ const HumanBeingsPage: React.FC = () => {
     const onFiltersUpdate = (newFilters: Filter[]) => {
         setFilters(newFilters);
         updateFilters(newFilters);
+    };
+
+    const onSortsUpdate = (newSorts: SortRule[]) => {
+        setSorts(newSorts);
+        updateSorts(newSorts);
     };
 
     const handlePrev = () => {
@@ -151,6 +156,14 @@ const HumanBeingsPage: React.FC = () => {
                             <FilterBox
                                 key={filter.id}
                                 name={`${filter.field} ${getOperationSymbol(filter.operation)} ${filter.value}`}
+                            />
+                        ))}
+
+                        <SortButton onSortsUpdate={onSortsUpdate} currentSorts={sorts}/>
+                        {sorts.map((sort) => (
+                            <SortBox
+                                key={sort.id}
+                                name={`${sort.field} (${sort.direction})`}
                             />
                         ))}
                     </div>

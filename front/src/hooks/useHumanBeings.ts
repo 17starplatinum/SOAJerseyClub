@@ -1,9 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { HumanBeingService, type UiFilter } from "../service/HumanBeingService.ts";
+import {useState, useEffect, useCallback, useRef} from "react";
+import {HumanBeingService, type UiFilter} from "../service/HumanBeingService.ts";
 import type {HumanBeingDTOSchema, HumanBeingFullSchema} from "../humanBeingAPI.ts";
-import { useToast } from "./useToast.ts";
+import {useToast} from "./useToast.ts";
+import type {SortRule} from "../components/SortDialog.tsx";
 
-export const useHumanBeings = (initialFilters: UiFilter[] = []) => {
+export const useHumanBeings = (
+    initialFilters: UiFilter[] = [],
+    initialSorts: SortRule[] = []
+) => {
     const [humanBeings, setHumanBeings] = useState<HumanBeingFullSchema[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -20,7 +24,9 @@ export const useHumanBeings = (initialFilters: UiFilter[] = []) => {
     const [totalCount, setTotalCount] = useState<number>(0);
 
     const [filters, setFilters] = useState<UiFilter[]>(initialFilters);
-    const { showSuccess, showError, showLoading, updateToast } = useToast();
+    const {showError, showLoading, updateToast} = useToast();
+
+    const [sorts, setSorts] = useState<SortRule[]>(initialSorts);
 
     const isFirstRender = useRef(true);
 
@@ -30,7 +36,7 @@ export const useHumanBeings = (initialFilters: UiFilter[] = []) => {
         const toastId = showLoading("Загрузка данных...");
 
         try {
-            const resp = await HumanBeingService.getHumanBeings(page, pageSize, filters);
+            const resp = await HumanBeingService.getHumanBeings(page, pageSize, filters, sorts);
             setHumanBeings(resp.humanBeingGetResponseDtos ?? []);
             setTotalPages(resp.totalPages ?? 1);
             setTotalCount(resp.totalCount ?? 0);
@@ -47,7 +53,7 @@ export const useHumanBeings = (initialFilters: UiFilter[] = []) => {
         } finally {
             setLoading(false);
         }
-    }, [page, pageSize, filters, showLoading, updateToast]);
+    }, [page, pageSize, filters, sorts, showLoading, updateToast]);
 
     useEffect(() => {
         if (isFirstRender.current) {
@@ -95,6 +101,12 @@ export const useHumanBeings = (initialFilters: UiFilter[] = []) => {
     const updateFilters = (newFilters: UiFilter[]) => {
         setFilters(newFilters);
         localStorage.setItem("humanBeingsFilters", JSON.stringify(newFilters));
+        setPage(1);
+    };
+
+    const updateSorts = (newSorts: SortRule[]) => {
+        setSorts(newSorts);
+        localStorage.setItem("humanBeingsSorts", JSON.stringify(newSorts));
         setPage(1);
     };
 
@@ -162,6 +174,8 @@ export const useHumanBeings = (initialFilters: UiFilter[] = []) => {
         filters,
         updateFilters,
         deleteHumanBeing,
-        updateHumanBeing
+        updateHumanBeing,
+        sorts,
+        updateSorts
     };
 };

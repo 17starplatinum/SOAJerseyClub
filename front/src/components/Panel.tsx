@@ -152,7 +152,7 @@ const Panel = ({ human, onDelete, onEdit }: Props) => {
                             style={{
                                 transform:
                                     human.weaponType === WeaponType.MACHINE_GUN
-                                        ? "translate(160px, -56px)"
+                                        ? "translate(180px, -70px)"
                                         : "translate(200px, -80px)",
                                 position: "absolute",
                                 zIndex: 1,
