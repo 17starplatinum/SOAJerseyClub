@@ -182,12 +182,12 @@ paths:
     patch:
       summary: Assign, transfer or delete a human being from/to a team.
       description: |
-        For a team with _id = {id}_, **assign, transfer or delete** a team to a human being in the request who is not in one at the moment.
-        | **Operation** | **Code** | **Description**                                                                                                                                      | **Datatype**      |
-        |---------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
-        | Add           | ADD      | Adds a human being (chosen by humanId) to a team (chosen by teamId)                                                                                  | long, long        |
-        | Transfer      | TRANSFER | Transfers a human being (chosen by humanId) to a different team (chosen by teamId). This changes the id of the team in the HumanBeing entity as well | long, long        |
-        | Remove        | gt       | Adds a human being (chosen by humanId) from a team (NOT chosen by teamId)                                                                            | long, null        |
+        For a team with _id = {id}_, **assign, transfer or delete** a human being to a team in the request.
+        | **Operation** | **Code** | **Description**                                                                                                                                      | **Datatype** [humanId, teamId] |
+        |---------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------|
+        | Add           | ADD      | Adds a human being (chosen by humanId) to a team (chosen by teamId)                                                                                  | long, long                     |
+        | Transfer      | TRANSFER | Transfers a human being (chosen by humanId) to a different team (chosen by teamId). This changes the teamId field in the HumanBeing entity as well   | long, long                     |
+        | Remove        | REMOVE   | Adds a human being (chosen by humanId) from a team (NOT chosen by teamId)                                                                            | long, null                     |
       operationId: manipulateHumanBeingToTeam
       tags:
         - Teams
