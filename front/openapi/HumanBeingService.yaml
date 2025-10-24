@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Human Being service REST endpoints
   description: This is the first part of our assignment in our course 'Service-Oriented Architecture' where we generate Swagger documentation before implementing it in practice.
-  version: 1.0.2
+  version: 1.0.3
 servers:
   - url: https://localhost:15478/api/v1
 paths:
@@ -58,6 +58,7 @@ paths:
           required: false
           description: |
             Array of fields used for **filtering**. Each element must contain the name of the filterable field and the filtering method in square parentheses, as well as the value that will be used for filtering. An _invalid_ value will result in an **error response**. Below is a list of available operations and their code values, their descriptions and available datatypes for said operations.
+
             ![No fucking way](https://64.media.tumblr.com/4b218f9ce82898062e6b56c88d160a18/49cb9142a33ad8da-30/s540x810/8cb2e0f908fa078eb8d37aec836d9c9ed066a661.gifv)
             | **Operation**         | **Code** | **Description**                                                                                                               | **Datatype**                                                   |
             |-----------------------|----------|-------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------|
@@ -441,9 +442,13 @@ components:
           oneOf:
             - $ref: '#/components/schemas/WeaponType'
             - type: 'null'
-        team:
+        teamId:
           oneOf:
-            - $ref: './HeroService.yaml#/components/schemas/TeamDTOSchema'
+            - type: integer
+              format: int64
+              exclusiveMinimum: 0
+              examples: [ 15 ]
+              description: Id of a team the human being belons to. Can be updated, but only indirectly.
             - type: 'null'
         mood:
           $ref: '#/components/schemas/Mood'
