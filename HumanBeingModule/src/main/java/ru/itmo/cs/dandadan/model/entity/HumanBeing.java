@@ -43,7 +43,6 @@ public class HumanBeing {
     @Column(name = "has_toothpick", nullable = false)
     private Boolean hasToothpick;
 
-    @Min(0)
     @Max(58)
     @NotNull(message = "Поле 'impactSpeed' не должно быть null")
     @Column(name = "impact_speed", nullable = false)

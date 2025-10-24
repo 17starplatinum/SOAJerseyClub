@@ -7,7 +7,7 @@
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Secured</web-resource-name>
-            <url-pattern>/*</url-pattern>
+            <url-pattern>/api/v1/*</url-pattern>
             <http-method>GET</http-method>
             <http-method>POST</http-method>
             <http-method>DELETE</http-method>
@@ -17,4 +17,7 @@
             <transport-guarantee>CONFIDENTIAL</transport-guarantee>
         </user-data-constraint>
     </security-constraint>
+    <resource-ref>
+        <res-ref-name>jdbc/</res-ref-name>
+    </resource-ref>
 </web-app>

@@ -53,6 +53,8 @@ dependencies {
     compileOnly("jakarta.websocket:jakarta.websocket-api:2.1.1")
     compileOnly("jakarta.xml.ws:jakarta.xml.ws-api:4.0.1")
     compileOnly("org.projectlombok:lombok:1.18.42")
+    implementation("io.github.cdimascio:dotenv-java:3.2.0")
+    implementation("org.hibernate.orm:hibernate-core:7.1.4.Final")
     implementation("org.glassfish.jersey.containers:jersey-container-servlet:3.1.6")
     implementation("org.glassfish.jersey.media:jersey-media-json-jackson:3.1.6")
     implementation("org.glassfish.jersey.inject:jersey-cdi2-se:3.1.6")
