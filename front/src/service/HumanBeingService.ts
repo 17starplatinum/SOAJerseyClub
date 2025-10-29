@@ -57,4 +57,9 @@ export const HumanBeingService = {
         const {data: response} = await api.humanBeings.updateHumanBeing(id, data);
         return response;
     },
+
+    async getUniqueImpactSpeeds(): Promise<number[]> {
+        const { data } = await api.humanBeings.getUniqueImpactSpeeds();
+        return data.uniqueSpeeds || [];
+    }
 };

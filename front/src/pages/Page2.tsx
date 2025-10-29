@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import "../variables.css";
+import "../styles/variables.css";
 
 const Page2: React.FC = () => {
     return (

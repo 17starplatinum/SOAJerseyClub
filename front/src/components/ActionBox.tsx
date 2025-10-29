@@ -1,5 +1,5 @@
-import "../actionBox.css";
-import "../variables.css";
+import "../styles/actionBox.css";
+import "../styles/variables.css";
 
 interface Props {
     name: string;

@@ -7,7 +7,7 @@ import FilterButton from "../components/FilterButton.tsx";
 import { type Filter, getOperationSymbol } from "../components/FilterDialog.tsx";
 import AnimatedSelect from "../components/AnimatedSelect.tsx";
 import { Toaster } from 'react-hot-toast';
-import "../variables.css";
+import "../styles/variables.css";
 import CreateHumanBeingDialog from '../components/CreateHumanBeingDialog.tsx';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from "sweetalert2";
@@ -15,6 +15,7 @@ import type {HumanBeingFullSchema} from "../humanBeingAPI.ts";
 import type {SortRule} from "../components/SortDialog.tsx";
 import SortButton from "../components/SortButton.tsx";
 import SortBox from "../components/SortBox.tsx";
+import {HumanBeingService} from "../service/HumanBeingService.ts";
 
 const MySwal = withReactContent(Swal);
 
@@ -41,13 +42,17 @@ const HumanBeingsPage: React.FC = () => {
         setPageSize,
         loadHumanBeings,
         updateFilters,
-        deleteHumanBeing,
         updateSorts,
+        deleteHumanBeing,
     } = useHumanBeings(filters, sorts);
 
     useEffect(() => {
         localStorage.setItem("humanBeingsFilters", JSON.stringify(filters));
     }, [filters]);
+
+    useEffect(() => {
+        localStorage.setItem("humanBeingsSorts", JSON.stringify(sorts));
+    }, [sorts]);
 
     const onFiltersUpdate = (newFilters: Filter[]) => {
         setFilters(newFilters);
@@ -79,6 +84,56 @@ const HumanBeingsPage: React.FC = () => {
         { value: "32", label: "32" },
         { value: "64", label: "64" }
     ];
+
+    const handleGetUniqueSpeeds = async () => {
+        try {
+            const uniqueSpeeds = await HumanBeingService.getUniqueImpactSpeeds();
+
+            const speedsText = uniqueSpeeds.length > 0
+                ? uniqueSpeeds.join(', ')
+                : 'No data available';
+
+            await MySwal.fire({
+                title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-primary)">Unique impact speeds</p>`,
+                html: `
+                <div style="text-align: center; padding: var(--spacing-md); font-family: var(--font-family-primary);">
+                    <p style="font-size: var(--font-size-accent); margin-bottom: var(--spacing-md);">
+                        Unique speeds found: ${uniqueSpeeds.length}
+                    </p>
+                    <div style="
+                        background: var(--color-light);
+                        border: var(--border-width) var(--border-style) var(--color-black);
+                        padding: var(--spacing-md);
+                        border-radius: var(--border-radius);
+                        max-height: 200px;
+                        overflow-y: auto;
+                        font-family: var(--font-family-primary);
+                        font-size: var(--font-size-general);
+                    ">
+                        ${speedsText}
+                    </div>
+                </div>
+            `,
+                width: 500,
+                showConfirmButton: true,
+                confirmButtonText: 'Закрыть',
+                confirmButtonColor: 'var(--color-primary)',
+                background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                },
+                customClass: {
+                    popup: 'custom-swal',
+                    confirmButton: 'btn btn-primary'
+                }
+            });
+        } catch (error) {
+            console.error('Failed to get unique speeds:', error);
+        }
+    };
 
     const handleOpenCreateDialog = () => {
         MySwal.fire({
@@ -221,6 +276,32 @@ const HumanBeingsPage: React.FC = () => {
                             }}
                         >
                             Create
+                        </motion.button>
+
+                        <motion.button
+                            onClick={handleGetUniqueSpeeds}
+                            disabled={loading}
+                            initial={{
+                                boxShadow: "none"
+                            }}
+                            whileHover={{
+                                y: loading ? 0 : -5,
+                                scale: loading ? 1 : 1.01,
+                                boxShadow: loading ? "" : "var(--shadow-hover)"
+                            }}
+                            transition={{
+                                times: [0, 0.9, 1]
+                            }}
+                            style={{
+                                padding: "var(--spacing-sm) var(--spacing-lg)",
+                                backgroundColor: loading ? "var(--color-disabled)" : "var(--color-secondary)",
+                                cursor: loading ? "not-allowed" : "pointer",
+                                minWidth: "150px",
+                                fontSize: "var(--font-size-general)",
+                                color: "var(--color-black)"
+                            }}
+                        >
+                            Unique Speeds
                         </motion.button>
                     </div>
 

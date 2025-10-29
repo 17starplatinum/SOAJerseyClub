@@ -1,6 +1,6 @@
 import React from "react";
-import '../fonts.css';
-import '../variables.css';
+import '../styles/fonts.css';
+import '../styles/variables.css';
 import NavigationLink from "./NavigationLink.tsx";
 
 const Navigation: React.FC = () => {

@@ -1,7 +1,7 @@
 import {motion} from "framer-motion";
 import React, {useState} from "react";
 import {type HumanBeingFullSchema, Mood, WeaponType} from "../humanBeingAPI.ts";
-import "../variables.css";
+import "../styles/variables.css";
 
 interface Props {
     human: HumanBeingFullSchema;
@@ -9,7 +9,7 @@ interface Props {
     onEdit?: (human: HumanBeingFullSchema) => void;
 }
 
-const Panel = ({ human, onDelete, onEdit }: Props) => {
+const Panel = ({human, onDelete, onEdit}: Props) => {
     const [isHovered, setIsHovered] = useState(false);
 
     const getWeaponImage = (weaponType: WeaponType | null) => {
@@ -117,6 +117,9 @@ const Panel = ({ human, onDelete, onEdit }: Props) => {
                         >
                             {human.name}
                         </div>
+                    </div>
+                    <div>
+                        id: {human.id}
                     </div>
                     <div>
                         Real Hero:

@@ -4,6 +4,12 @@ import type {HumanBeingDTOSchema, HumanBeingFullSchema} from "../humanBeingAPI.t
 import {useToast} from "./useToast.ts";
 import type {SortRule} from "../components/SortDialog.tsx";
 
+interface HumanBeingsResponse {
+    humanBeingGetResponseDtos?: HumanBeingFullSchema[];
+    totalPages?: number;
+    totalCount?: number;
+}
+
 export const useHumanBeings = (
     initialFilters: UiFilter[] = [],
     initialSorts: SortRule[] = []
@@ -24,36 +30,103 @@ export const useHumanBeings = (
     const [totalCount, setTotalCount] = useState<number>(0);
 
     const [filters, setFilters] = useState<UiFilter[]>(initialFilters);
-    const {showError, showLoading, updateToast} = useToast();
+    const {showLoading, updateToast} = useToast();
 
     const [sorts, setSorts] = useState<SortRule[]>(initialSorts);
 
     const isFirstRender = useRef(true);
 
-    const loadHumanBeings = useCallback(async () => {
+    const handleError = useCallback((error: unknown): string => {
+        if (error instanceof Error) {
+            return error.message;
+        } else if (typeof error === 'string') {
+            return error;
+        } else {
+            return "Unknown error";
+        }
+    }, []);
+
+    const handleApiResponse = useCallback((resp: HumanBeingsResponse): void => {
+        setHumanBeings(resp.humanBeingGetResponseDtos ?? []);
+        setTotalPages(resp.totalPages ?? 1);
+        setTotalCount(resp.totalCount ?? 0);
+
+        if (page > (resp.totalPages ?? 1) && (resp.totalPages ?? 1) > 0) {
+            setPage(resp.totalPages ?? 1);
+        }
+    }, [page]);
+
+    const loadHumanBeingsData = useCallback(async (
+        options: {
+            showToast?: boolean;
+            toastMessage?: string;
+            successMessage?: string;
+        } = {}
+    ): Promise<void> => {
+        const { showToast = true, toastMessage = "Загрузка данных...", successMessage } = options;
+
         setLoading(true);
         setError(null);
-        const toastId = showLoading("Загрузка данных...");
+
+        const toastId = showToast ? showLoading(toastMessage) : null;
 
         try {
             const resp = await HumanBeingService.getHumanBeings(page, pageSize, filters, sorts);
-            setHumanBeings(resp.humanBeingGetResponseDtos ?? []);
-            setTotalPages(resp.totalPages ?? 1);
-            setTotalCount(resp.totalCount ?? 0);
+            handleApiResponse(resp);
 
-            if (page > (resp.totalPages ?? 1) && (resp.totalPages ?? 1) > 0) {
-                setPage(resp.totalPages ?? 1);
+            if (showToast && toastId) {
+                const message = successMessage || `${resp.humanBeingGetResponseDtos?.length ?? 0} objects uploaded`;
+                updateToast(toastId, 'success', message);
             }
-
-            updateToast(toastId, 'success', `${resp.humanBeingGetResponseDtos?.length ?? 0} objects uploaded`);
-        } catch (err: any) {
-            const errorMessage = err?.message || "Unknown error";
+        } catch (err: unknown) {
+            const errorMessage = handleError(err);
             setError(errorMessage);
-            updateToast(toastId, 'error', `Download error: ${errorMessage}`);
+
+            if (showToast && toastId) {
+                updateToast(toastId, 'error', `Download error: ${errorMessage}`);
+            }
         } finally {
             setLoading(false);
         }
-    }, [page, pageSize, filters, sorts, showLoading, updateToast]);
+    }, [page, pageSize, filters, sorts, showLoading, updateToast, handleApiResponse, handleError]);
+
+    const performEntityOperation = useCallback(async <T>(
+        operation: () => Promise<T>,
+        options: {
+            loadingMessage: string;
+            successMessage: string;
+            errorPrefix: string;
+            reloadAfterSuccess?: boolean;
+        }
+    ): Promise<void> => {
+        const { loadingMessage, successMessage, errorPrefix, reloadAfterSuccess = true } = options;
+
+        setLoading(true);
+        setError(null);
+        const toastId = showLoading(loadingMessage);
+
+        try {
+            await operation();
+            updateToast(toastId, 'success', successMessage);
+
+            if (reloadAfterSuccess) {
+                await loadHumanBeingsData({
+                    showToast: false,
+                    successMessage: 'The data has been updated successfully'
+                });
+            }
+        } catch (err: unknown) {
+            const errorMessage = handleError(err);
+            setError(errorMessage);
+            updateToast(toastId, 'error', `${errorPrefix}: ${errorMessage}`);
+        } finally {
+            setLoading(false);
+        }
+    }, [showLoading, updateToast, loadHumanBeingsData, handleError]);
+
+    const loadHumanBeings = useCallback(() => {
+        loadHumanBeingsData();
+    }, [loadHumanBeingsData]);
 
     useEffect(() => {
         if (isFirstRender.current) {
@@ -65,30 +138,12 @@ export const useHumanBeings = (
     }, [loadHumanBeings]);
 
     useEffect(() => {
-        const loadInitialData = async () => {
-            setLoading(true);
-            setError(null);
-
-            try {
-                const resp = await HumanBeingService.getHumanBeings(page, pageSize, filters);
-                setHumanBeings(resp.humanBeingGetResponseDtos ?? []);
-                setTotalPages(resp.totalPages ?? 1);
-                setTotalCount(resp.totalCount ?? 0);
-
-                if (page > (resp.totalPages ?? 1) && (resp.totalPages ?? 1) > 0) {
-                    setPage(resp.totalPages ?? 1);
-                }
-            } catch (err: any) {
-                const errorMessage = err?.message || "Unknown error";
-                setError(errorMessage);
-                showError(`Download error: ${errorMessage}`);
-            } finally {
-                setLoading(false);
-            }
+        const loadInitialData = async (): Promise<void> => {
+            await loadHumanBeingsData({ showToast: false });
         };
 
         loadInitialData();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         localStorage.setItem("humanBeingsPage", String(page));
@@ -98,63 +153,52 @@ export const useHumanBeings = (
         localStorage.setItem("humanBeingsPageSize", String(pageSize));
     }, [pageSize]);
 
-    const updateFilters = (newFilters: UiFilter[]) => {
+    const updateFilters = (newFilters: UiFilter[]): void => {
         setFilters(newFilters);
         localStorage.setItem("humanBeingsFilters", JSON.stringify(newFilters));
         setPage(1);
     };
 
-    const updateSorts = (newSorts: SortRule[]) => {
+    const updateSorts = (newSorts: SortRule[]): void => {
         setSorts(newSorts);
         localStorage.setItem("humanBeingsSorts", JSON.stringify(newSorts));
         setPage(1);
     };
 
-    const deleteHumanBeing = async (id: number) => {
-        setLoading(true);
-        setError(null);
-        const toastId = showLoading("Deleting an entry...");
-
-        try {
-            await HumanBeingService.deleteHumanBeing(id);
-            updateToast(toastId, 'success', 'The record was successfully deleted');
-
-            const loadingToastId = showLoading("Uploading updated data...");
-
-            const resp = await HumanBeingService.getHumanBeings(page, pageSize, filters);
-            const items = resp.humanBeingGetResponseDtos ?? [];
-            if (items.length === 0 && page > 1) {
-                setPage((p) => Math.max(1, p - 1));
-            } else {
-                setHumanBeings(items);
-                setTotalPages(resp.totalPages ?? 1);
-                setTotalCount(resp.totalCount ?? 0);
+    const deleteHumanBeing = async (id: number): Promise<void> => {
+        await performEntityOperation(
+            () => HumanBeingService.deleteHumanBeing(id),
+            {
+                loadingMessage: "Deleting an entry...",
+                successMessage: 'The record was successfully deleted',
+                errorPrefix: 'Deletion error'
             }
-
-            updateToast(loadingToastId, 'success', 'The data has been updated successfully');
-        } catch (err: any) {
-            const errorMessage = err?.message || "Unknown error";
-            setError(errorMessage);
-            updateToast(toastId, 'error', `Deletion error: ${errorMessage}`);
-        } finally {
-            setLoading(false);
-        }
+        );
     };
 
-    const updateHumanBeing = async (id: number, data: HumanBeingDTOSchema) => {
+    const updateHumanBeing = async (id: number, data: HumanBeingDTOSchema): Promise<void> => {
+        await performEntityOperation(
+            () => HumanBeingService.updateHumanBeing(id, data),
+            {
+                loadingMessage: "Updating the record...",
+                successMessage: 'The record was successfully updated',
+                errorPrefix: 'Update error'
+            }
+        );
+    };
+
+    const getUniqueImpactSpeeds = async (): Promise<number[]> => {
         setLoading(true);
-        setError(null);
-        const toastId = showLoading("Updating the record...");
+        const toastId = showLoading("Getting unique speeds...");
 
         try {
-            await HumanBeingService.updateHumanBeing(id, data);
-            updateToast(toastId, 'success', 'The record was successfully updated');
-
-            await loadHumanBeings();
-        } catch (err: any) {
-            const errorMessage = err?.message || "Unknown error";
-            setError(errorMessage);
-            updateToast(toastId, 'error', `Update error: ${errorMessage}`);
+            const speeds = await HumanBeingService.getUniqueImpactSpeeds();
+            updateToast(toastId, 'success', 'Unique speeds have been successfully uploaded');
+            return speeds;
+        } catch (err: unknown) {
+            const errorMessage = handleError(err);
+            updateToast(toastId, 'error', `Download error: ${errorMessage}`);
+            throw err;
         } finally {
             setLoading(false);
         }
@@ -176,6 +220,7 @@ export const useHumanBeings = (
         deleteHumanBeing,
         updateHumanBeing,
         sorts,
-        updateSorts
+        updateSorts,
+        getUniqueImpactSpeeds
     };
 };
