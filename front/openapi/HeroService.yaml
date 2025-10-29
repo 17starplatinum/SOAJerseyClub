@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Hero service REST endpoints
   description: This is the first part of our assignment in our course 'Service-Oriented Architecture' where we generate Swagger documentation before implementing it in practice.
-  version: 1.0.2
+  version: 1.0.3
 servers:
   - url: https://localhost:15478/api/v1/heroes
 paths:
@@ -36,6 +36,7 @@ paths:
           required: false
           description: |
             Array of fields used for **filtering**. Each element must contain the name of the filterable field and the filtering method in square parentheses, as well as the value that will be used for filtering. An _invalid_ value will result in an **error response**. Below is a list of available operations and their code values, their descriptions and available datatypes for said operations.
+
             ![absolute dandadan](https://media1.tenor.com/m/n_rDQ8ulxIYAAAAd/dandadan-dandadan-anime.gif)
             | **Operation**         | **Code** | **Description**                                                                                                               | **Datatype**      |
             |-----------------------|----------|-------------------------------------------------------------------------------------------------------------------------------|-------------------|
@@ -178,6 +179,76 @@ paths:
             application/json:
               schema:
                 $ref: './HumanBeingService.yaml#/components/schemas/Error'
+    patch:
+      summary: Assign, transfer or delete a human being from/to a team.
+      description: |
+        For a team with _id = {id}_, **assign, transfer or delete** a human being to a team in the request.
+        | **Operation** | **Code** | **Description**                                                                                                                                      | **Datatype** [humanId, teamId] |
+        |---------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------|
+        | Add           | ADD      | Adds a human being (chosen by humanId) to a team (chosen by teamId)                                                                                  | long, long                     |
+        | Transfer      | TRANSFER | Transfers a human being (chosen by humanId) to a different team (chosen by teamId). This changes the teamId field in the HumanBeing entity as well   | long, long                     |
+        | Remove        | REMOVE   | Adds a human being (chosen by humanId) from a team (NOT chosen by teamId)                                                                            | long, null                     |
+      operationId: manipulateHumanBeingToTeam
+      tags:
+        - Teams
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamPatchSchema'
+      responses:
+        '200':
+          description: Returns an array of updated HumanBeings (team members who are **now** related to the team but not before)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './HumanBeingService.yaml#/components/schemas/HumanBeingFullSchema'
+        '400':
+          description: The path parameter 'id' or 'humanId' is _invalid_.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 400
+                message: "Invalid 'id': expected positive integer, got 0."
+                time: 2025-09-03T19:14:07.165Z
+        '404':
+          description: Team _not found_ in this or the upstream Human Being service.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 404
+                message: "Team not found: no team with id=123 exists."
+                time: 2025-09-03T19:14:07.782Z
+        '502':
+          $ref: '#/components/responses/UpstreamBadGateway'
+        '503':
+          $ref: '#/components/responses/UpstreamServiceUnavailable'
+        '504':
+          $ref: '#/components/responses/UpstreamGatewayTimeout'
+        '500':
+          description: |
+            *Unexpected server error* in Hero service.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+              example:
+                code: 500
+                message: "Unexpected error in Hero service while adding a team member."
+                time: 2025-09-03T19:14:07.321Z
+        default:
+          description: Returns an error response in the form of **error code, message and time**.
+          content:
+            application/json:
+              schema:
+                $ref: './HumanBeingService.yaml#/components/schemas/Error'
   /teams/{id}:
     get:
       summary: Get existing team by given ID.
@@ -192,7 +263,7 @@ paths:
             type: integer
             format: int64
             exclusiveMinimum: 0
-            examples: [ 228 ]
+            examples: [228]
       tags:
         - Teams
       responses:
@@ -310,7 +381,7 @@ paths:
     delete:
       summary: Deletes a team by their ID.
       description: |
-        **Deletes** a team (and their associated objects) by their given ID.
+        **Deletes** a team (and their associated objects) by their given ID. If a team contains members at the moment of deletion, then the human beings will have their _teamId_'s set to null before proceeding with the deletion.
       operationId: deleteHumanBeing
       parameters:
         - name: id
@@ -355,83 +426,7 @@ paths:
             application/json:
               schema:
                 $ref: './HumanBeingService.yaml#/components/schemas/Error'
-  /teams/{id}/add:
-    patch:
-      summary: Assign a human being to a team.
-      description: |
-        For a team with id = {id}, **assign** a team to a human being in the request who is not in one at the moment.
-      operationId: addHumanBeingToTeam
-      tags:
-        - Teams
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Team ID is a positive 64-bit integer.
-          schema:
-            type: integer
-            format: int64
-            exclusiveMinimum: 0
-        - name: humanId
-          in: query
-          required: true
-          description: ID of a human being.
-          schema:
-            type: integer
-            format: int64
-            exclusiveMinimum: 0
-      responses:
-        '200':
-          description: Returns an array of updated HumanBeings (team members who were assigned to the team)
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: './HumanBeingService.yaml#/components/schemas/HumanBeingFullSchema'
-        '400':
-          description: The path parameter 'id' or 'humanId' is _invalid_.
-          content:
-            application/json:
-              schema:
-                $ref: './HumanBeingService.yaml#/components/schemas/Error'
-              example:
-                code: 400
-                message: "Invalid 'id': expected positive integer, got 0."
-                time: 2025-09-03T19:14:07Z
-        '404':
-          description: Team _not found_ in this or the upstream Human Being service.
-          content:
-            application/json:
-              schema:
-                $ref: './HumanBeingService.yaml#/components/schemas/Error'
-              example:
-                code: 404
-                message: "Team not found: no team with id=123 exists."
-                time: 2025-09-03T19:14:07Z
-        '502':
-          $ref: '#/components/responses/UpstreamBadGateway'
-        '503':
-          $ref: '#/components/responses/UpstreamServiceUnavailable'
-        '504':
-          $ref: '#/components/responses/UpstreamGatewayTimeout'
-        '500':
-          description: |
-            *Unexpected server error* in Hero service.
-          content:
-            application/json:
-              schema:
-                $ref: './HumanBeingService.yaml#/components/schemas/Error'
-              example:
-                code: 500
-                message: "Unexpected error in Hero service while adding a team member."
-                time: 2025-09-03T19:14:07Z
-        default:
-          description: Returns an error response in the form of **error code, message and time**.
-          content:
-            application/json:
-              schema:
-                $ref: './HumanBeingService.yaml#/components/schemas/Error'
+
   /search/{real-hero-only}:
     get:
       summary: Find heroes (all or only real ones).
@@ -464,7 +459,7 @@ paths:
               example:
                 code: 400
                 message: "Invalid 'real-hero-only' value: expected boolean (true|false)."
-                time: 2025-09-03T19:14:07Z
+                time: 2025-09-03T19:14:07.214Z
         '502':
           $ref: '#/components/responses/UpstreamBadGateway'
         '503':
@@ -480,7 +475,7 @@ paths:
               example:
                 code: 500
                 message: "Unexpected error in Hero service while processing the request."
-                time: 2025-09-03T19:14:07Z
+                time: 2025-09-03T19:14:07.435Z
         default:
           description: Returns an error response in the form of error code, message and time.
           content:
@@ -521,7 +516,7 @@ paths:
               example:
                 code: 400
                 message: "Invalid 'team-id': expected positive integer, got 0."
-                time: 2025-09-03T19:14:07Z
+                time: 2025-09-03T19:14:07.192Z
         '404':
           description: Team _not found_ in the upstream Human Being service.
           content:
@@ -531,7 +526,7 @@ paths:
               example:
                 code: 404
                 message: "Team not found: no team with id=123 exists."
-                time: 2025-09-03T19:14:07Z
+                time: 2025-09-03T19:14:07.014Z
         '502':
           $ref: '#/components/responses/UpstreamBadGateway'
         '503':
@@ -547,7 +542,7 @@ paths:
               example:
                 code: 500
                 message: "Unexpected error in Hero service while updating team cars."
-                time: 2025-09-03T19:14:07Z
+                time: 2025-09-03T19:14:07.703Z
         default:
           description: Returns an error response in the form of **error code, message and time**.
           content:
@@ -602,6 +597,31 @@ components:
           type: integer
           default: null
           description: "Total count (nullable if not paginated)"
+    TeamPatchSchema:
+      type: object
+      properties:
+        humanId:
+          type: integer
+          format: int64
+          exclusiveMinimum: 0
+          examples: [236]
+          description: ID of a human being
+        teamId:
+          oneOf:
+            - type: integer
+              format: int64
+              exclusiveMinimum: 0
+              examples: [25]
+              description: ID of a team
+            - type: 'null'
+        operation:
+          $ref: '#/components/schemas/OperationType'
+    OperationType:
+      type: string
+      enum:
+        - ADD
+        - TRANSFER
+        - REMOVE
   responses:
     HeroServiceUnavailable:
       description: Hero service is overloaded or under maintenance.
@@ -616,7 +636,7 @@ components:
           example:
             code: 503
             message: "Hero service is temporarily unavailable. Please retry later."
-            time: 2025-09-03T19:14:07Z
+            time: 2025-09-03T19:14:07.472Z
     UpstreamBadGateway:
       description: The upstream Human Being service returned an invalid response or failed the request.
       content:
@@ -626,7 +646,7 @@ components:
           example:
             code: 502
             message: "Upstream error: Human Being service responded with 5xx while processing the request."
-            time: 2025-09-03T19:14:07Z
+            time: 2025-09-03T19:14:07.048Z
     UpstreamServiceUnavailable:
       description: The upstream Human Being service is unavailable or overloaded.
       content:
@@ -636,7 +656,7 @@ components:
           example:
             code: 503
             message: "Upstream unavailable: Human Being service is down or not accepting requests."
-            time: 2025-09-03T19:14:07Z
+            time: 2025-09-03T19:14:07.014Z
     UpstreamGatewayTimeout:
       description: The upstream Human Being service did not respond in time.
       content:
@@ -646,4 +666,4 @@ components:
           example:
             code: 504
             message: "Upstream timeout: no response from Human Being service within 5 seconds."
-            time: 2025-09-03T19:14:07Z
+            time: 2025-09-03T19:14:07.806Z
