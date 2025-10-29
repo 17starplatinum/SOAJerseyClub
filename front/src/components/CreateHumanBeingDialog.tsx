@@ -1,5 +1,5 @@
 import {motion} from 'framer-motion';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import Swal from 'sweetalert2';
 import AnimatedSelect, {type SelectOption} from './AnimatedSelect.tsx';
 import Button from './Button.tsx';
@@ -7,6 +7,8 @@ import {HumanBeingService} from '../service/HumanBeingService.ts';
 import {WeaponType, Mood, Color, type HumanBeingDTOSchema, type HumanBeingFullSchema} from '../humanBeingAPI.ts';
 import {useToast} from "../hooks/useToast.ts";
 import LimitedNumberInput from "./LimitedNumberInput.tsx";
+import type {TeamFullSchema} from "../heroAPI.ts";
+import {TeamService} from "../service/TeamService.ts";
 
 interface CreateHumanBeingDialogProps {
     onSuccess: () => void;
@@ -58,7 +60,8 @@ const CreateHumanBeingDialog = ({ onSuccess, editingHuman }: CreateHumanBeingDia
                 weaponType: editingHuman.weaponType,
                 mood: editingHuman.mood,
                 coordinates: editingHuman.coordinates,
-                car: editingHuman.car
+                car: editingHuman.car,
+                teamId: editingHuman.teamId
             };
         }
         return {
@@ -69,13 +72,40 @@ const CreateHumanBeingDialog = ({ onSuccess, editingHuman }: CreateHumanBeingDia
             weaponType: null,
             mood: undefined,
             coordinates: { x: undefined, y: undefined },
-            car: null
+            car: null,
+            teamId: null
         };
     });
-
+    const [teams, setTeams] = useState<TeamFullSchema[]>([]);
+    const [teamsLoading, setTeamsLoading] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const {showSuccess, showError} = useToast();
+
+    useEffect(() => {
+        const loadTeams = async () => {
+            setTeamsLoading(true);
+            try {
+                const teamsData = await TeamService.getAllTeams();
+                setTeams(teamsData);
+            } catch (error) {
+                console.error('Failed to load teams:', error);
+                showError('Failed to load teams');
+            } finally {
+                setTeamsLoading(false);
+            }
+        };
+
+        loadTeams();
+    }, [showError]);
+
+    const teamOptions: SelectOption[] = [
+        { value: '', label: 'No team' },
+        ...teams.map(team => ({
+            value: team.id?.toString() || '',
+            label: team.name || `Team #${team.id}`
+        }))
+    ];
 
     const weaponTypeOptions: SelectOption[] = [
         {
@@ -144,7 +174,8 @@ const CreateHumanBeingDialog = ({ onSuccess, editingHuman }: CreateHumanBeingDia
                     y: Number(formData.coordinates?.y)
                 },
                 mood: formData.mood!,
-                car: formData.car
+                car: formData.car,
+                teamId: formData.teamId
             };
 
             if (editingHuman) {
@@ -400,6 +431,23 @@ const CreateHumanBeingDialog = ({ onSuccess, editingHuman }: CreateHumanBeingDia
                             </motion.span>
                         )}
                     </div>
+                </div>
+
+                <div>
+                    <label style={{
+                        display: 'block',
+                        marginBottom: 'var(--spacing-xs)',
+                        fontFamily: 'var(--font-family-primary)'
+                    }}>
+                        Team
+                    </label>
+                    <AnimatedSelect
+                        value={formData.teamId?.toString() || ''}
+                        onChange={(value) => updateField('teamId', value ? parseInt(value) : null)}
+                        options={teamOptions}
+                        placeholder={teamsLoading ? "Loading teams..." : "Select team"}
+                        disabled={teamsLoading}
+                    />
                 </div>
 
                 <div style={{display: 'flex', alignItems: 'center', gap: 'var(--spacing-xs)'}}>

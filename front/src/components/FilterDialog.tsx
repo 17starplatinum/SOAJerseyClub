@@ -1,8 +1,10 @@
 import {motion, AnimatePresence} from 'framer-motion';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import Swal from "sweetalert2";
 import AnimatedSelect, {type SelectOption} from './AnimatedSelect.tsx';
 import Button from './Button.tsx';
+import { TeamService } from '../service/TeamService.ts';
+import type { TeamFullSchema } from '../heroAPI.ts';
 
 export interface Filter {
     id: number;
@@ -58,18 +60,38 @@ const FILTER_CONFIG = {
         {value: 'car.model', label: 'Car model', type: 'string'},
         {value: 'car.cool', label: 'Car cool', type: 'boolean'},
         {value: 'car.color', label: 'Car color', type: 'enum'},
+        // {value: 'teamId', label: 'Team', type: 'team'},
     ],
     operations: {
         string: ['eq', 'neq', 'like'],
         number: ['eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'like'],
         boolean: ['eq', 'neq', 'like'],
-        enum: ['eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'like']
+        enum: ['eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'like'],
+        // team: ['eq', 'neq', 'like']
     }
 };
 
 const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
     const [filters, setFilters] = useState<Filter[]>(currentFilters);
     const [currentFilter, setCurrentFilter] = useState<Partial<Filter>>({});
+    const [teams, setTeams] = useState<TeamFullSchema[]>([]);
+    const [teamsLoading, setTeamsLoading] = useState(false);
+
+    useEffect(() => {
+        const loadTeams = async () => {
+            setTeamsLoading(true);
+            try {
+                const teamsData = await TeamService.getAllTeams();
+                setTeams(teamsData);
+            } catch (error) {
+                console.error('Failed to load teams:', error);
+            } finally {
+                setTeamsLoading(false);
+            }
+        };
+
+        loadTeams();
+    }, []);
 
     const getFieldType = (fieldName: string) => {
         const field = FILTER_CONFIG.fields.find(f => f.value === fieldName);
@@ -123,11 +145,60 @@ const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
         }))
         : [];
 
+    // Опции для команд (для операций eq и neq)
+    const teamOptions: SelectOption[] = [
+        { value: '', label: 'No team' },
+        ...teams.map(team => ({
+            value: team.id?.toString() || '',
+            label: team.name || `Team #${team.id}`
+        }))
+    ];
+
     const renderValueInput = () => {
         if (!currentFilter.field || !currentFilter.operation) return null;
 
         const fieldType = getFieldType(currentFilter.field);
         const operation = currentFilter.operation;
+
+        if (fieldType === 'team') {
+            if (operation === 'like') {
+                return (
+                    <motion.input
+                        initial={{opacity: 0, y: 10}}
+                        animate={{opacity: 1, y: 0}}
+                        exit={{opacity: 0, y: -10}}
+                        type="text"
+                        value={currentFilter.value || ''}
+                        onChange={e => setCurrentFilter(prev => ({...prev, value: e.target.value}))}
+                        placeholder="Enter team name substring"
+                        style={{
+                            padding: 'var(--spacing-sm)',
+                            fontFamily: 'var(--font-family-primary)',
+                            fontSize: 'var(--font-size-general)',
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            border: 'var(--border-width) var(--border-style) black',
+                            borderRadius: 'var(--border-radius)'
+                        }}
+                        whileFocus={{
+                            scale: 1.02,
+                            borderColor: 'var(--color-primary)',
+                            boxShadow: '0 0 0 2px rgba(59, 130, 246, 0.1)'
+                        }}
+                    />
+                );
+            } else {
+                return (
+                    <AnimatedSelect
+                        value={currentFilter.value || ''}
+                        onChange={value => setCurrentFilter(prev => ({...prev, value}))}
+                        options={teamOptions}
+                        placeholder={teamsLoading ? "Loading teams..." : "Select team"}
+                        disabled={teamsLoading}
+                    />
+                );
+            }
+        }
 
         if (fieldType === 'boolean' && operation !== 'like') {
             return (

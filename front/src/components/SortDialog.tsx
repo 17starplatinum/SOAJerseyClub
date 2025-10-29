@@ -30,6 +30,7 @@ const SORT_CONFIG = {
         { value: 'car.color', label: 'Car Color' },
         { value: 'car.model', label: 'Car Model' },
         { value: 'car.cool', label: 'Car Cool' },
+        // { value: 'teamId', label: 'Team' },
     ]
 };
 

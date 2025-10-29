@@ -1,8 +1,11 @@
-import {useState, useEffect, useCallback, useRef} from "react";
-import {HumanBeingService, type UiFilter} from "../service/HumanBeingService.ts";
-import type {HumanBeingDTOSchema, HumanBeingFullSchema} from "../humanBeingAPI.ts";
-import {useToast} from "./useToast.ts";
-import type {SortRule} from "../components/SortDialog.tsx";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { HumanBeingService, type UiFilter } from "../service/HumanBeingService.ts";
+import { TeamService } from "../service/TeamService.ts";
+import type { HumanBeingDTOSchema, HumanBeingFullSchema } from "../humanBeingAPI.ts";
+import type { TeamFullSchema } from "../heroAPI.ts";
+import type { HumanBeingWithTeam, TeamsState } from "../types.ts";
+import { useToast } from "./useToast.ts";
+import type { SortRule } from "../components/SortDialog.tsx";
 
 interface HumanBeingsResponse {
     humanBeingGetResponseDtos?: HumanBeingFullSchema[];
@@ -14,9 +17,15 @@ export const useHumanBeings = (
     initialFilters: UiFilter[] = [],
     initialSorts: SortRule[] = []
 ) => {
-    const [humanBeings, setHumanBeings] = useState<HumanBeingFullSchema[]>([]);
+    const [humanBeings, setHumanBeings] = useState<HumanBeingWithTeam[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const [teamsState, setTeamsState] = useState<TeamsState>({
+        teams: [],
+        loading: false,
+        error: null,
+    });
 
     const [page, setPage] = useState<number>(() => {
         const saved = localStorage.getItem("humanBeingsPage");
@@ -30,11 +39,34 @@ export const useHumanBeings = (
     const [totalCount, setTotalCount] = useState<number>(0);
 
     const [filters, setFilters] = useState<UiFilter[]>(initialFilters);
-    const {showLoading, updateToast} = useToast();
+    const { showLoading, updateToast } = useToast();
 
     const [sorts, setSorts] = useState<SortRule[]>(initialSorts);
 
     const isFirstRender = useRef(true);
+
+    const loadTeams = useCallback(async (): Promise<TeamFullSchema[]> => {
+        setTeamsState(prev => ({ ...prev, loading: true, error: null }));
+        try {
+            const teams = await TeamService.getAllTeams();
+            setTeamsState({ teams, loading: false, error: null });
+            return teams;
+        } catch (err) {
+            const errorMessage = handleError(err);
+            setTeamsState({ teams: [], loading: false, error: errorMessage });
+            return [];
+        }
+    }, []);
+
+    const enrichHumanBeingsWithTeams = useCallback((
+        humanBeings: HumanBeingFullSchema[],
+        teams: TeamFullSchema[]
+    ): HumanBeingWithTeam[] => {
+        return humanBeings.map(human => ({
+            ...human,
+            team: teams.find(team => team.id === human.teamId) || undefined,
+        }));
+    }, []);
 
     const handleError = useCallback((error: unknown): string => {
         if (error instanceof Error) {
@@ -46,15 +78,20 @@ export const useHumanBeings = (
         }
     }, []);
 
-    const handleApiResponse = useCallback((resp: HumanBeingsResponse): void => {
-        setHumanBeings(resp.humanBeingGetResponseDtos ?? []);
+    const handleApiResponse = useCallback((resp: HumanBeingsResponse, teams: TeamFullSchema[]): void => {
+        const enrichedHumanBeings = enrichHumanBeingsWithTeams(
+            resp.humanBeingGetResponseDtos ?? [],
+            teams
+        );
+
+        setHumanBeings(enrichedHumanBeings);
         setTotalPages(resp.totalPages ?? 1);
         setTotalCount(resp.totalCount ?? 0);
 
         if (page > (resp.totalPages ?? 1) && (resp.totalPages ?? 1) > 0) {
             setPage(resp.totalPages ?? 1);
         }
-    }, [page]);
+    }, [page, enrichHumanBeingsWithTeams]);
 
     const loadHumanBeingsData = useCallback(async (
         options: {
@@ -71,8 +108,12 @@ export const useHumanBeings = (
         const toastId = showToast ? showLoading(toastMessage) : null;
 
         try {
-            const resp = await HumanBeingService.getHumanBeings(page, pageSize, filters, sorts);
-            handleApiResponse(resp);
+            const [teams, resp] = await Promise.all([
+                loadTeams(),
+                HumanBeingService.getHumanBeings(page, pageSize, filters, sorts)
+            ]);
+
+            handleApiResponse(resp, teams);
 
             if (showToast && toastId) {
                 const message = successMessage || `${resp.humanBeingGetResponseDtos?.length ?? 0} objects uploaded`;
@@ -88,7 +129,7 @@ export const useHumanBeings = (
         } finally {
             setLoading(false);
         }
-    }, [page, pageSize, filters, sorts, showLoading, updateToast, handleApiResponse, handleError]);
+    }, [page, pageSize, filters, sorts, showLoading, updateToast, handleApiResponse, handleError, loadTeams]);
 
     const performEntityOperation = useCallback(async <T>(
         operation: () => Promise<T>,
@@ -212,6 +253,7 @@ export const useHumanBeings = (
         pageSize,
         totalPages,
         totalCount,
+        teamsState,
         setPage,
         setPageSize,
         loadHumanBeings,
@@ -221,6 +263,7 @@ export const useHumanBeings = (
         updateHumanBeing,
         sorts,
         updateSorts,
-        getUniqueImpactSpeeds
+        getUniqueImpactSpeeds,
+        loadTeams,
     };
 };
