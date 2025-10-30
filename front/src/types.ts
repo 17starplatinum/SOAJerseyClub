@@ -3,6 +3,7 @@ import type { TeamFullSchema } from "./heroAPI.ts";
 
 export interface HumanBeingWithTeam extends HumanBeingFullSchema {
     team?: TeamFullSchema;
+    teamLoadError?: boolean;
 }
 
 export interface TeamsState {

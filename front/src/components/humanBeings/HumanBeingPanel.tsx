@@ -149,7 +149,13 @@ const HumanBeingPanel = ({human, onDelete, onEdit}: Props) => {
                         />
                     </div>
                     <div>Impact Speed: {human.impactSpeed}</div>
-                    <div>Team: {human.team?.name || "No team"}</div>
+                    <div>
+                        Team:{" "}
+                        {human.teamLoadError
+                            ? "couldn't upload"
+                            : (human.team?.name || "No team")
+                        }
+                    </div>
 
                     {human.weaponType && (
                         <div

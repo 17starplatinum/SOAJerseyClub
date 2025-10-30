@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { TeamService } from "../service/TeamService.ts";
 import type { TeamDTOSchema, TeamFullSchema } from "../heroAPI.ts";
 import { useToast } from "./useToast.ts";
@@ -34,8 +34,6 @@ export const useTeams = (
     const { showLoading, updateToast } = useToast();
 
     const [sorts, setSorts] = useState<SortRule[]>(initialSorts);
-
-    const isFirstRender = useRef(true);
 
     const handleError = useCallback((error: unknown): string => {
         if (error instanceof Error) {
@@ -131,21 +129,8 @@ export const useTeams = (
     }, [loadTeamsData]);
 
     useEffect(() => {
-        if (isFirstRender.current) {
-            isFirstRender.current = false;
-            return;
-        }
-
-        loadTeams();
-    }, [loadTeams]);
-
-    useEffect(() => {
-        const loadInitialData = async (): Promise<void> => {
-            await loadTeamsData({ showToast: false });
-        };
-
-        loadInitialData();
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+        loadTeamsData({ showToast: false });
+    }, [page, pageSize, filters, sorts]);
 
     useEffect(() => {
         localStorage.setItem("teamsPage", String(page));

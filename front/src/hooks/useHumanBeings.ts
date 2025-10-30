@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { HumanBeingService, type UiFilter } from "../service/HumanBeingService.ts";
 import { TeamService } from "../service/TeamService.ts";
 import type { HumanBeingDTOSchema, HumanBeingFullSchema } from "../humanBeingAPI.ts";
@@ -11,6 +11,11 @@ interface HumanBeingsResponse {
     humanBeingGetResponseDtos?: HumanBeingFullSchema[];
     totalPages?: number;
     totalCount?: number;
+}
+
+interface LoadTeamsResult {
+    teams: TeamFullSchema[];
+    error: string | null;
 }
 
 export const useHumanBeings = (
@@ -43,31 +48,6 @@ export const useHumanBeings = (
 
     const [sorts, setSorts] = useState<SortRule[]>(initialSorts);
 
-    const isFirstRender = useRef(true);
-
-    const loadTeams = useCallback(async (): Promise<TeamFullSchema[]> => {
-        setTeamsState(prev => ({ ...prev, loading: true, error: null }));
-        try {
-            const teams = await TeamService.getAllTeams();
-            setTeamsState({ teams, loading: false, error: null });
-            return teams;
-        } catch (err) {
-            const errorMessage = handleError(err);
-            setTeamsState({ teams: [], loading: false, error: errorMessage });
-            return [];
-        }
-    }, []);
-
-    const enrichHumanBeingsWithTeams = useCallback((
-        humanBeings: HumanBeingFullSchema[],
-        teams: TeamFullSchema[]
-    ): HumanBeingWithTeam[] => {
-        return humanBeings.map(human => ({
-            ...human,
-            team: teams.find(team => team.id === human.teamId) || undefined,
-        }));
-    }, []);
-
     const handleError = useCallback((error: unknown): string => {
         if (error instanceof Error) {
             return error.message;
@@ -78,10 +58,38 @@ export const useHumanBeings = (
         }
     }, []);
 
-    const handleApiResponse = useCallback((resp: HumanBeingsResponse, teams: TeamFullSchema[]): void => {
+    const loadTeams = useCallback(async (): Promise<LoadTeamsResult> => {
+        setTeamsState(prev => ({ ...prev, loading: true, error: null }));
+        try {
+            const teams = await TeamService.getAllTeams();
+            const result: LoadTeamsResult = { teams, error: null };
+            setTeamsState({ teams, loading: false, error: null });
+            return result;
+        } catch (err) {
+            const errorMessage = handleError(err);
+            const result: LoadTeamsResult = { teams: [], error: errorMessage };
+            setTeamsState({ teams: [], loading: false, error: errorMessage });
+            return result;
+        }
+    }, [handleError]);
+
+    const enrichHumanBeingsWithTeams = useCallback((
+        humanBeings: HumanBeingFullSchema[],
+        teams: TeamFullSchema[],
+        teamLoadFailed: boolean
+    ): HumanBeingWithTeam[] => {
+        return humanBeings.map(human => ({
+            ...human,
+            team: teams.find(team => team.id === human.teamId) || undefined,
+            teamLoadError: !!human.teamId && teamLoadFailed
+        }));
+    }, []);
+
+    const handleApiResponse = useCallback((resp: HumanBeingsResponse, teams: TeamFullSchema[], teamLoadFailed: boolean): void => {
         const enrichedHumanBeings = enrichHumanBeingsWithTeams(
             resp.humanBeingGetResponseDtos ?? [],
-            teams
+            teams,
+            teamLoadFailed
         );
 
         setHumanBeings(enrichedHumanBeings);
@@ -108,12 +116,12 @@ export const useHumanBeings = (
         const toastId = showToast ? showLoading(toastMessage) : null;
 
         try {
-            const [teams, resp] = await Promise.all([
+            const [teamsResult, resp] = await Promise.all([
                 loadTeams(),
                 HumanBeingService.getHumanBeings(page, pageSize, filters, sorts)
             ]);
 
-            handleApiResponse(resp, teams);
+            handleApiResponse(resp, teamsResult.teams, !!teamsResult.error);
 
             if (showToast && toastId) {
                 const message = successMessage || `${resp.humanBeingGetResponseDtos?.length ?? 0} objects uploaded`;
@@ -170,21 +178,8 @@ export const useHumanBeings = (
     }, [loadHumanBeingsData]);
 
     useEffect(() => {
-        if (isFirstRender.current) {
-            isFirstRender.current = false;
-            return;
-        }
-
-        loadHumanBeings();
-    }, [loadHumanBeings]);
-
-    useEffect(() => {
-        const loadInitialData = async (): Promise<void> => {
-            await loadHumanBeingsData({ showToast: false });
-        };
-
-        loadInitialData();
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+        loadHumanBeingsData({ showToast: false });
+    }, [page, pageSize, filters, sorts]);
 
     useEffect(() => {
         localStorage.setItem("humanBeingsPage", String(page));
