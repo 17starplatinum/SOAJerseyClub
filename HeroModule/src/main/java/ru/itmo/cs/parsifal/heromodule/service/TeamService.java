@@ -13,7 +13,9 @@ import ru.itmo.cs.parsifal.heromodule.repository.TeamRepository;
 import jakarta.persistence.criteria.Predicate;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -183,24 +185,16 @@ public class TeamService {
                                             String field, String operator, String value) {
         Number numberValue = field.equals("id") ? Long.parseLong(value) : Integer.parseInt(value);
 
-        switch (operator) {
-            case "eq":
-                return cb.equal(root.get(field), numberValue);
-            case "neq":
-                return cb.notEqual(root.get(field), numberValue);
-            case "gt":
-                return cb.gt(root.get(field), numberValue.intValue());
-            case "lt":
-                return cb.lt(root.get(field), numberValue.intValue());
-            case "gte":
-                return cb.ge(root.get(field), numberValue.intValue());
-            case "lte":
-                return cb.le(root.get(field), numberValue.intValue());
-            case "like":
-                return cb.like(root.get(field).as(String.class), "%" + value + "%");
-            default:
-                throw new RuntimeException("Unsupported operator for numeric field: " + operator);
-        }
+        return switch (operator) {
+            case "eq" -> cb.equal(root.get(field), numberValue);
+            case "neq" -> cb.notEqual(root.get(field), numberValue);
+            case "gt" -> cb.gt(root.get(field), numberValue.intValue());
+            case "lt" -> cb.lt(root.get(field), numberValue.intValue());
+            case "gte" -> cb.ge(root.get(field), numberValue.intValue());
+            case "lte" -> cb.le(root.get(field), numberValue.intValue());
+            case "like" -> cb.like(root.get(field).as(String.class), "%" + value + "%");
+            default -> throw new RuntimeException("Unsupported operator for numeric field: " + operator);
+        };
     }
 
     private Pageable buildPageable(List<String> sort, Integer page, Integer pageSize) {
@@ -212,6 +206,28 @@ public class TeamService {
         int size = pageSize != null ? pageSize : 10;
 
         if (sort != null && !sort.isEmpty()) {
+            Set<String> ascendingFields = new HashSet<>();
+            Set<String> descendingFields = new HashSet<>();
+
+            for (String sortField : sort) {
+                if (sortField.startsWith("-")) {
+                    String fieldName = sortField.substring(1);
+                    if (ascendingFields.contains(fieldName)) {
+                        throw new IllegalArgumentException(
+                                "Conflicting sort directions for field: " + fieldName
+                        );
+                    }
+                    descendingFields.add(fieldName);
+                } else {
+                    if (descendingFields.contains(sortField)) {
+                        throw new IllegalArgumentException(
+                                "Conflicting sort directions for field: " + sortField
+                        );
+                    }
+                    ascendingFields.add(sortField);
+                }
+            }
+
             List<Sort.Order> orders = new ArrayList<>();
             for (String sortField : sort) {
                 if (sortField.startsWith("-")) {
