@@ -23,12 +23,26 @@ const GenericSortDialog = ({ currentSorts, onSave, fields, title }: GenericSortD
 
     const handleAddSort = () => {
         if (currentSort.field && currentSort.direction) {
-            const newSort: SortRule = {
-                id: Date.now(),
-                field: currentSort.field,
-                direction: currentSort.direction
-            };
-            setSorts(prev => [...prev, newSort]);
+            const existingSortIndex = sorts.findIndex(sort => sort.field === currentSort.field);
+
+            let newSorts: SortRule[];
+
+            if (existingSortIndex !== -1) {
+                newSorts = [...sorts];
+                newSorts[existingSortIndex] = {
+                    ...newSorts[existingSortIndex],
+                    direction: currentSort.direction as 'asc' | 'desc'
+                };
+            } else {
+                const newSort: SortRule = {
+                    id: Date.now(),
+                    field: currentSort.field,
+                    direction: currentSort.direction as 'asc' | 'desc'
+                };
+                newSorts = [...sorts, newSort];
+            }
+
+            setSorts(newSorts);
             setCurrentSort({});
         }
     };
@@ -42,10 +56,12 @@ const GenericSortDialog = ({ currentSorts, onSave, fields, title }: GenericSortD
         Swal.close();
     };
 
-    const fieldOptions: SelectOption[] = fields.map(field => ({
-        value: field.value,
-        label: field.label
-    }));
+    const availableFieldOptions: SelectOption[] = fields
+        .filter(field => !sorts.some(sort => sort.field === field.value))
+        .map(field => ({
+            value: field.value,
+            label: field.label
+        }));
 
     const directionOptions: SelectOption[] = [
         { value: 'asc', label: 'Ascending' },
@@ -73,7 +89,7 @@ const GenericSortDialog = ({ currentSorts, onSave, fields, title }: GenericSortD
                     <AnimatedSelect
                         value={currentSort.field || ''}
                         onChange={field => setCurrentSort(prev => ({ ...prev, field }))}
-                        options={fieldOptions}
+                        options={availableFieldOptions}
                         placeholder="Select field"
                     />
 
@@ -103,7 +119,7 @@ const GenericSortDialog = ({ currentSorts, onSave, fields, title }: GenericSortD
                         onClick={handleAddSort}
                         disabled={!currentSort.field || !currentSort.direction}
                     >
-                        Add sort
+                        {sorts.some(sort => sort.field === currentSort.field) ? 'Update sort' : 'Add sort'}
                     </Button>
                 </div>
             </div>
