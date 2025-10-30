@@ -37,7 +37,7 @@ const HumanBeingsPage: React.FC = () => {
     const [searchMode, setSearchMode] = useState(false);
     const [searchResults, setSearchResults] = useState<HumanBeingFullSchema[]>([]);
 
-    const { showLoading, updateToast } = useToast();
+    const { showLoading, updateToast, showError  } = useToast();
 
     const {
         humanBeings,
@@ -195,85 +195,87 @@ const HumanBeingsPage: React.FC = () => {
     };
 
     const handleAssignRedLada = async () => {
+        let teams: Awaited<ReturnType<typeof TeamService.getAllTeams>> = [];
         try {
-            const teams = await TeamService.getAllTeams();
-
-            const { value: selectedTeamId } = await MySwal.fire({
-                title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-primary)">Assign Red Lada Kalina</p>`,
-                html: `
-                    <div style="text-align: center; padding: var(--spacing-md); font-family: var(--font-family-primary);">
-                        <p style="font-size: var(--font-size-accent); margin-bottom: var(--spacing-md);">
-                            Select team to assign red Lada Kalina to members without cars
-                        </p>
-                        <select id="teamSelect" style="
-                            width: 100%;
-                            padding: var(--spacing-sm);
-                            font-family: var(--font-family-primary);
-                            font-size: var(--font-size-general);
-                            border: var(--border-width) var(--border-style) var(--color-black);
-                            border-radius: var(--border-radius);
-                            margin-bottom: var(--spacing-md);
-                        ">
-                            <option value="">Select a team</option>
-                            ${teams.map(team =>
-                    `<option value="${team.id}">${team.name || `Team #${team.id}`}</option>`
-                ).join('')}
-                        </select>
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Assign',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: 'var(--color-primary)',
-                cancelButtonColor: 'var(--color-accent)',
-                background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
-                preConfirm: () => {
-                    const select = document.getElementById('teamSelect') as HTMLSelectElement;
-                    if (!select.value) {
-                        Swal.showValidationMessage('Please select a team');
-                        return false;
-                    }
-                    return select.value;
-                }
-            });
-
-            if (selectedTeamId) {
-                const toastId = showLoading('Assigning red Lada Kalina to team...');
-                try {
-                    await TeamService.assignRedLadaToTeam(Number(selectedTeamId));
-                    updateToast(toastId, 'success', 'Red Lada Kalina assigned successfully!');
-                    loadHumanBeings();
-                } catch (error) {
-                    updateToast(toastId, 'error', 'Failed to assign red Lada Kalina');
-                }
-            }
+            teams = await TeamService.getAllTeams();
         } catch (error) {
-            console.error('Failed to assign red Lada:', error);
+            showError('Не удалось загрузить команды для назначения машины');
+            teams = [];
+        }
+
+        const { value: selectedTeamId } = await MySwal.fire({
+            title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-primary)">Assign Red Lada Kalina</p>`,
+            html: `
+            <div style="text-align: center; padding: var(--spacing-md); font-family: var(--font-family-primary);">
+                <p style="font-size: var(--font-size-accent); margin-bottom: var(--spacing-md);">
+                    Select team to assign red Lada Kalina to members without cars
+                </p>
+                <select id="teamSelect" style="
+                    width: 100%;
+                    padding: var(--spacing-sm);
+                    font-family: var(--font-family-primary);
+                    font-size: var(--font-size-general);
+                    border: var(--border-width) var(--border-style) var(--color-black);
+                    border-radius: var(--border-radius);
+                    margin-bottom: var(--spacing-md);
+                ">
+                    <option value="">${teams.length ? 'Select a team' : 'No teams available'}</option>
+                    ${teams.map(team =>
+                `<option value="${team.id}">${team.name || `Team #${team.id}`}</option>`
+            ).join('')}
+                </select>
+            </div>
+        `,
+            showCancelButton: true,
+            confirmButtonText: 'Assign',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: 'var(--color-primary)',
+            cancelButtonColor: 'var(--color-accent)',
+            background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
+            preConfirm: () => {
+                const select = document.getElementById('teamSelect') as HTMLSelectElement;
+                if (!select.value) {
+                    Swal.showValidationMessage('Please select a team');
+                    return;
+                }
+                return select.value;
+            }
+        });
+
+        if (selectedTeamId) {
+            const toastId = showLoading('Assigning red Lada Kalina to team...');
+            try {
+                await TeamService.assignRedLadaToTeam(Number(selectedTeamId));
+                updateToast(toastId, 'success', 'Red Lada Kalina assigned successfully!');
+                loadHumanBeings();
+            } catch (error) {
+                updateToast(toastId, 'error', 'Failed to assign red Lada Kalina');
+            }
         }
     };
 
     const handleSearchHeroes = async () => {
-        const { value: realHeroOnly } = await MySwal.fire({
+        const { value } = await MySwal.fire({
             title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-primary)">Search Heroes</p>`,
             html: `
-                <div style="text-align: center; padding: var(--spacing-md); font-family: var(--font-family-primary);">
-                    <p style="font-size: var(--font-size-accent); margin-bottom: var(--spacing-md);">
-                        Search for heroes
-                    </p>
-                    <select id="heroSearchSelect" style="
-                        width: 100%;
-                        padding: var(--spacing-sm);
-                        font-family: var(--font-family-primary);
-                        font-size: var(--font-size-general);
-                        border: var(--border-width) var(--border-style) var(--color-black);
-                        border-radius: var(--border-radius);
-                        margin-bottom: var(--spacing-md);
-                    ">
-                        <option value="false">All Heroes</option>
-                        <option value="true">Real Heroes Only</option>
-                    </select>
-                </div>
-            `,
+            <div style="text-align: center; padding: var(--spacing-md); font-family: var(--font-family-primary);">
+                <p style="font-size: var(--font-size-accent); margin-bottom: var(--spacing-md);">
+                    Search for heroes
+                </p>
+                <select id="heroSearchSelect" style="
+                    width: 100%;
+                    padding: var(--spacing-sm);
+                    font-family: var(--font-family-primary);
+                    font-size: var(--font-size-general);
+                    border: var(--border-width) var(--border-style) var(--color-black);
+                    border-radius: var(--border-radius);
+                    margin-bottom: var(--spacing-md);
+                ">
+                    <option value="false">All Heroes</option>
+                    <option value="true">Real Heroes Only</option>
+                </select>
+            </div>
+        `,
             showCancelButton: true,
             confirmButtonText: 'Search',
             cancelButtonText: 'Cancel',
@@ -282,11 +284,12 @@ const HumanBeingsPage: React.FC = () => {
             background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
             preConfirm: () => {
                 const select = document.getElementById('heroSearchSelect') as HTMLSelectElement;
-                return select.value === 'true';
+                return select.value;
             }
         });
 
-        if (realHeroOnly !== undefined) {
+        if (value !== undefined) {
+            const realHeroOnly = value === 'true';
             const toastId = showLoading('Searching heroes...');
             try {
                 const results = await TeamService.getHeroes(realHeroOnly);
