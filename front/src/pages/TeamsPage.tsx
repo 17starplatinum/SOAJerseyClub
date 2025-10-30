@@ -1,40 +1,38 @@
-import React, {useEffect, useState} from "react";
-import HumanBeingPanel from "../components/humanBeings/HumanBeingPanel.tsx";
-import {useHumanBeings} from "../hooks/useHumanBeings.ts";
-import {motion, AnimatePresence} from "framer-motion";
+import React, { useEffect, useState } from "react";
+import TeamPanel from "../components/teams/TeamPanel.tsx";
+import { useTeams } from "../hooks/useTeams.ts";
+import { motion, AnimatePresence } from "framer-motion";
 import FilterBox from "../components/FilterBox.tsx";
 import FilterButton from "../components/FilterButton.tsx";
 import AnimatedSelect from "../components/AnimatedSelect.tsx";
-import {Toaster} from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 import "../styles/variables.css";
-import CreateHumanBeingDialog from '../components/humanBeings/CreateHumanBeingDialog.tsx';
+import CreateTeamDialog from '../components/teams/CreateTeamDialog.tsx';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from "sweetalert2";
-import type {HumanBeingFullSchema} from "../humanBeingAPI.ts";
+import type { TeamFullSchema } from "../heroAPI.ts";
 import SortButton from "../components/SortButton.tsx";
 import SortBox from "../components/SortBox.tsx";
-import {HumanBeingService} from "../service/HumanBeingService.ts";
-import HumanBeingsFilterDialog from "../components/humanBeings/HumanBeingsFilterDialog.tsx";
-import HumanBeingsSortDialog from "../components/humanBeings/HumanBeingsSortDialog.tsx";
+import TeamsFilterDialog from "../components/teams/TeamsFilterDialog.tsx";
+import TeamsSortDialog from "../components/teams/TeamsSortDialog.tsx";
 import {type Filter, getOperationSymbol} from "../components/GenericFilterDialog.tsx";
 import type {SortRule} from "../components/GenericSortDialog.tsx";
 
 const MySwal = withReactContent(Swal);
 
-
-const HumanBeingsPage: React.FC = () => {
+const TeamsPage: React.FC = () => {
     const [filters, setFilters] = useState<Filter[]>(() => {
-        const savedFilters = localStorage.getItem("humanBeingsFilters");
+        const savedFilters = localStorage.getItem("teamsFilters");
         return savedFilters ? JSON.parse(savedFilters) : [];
     });
 
     const [sorts, setSorts] = useState<SortRule[]>(() => {
-        const savedSorts = localStorage.getItem("humanBeingsSorts");
+        const savedSorts = localStorage.getItem("teamsSorts");
         return savedSorts ? JSON.parse(savedSorts) : [];
     });
 
     const {
-        humanBeings,
+        teams,
         loading,
         page,
         pageSize,
@@ -42,18 +40,18 @@ const HumanBeingsPage: React.FC = () => {
         totalCount,
         setPage,
         setPageSize,
-        loadHumanBeings,
+        loadTeams,
         updateFilters,
         updateSorts,
-        deleteHumanBeing,
-    } = useHumanBeings(filters, sorts);
+        deleteTeam,
+    } = useTeams(filters, sorts);
 
     useEffect(() => {
-        localStorage.setItem("humanBeingsFilters", JSON.stringify(filters));
+        localStorage.setItem("teamsFilters", JSON.stringify(filters));
     }, [filters]);
 
     useEffect(() => {
-        localStorage.setItem("humanBeingsSorts", JSON.stringify(sorts));
+        localStorage.setItem("teamsSorts", JSON.stringify(sorts));
     }, [sorts]);
 
     const onFiltersUpdate = (newFilters: Filter[]) => {
@@ -81,69 +79,19 @@ const HumanBeingsPage: React.FC = () => {
     };
 
     const pageSizeOptions = [
-        {value: "4", label: "4"},
-        {value: "8", label: "8"},
-        {value: "32", label: "32"},
-        {value: "64", label: "64"}
+        { value: "4", label: "4" },
+        { value: "8", label: "8" },
+        { value: "32", label: "32" },
+        { value: "64", label: "64" }
     ];
-
-    const handleGetUniqueSpeeds = async () => {
-        try {
-            const uniqueSpeeds = await HumanBeingService.getUniqueImpactSpeeds();
-
-            const speedsText = uniqueSpeeds.length > 0
-                ? uniqueSpeeds.join(', ')
-                : 'No data available';
-
-            await MySwal.fire({
-                title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-primary)">Unique impact speeds</p>`,
-                html: `
-                <div style="text-align: center; padding: var(--spacing-md); font-family: var(--font-family-primary);">
-                    <p style="font-size: var(--font-size-accent); margin-bottom: var(--spacing-md);">
-                        Unique speeds found: ${uniqueSpeeds.length}
-                    </p>
-                    <div style="
-                        background: var(--color-light);
-                        border: var(--border-width) var(--border-style) var(--color-black);
-                        padding: var(--spacing-md);
-                        border-radius: var(--border-radius);
-                        max-height: 200px;
-                        overflow-y: auto;
-                        font-family: var(--font-family-primary);
-                        font-size: var(--font-size-general);
-                    ">
-                        ${speedsText}
-                    </div>
-                </div>
-            `,
-                width: 500,
-                showConfirmButton: true,
-                confirmButtonText: 'Закрыть',
-                confirmButtonColor: 'var(--color-primary)',
-                background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
-                showClass: {
-                    popup: 'animate__animated animate__fadeInDown'
-                },
-                hideClass: {
-                    popup: 'animate__animated animate__fadeOutUp'
-                },
-                customClass: {
-                    popup: 'custom-swal',
-                    confirmButton: 'btn btn-primary'
-                }
-            });
-        } catch (error) {
-            console.error('Failed to get unique speeds:', error);
-        }
-    };
 
     const handleOpenCreateDialog = () => {
         MySwal.fire({
-            title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-success)">Create Object</p>`,
-            html: <CreateHumanBeingDialog onSuccess={() => {
-                loadHumanBeings();
-            }}/>,
-            width: 600,
+            title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-success)">Create Team</p>`,
+            html: <CreateTeamDialog onSuccess={() => {
+                loadTeams();
+            }} />,
+            width: 500,
             showConfirmButton: false,
             showCancelButton: false,
             allowOutsideClick: true,
@@ -161,16 +109,16 @@ const HumanBeingsPage: React.FC = () => {
         });
     };
 
-    const handleOpenEditDialog = (human: HumanBeingFullSchema) => {
+    const handleOpenEditDialog = (team: TeamFullSchema) => {
         MySwal.fire({
-            title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-primary)">Edit Object</p>`,
-            html: <CreateHumanBeingDialog
+            title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-primary)">Edit Team</p>`,
+            html: <CreateTeamDialog
                 onSuccess={() => {
-                    loadHumanBeings();
+                    loadTeams();
                 }}
-                editingHuman={human}
+                editingTeam={team}
             />,
-            width: 600,
+            width: 500,
             showConfirmButton: false,
             showCancelButton: false,
             allowOutsideClick: true,
@@ -211,7 +159,7 @@ const HumanBeingsPage: React.FC = () => {
                         <FilterButton
                             onFiltersUpdate={onFiltersUpdate}
                             currentFilters={filters}
-                            dialogComponent={HumanBeingsFilterDialog}
+                            dialogComponent={TeamsFilterDialog}
                         />
                         {filters.map((filter) => (
                             <FilterBox
@@ -223,7 +171,7 @@ const HumanBeingsPage: React.FC = () => {
                         <SortButton
                             onSortsUpdate={onSortsUpdate}
                             currentSorts={sorts}
-                            dialogComponent={HumanBeingsSortDialog}
+                            dialogComponent={TeamsSortDialog}
                         />
                         {sorts.map((sort) => (
                             <SortBox
@@ -237,14 +185,9 @@ const HumanBeingsPage: React.FC = () => {
 
             <section>
                 <div style={{padding: "var(--spacing-lg)"}}>
-                    <div style={{
-                        padding: "var(--spacing-lg)",
-                        display: "flex",
-                        gap: "var(--spacing-md)",
-                        justifyContent: "center"
-                    }}>
+                    <div style={{padding: "var(--spacing-lg)", display: "flex", gap: "var(--spacing-md)", justifyContent: "center"}}>
                         <motion.button
-                            onClick={() => loadHumanBeings()}
+                            onClick={() => loadTeams()}
                             disabled={loading}
                             initial={{
                                 boxShadow: "none"
@@ -290,55 +233,29 @@ const HumanBeingsPage: React.FC = () => {
                                 fontSize: "var(--font-size-general)"
                             }}
                         >
-                            Create
-                        </motion.button>
-
-                        <motion.button
-                            onClick={handleGetUniqueSpeeds}
-                            disabled={loading}
-                            initial={{
-                                boxShadow: "none"
-                            }}
-                            whileHover={{
-                                y: loading ? 0 : -5,
-                                scale: loading ? 1 : 1.01,
-                                boxShadow: loading ? "" : "var(--shadow-hover)"
-                            }}
-                            transition={{
-                                times: [0, 0.9, 1]
-                            }}
-                            style={{
-                                padding: "var(--spacing-sm) var(--spacing-lg)",
-                                backgroundColor: loading ? "var(--color-disabled)" : "var(--color-secondary)",
-                                cursor: loading ? "not-allowed" : "pointer",
-                                minWidth: "150px",
-                                fontSize: "var(--font-size-general)",
-                                color: "var(--color-black)"
-                            }}
-                        >
-                            Unique Speeds
+                            Create Team
                         </motion.button>
                     </div>
 
                     <div style={{display: "flex", justifyContent: "center", flexWrap: "wrap"}}>
                         <AnimatePresence>
-                            {humanBeings.map((human) => (
+                            {teams.map((team) => (
                                 <motion.div
-                                    key={human.id}
+                                    key={team.id}
                                     layout
-                                    initial={{opacity: 1, scale: 1}}
-                                    animate={{opacity: 1, scale: 1}}
+                                    initial={{ opacity: 1, scale: 1 }}
+                                    animate={{ opacity: 1, scale: 1 }}
                                     exit={{
                                         opacity: 0,
                                         scale: 0.8,
-                                        transition: {duration: 0.3}
+                                        transition: { duration: 0.3 }
                                     }}
-                                    transition={{duration: 0.2}}
+                                    transition={{ duration: 0.2 }}
                                 >
-                                    <HumanBeingPanel
-                                        key={human.id}
-                                        human={human}
-                                        onDelete={() => deleteHumanBeing(human.id)}
+                                    <TeamPanel
+                                        key={team.id}
+                                        team={team}
+                                        onDelete={() => deleteTeam(team.id!)}
                                         onEdit={handleOpenEditDialog}
                                     />
                                 </motion.div>
@@ -428,4 +345,4 @@ const HumanBeingsPage: React.FC = () => {
     );
 };
 
-export default HumanBeingsPage;
+export default TeamsPage;

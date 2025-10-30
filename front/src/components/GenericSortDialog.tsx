@@ -10,31 +10,14 @@ export interface SortRule {
     direction: 'asc' | 'desc';
 }
 
-interface SortDialogProps {
+interface GenericSortDialogProps {
     currentSorts: SortRule[];
     onSave: (sorts: SortRule[]) => void;
+    fields: Array<{ value: string; label: string }>;
+    title: string;
 }
 
-const SORT_CONFIG = {
-    fields: [
-        { value: 'id', label: 'ID' },
-        { value: 'name', label: 'Name' },
-        { value: 'coordinates.x', label: 'Coordinates X' },
-        { value: 'coordinates.y', label: 'Coordinates Y' },
-        { value: 'creationDate', label: 'Creation Date' },
-        { value: 'realHero', label: 'Real Hero' },
-        { value: 'hasToothpick', label: 'Has Toothpick' },
-        { value: 'impactSpeed', label: 'Impact Speed' },
-        { value: 'weaponType', label: 'Weapon Type' },
-        { value: 'mood', label: 'Mood' },
-        { value: 'car.color', label: 'Car Color' },
-        { value: 'car.model', label: 'Car Model' },
-        { value: 'car.cool', label: 'Car Cool' },
-        // { value: 'teamId', label: 'Team' },
-    ]
-};
-
-const SortDialog = ({ currentSorts, onSave }: SortDialogProps) => {
+const GenericSortDialog = ({ currentSorts, onSave, fields, title }: GenericSortDialogProps) => {
     const [sorts, setSorts] = useState<SortRule[]>(currentSorts);
     const [currentSort, setCurrentSort] = useState<Partial<SortRule>>({});
 
@@ -59,7 +42,7 @@ const SortDialog = ({ currentSorts, onSave }: SortDialogProps) => {
         Swal.close();
     };
 
-    const fieldOptions: SelectOption[] = SORT_CONFIG.fields.map(field => ({
+    const fieldOptions: SelectOption[] = fields.map(field => ({
         value: field.value,
         label: field.label
     }));
@@ -71,6 +54,16 @@ const SortDialog = ({ currentSorts, onSave }: SortDialogProps) => {
 
     return (
         <div style={{ minWidth: '300px', padding: 'var(--spacing-lg)' }}>
+            <h3 style={{
+                fontFamily: 'var(--font-family-accent)',
+                fontSize: 'var(--font-size-xl)',
+                color: 'var(--color-accent)',
+                textAlign: 'center',
+                marginBottom: 'var(--spacing-lg)'
+            }}>
+                {title}
+            </h3>
+
             <div style={{
                 marginBottom: 'var(--spacing-lg)',
                 padding: 'var(--spacing-md)',
@@ -211,4 +204,4 @@ const SortDialog = ({ currentSorts, onSave }: SortDialogProps) => {
     );
 };
 
-export default SortDialog;
+export default GenericSortDialog;

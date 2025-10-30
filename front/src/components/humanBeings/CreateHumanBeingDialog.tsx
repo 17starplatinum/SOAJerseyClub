@@ -1,14 +1,14 @@
 import {motion} from 'framer-motion';
 import {useEffect, useState} from 'react';
 import Swal from 'sweetalert2';
-import AnimatedSelect, {type SelectOption} from './AnimatedSelect.tsx';
-import Button from './Button.tsx';
-import {HumanBeingService} from '../service/HumanBeingService.ts';
-import {WeaponType, Mood, Color, type HumanBeingDTOSchema, type HumanBeingFullSchema} from '../humanBeingAPI.ts';
-import {useToast} from "../hooks/useToast.ts";
-import LimitedNumberInput from "./LimitedNumberInput.tsx";
-import type {TeamFullSchema} from "../heroAPI.ts";
-import {TeamService} from "../service/TeamService.ts";
+import AnimatedSelect, {type SelectOption} from '../AnimatedSelect.tsx';
+import Button from '../Button.tsx';
+import {HumanBeingService} from '../../service/HumanBeingService.ts';
+import {WeaponType, Mood, Color, type HumanBeingDTOSchema, type HumanBeingFullSchema} from '../../humanBeingAPI.ts';
+import {useToast} from "../../hooks/useToast.ts";
+import LimitedNumberInput from "../LimitedNumberInput.tsx";
+import type {TeamFullSchema} from "../../heroAPI.ts";
+import {TeamService} from "../../service/TeamService.ts";
 
 interface CreateHumanBeingDialogProps {
     onSuccess: () => void;

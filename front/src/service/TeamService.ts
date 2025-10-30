@@ -1,5 +1,5 @@
 import { Api } from "../heroAPI.ts";
-import type { TeamFullSchema, TeamPaginatedSchema } from "../heroAPI.ts";
+import type { TeamFullSchema, TeamPaginatedSchema, TeamDTOSchema } from "../heroAPI.ts";
 
 const api = new Api({
     baseUrl: "https://localhost:15479/api/v1/heroes",
@@ -25,5 +25,19 @@ export const TeamService = {
 
         const { data } = await api.teams.getTeams(query);
         return data;
+    },
+
+    async addTeam(data: TeamDTOSchema): Promise<TeamFullSchema> {
+        const { data: response } = await api.teams.addTeam(data);
+        return response;
+    },
+
+    async updateTeam(id: number, data: TeamDTOSchema): Promise<TeamFullSchema> {
+        const { data: response } = await api.teams.updateTeam(id, data);
+        return response;
+    },
+
+    async deleteTeam(id: number): Promise<void> {
+        await api.teams.deleteHumanBeing(id);
     },
 };

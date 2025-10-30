@@ -2,7 +2,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Navigation from "./Navigation.tsx";
 import HumanBeingsPage from "../pages/HumanBeingsPage.tsx";
-import Page2 from "../pages/Page2.tsx";
+import TeamsPage from "../pages/TeamsPage.tsx";
 import React from "react";
 import ScrollToTopButton from "./ScrollToTopButton.tsx";
 
@@ -50,7 +50,7 @@ const App: React.FC = () => {
                                 exit="out"
                                 variants={pageVariants}
                             >
-                                <Page2/>
+                                <TeamsPage/>
                             </motion.div>
                         }
                     />

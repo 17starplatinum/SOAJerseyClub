@@ -1,23 +1,23 @@
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-import SortDialog, { type SortRule } from './SortDialog.tsx';
-import { useState } from "react";
-import { motion } from "framer-motion";
+import {useState} from "react";
+import {motion} from "framer-motion";
+import type { SortRule } from './GenericSortDialog.tsx';
 
 const MySwal = withReactContent(Swal);
 
 interface SortButtonProps {
     currentSorts: SortRule[];
     onSortsUpdate: (sorts: SortRule[]) => void;
+    dialogComponent: React.ComponentType<{ currentSorts: SortRule[]; onSave: (sorts: SortRule[]) => void }>;
 }
 
-const SortButton = ({ currentSorts, onSortsUpdate }: SortButtonProps) => {
+const SortButton = ({ currentSorts, onSortsUpdate, dialogComponent: DialogComponent }: SortButtonProps) => {
     const [isHovered, setIsHovered] = useState(false);
 
     const handleOpenDialog = () => {
         MySwal.fire({
-            title: `<p style="font-size: var(--font-size-xl); margin: 0; margin-bottom: -40px; font-family: var(--font-family-accent); color: var(--color-accent)">Sorting</p>`,
-            html: <SortDialog currentSorts={currentSorts} onSave={onSortsUpdate} />,
+            html: <DialogComponent currentSorts={currentSorts} onSave={onSortsUpdate} />,
             showConfirmButton: false,
             showCancelButton: false,
             allowOutsideClick: true,

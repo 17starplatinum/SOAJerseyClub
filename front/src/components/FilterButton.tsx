@@ -1,30 +1,23 @@
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-import FilterDialog from './FilterDialog.tsx';
 import {useState} from "react";
 import {motion} from "framer-motion";
+import type { Filter } from './GenericFilterDialog.tsx';
 
 const MySwal = withReactContent(Swal);
-
-interface Filter {
-    id: number;
-    field: string;
-    operation: string;
-    value: string;
-}
 
 interface FilterButtonProps {
     currentFilters: Filter[];
     onFiltersUpdate: (filters: Filter[]) => void;
+    dialogComponent: React.ComponentType<{ currentFilters: Filter[]; onSave: (filters: Filter[]) => void }>;
 }
 
-const FilterButton = ({ currentFilters, onFiltersUpdate }: FilterButtonProps) => {
+const FilterButton = ({ currentFilters, onFiltersUpdate, dialogComponent: DialogComponent }: FilterButtonProps) => {
     const [isHovered, setIsHovered] = useState(false);
 
     const handleOpenDialog = () => {
         MySwal.fire({
-            title: `<p style="font-size: var(--font-size-xl); margin: 0; margin-bottom: -40px; font-family: var(--font-family-accent); color: var(--color-accent)">Filters</p>`,
-            html: <FilterDialog currentFilters={currentFilters} onSave={onFiltersUpdate} />,
+            html: <DialogComponent currentFilters={currentFilters} onSave={onFiltersUpdate} />,
             showConfirmButton: false,
             showCancelButton: false,
             allowOutsideClick: true,

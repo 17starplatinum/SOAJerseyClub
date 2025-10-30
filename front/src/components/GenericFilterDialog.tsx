@@ -13,16 +13,19 @@ export interface Filter {
     value: string;
 }
 
-interface FilterDialogProps {
-    currentFilters: Filter[];
-    onSave: (filters: Filter[]) => void;
+interface FilterConfig {
+    fields: Array<{value: string; label: string; type: string}>;
+    operations: Record<string, string[]>;
+    enumValues?: Record<string, string[]>;
+    loadTeams?: boolean;
 }
 
-const ENUM_VALUES = {
-    'weaponType': ['AXE', 'SHOTGUN', 'MACHINE_GUN'],
-    'mood': ['SADNESS', 'SORROW', 'GLOOM', 'APATHY', 'RAGE'],
-    'car.color': ['RED', 'BLUE', 'YELLOW', 'GREEN', 'BLACK', 'WHITE']
-};
+interface GenericFilterDialogProps {
+    currentFilters: Filter[];
+    onSave: (filters: Filter[]) => void;
+    config: FilterConfig;
+    title: string;
+}
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const getOperationSymbol = (operation: string) => {
@@ -46,60 +49,37 @@ export const getOperationSymbol = (operation: string) => {
     }
 };
 
-const FILTER_CONFIG = {
-    fields: [
-        {value: 'id', label: 'Id', type: 'number'},
-        {value: 'name', label: 'Name', type: 'string'},
-        {value: 'coordinates.x', label: 'Coordinates X', type: 'number'},
-        {value: 'coordinates.y', label: 'Coordinates Y', type: 'number'},
-        {value: 'impactSpeed', label: 'Impact Speed', type: 'number'},
-        {value: 'realHero', label: 'Real Hero', type: 'boolean'},
-        {value: 'hasToothpick', label: 'Has Toothpick', type: 'boolean'},
-        {value: 'weaponType', label: 'Weapon Type', type: 'enum'},
-        {value: 'mood', label: 'Mood', type: 'enum'},
-        {value: 'car.model', label: 'Car model', type: 'string'},
-        {value: 'car.cool', label: 'Car cool', type: 'boolean'},
-        {value: 'car.color', label: 'Car color', type: 'enum'},
-        // {value: 'teamId', label: 'Team', type: 'team'},
-    ],
-    operations: {
-        string: ['eq', 'neq', 'like'],
-        number: ['eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'like'],
-        boolean: ['eq', 'neq', 'like'],
-        enum: ['eq', 'neq', 'gt', 'lt', 'gte', 'lte', 'like'],
-        // team: ['eq', 'neq', 'like']
-    }
-};
-
-const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
+const GenericFilterDialog = ({currentFilters, onSave, config, title}: GenericFilterDialogProps) => {
     const [filters, setFilters] = useState<Filter[]>(currentFilters);
     const [currentFilter, setCurrentFilter] = useState<Partial<Filter>>({});
     const [teams, setTeams] = useState<TeamFullSchema[]>([]);
     const [teamsLoading, setTeamsLoading] = useState(false);
 
     useEffect(() => {
-        const loadTeams = async () => {
-            setTeamsLoading(true);
-            try {
-                const teamsData = await TeamService.getAllTeams();
-                setTeams(teamsData);
-            } catch (error) {
-                console.error('Failed to load teams:', error);
-            } finally {
-                setTeamsLoading(false);
-            }
-        };
+        if (config.loadTeams) {
+            const loadTeams = async () => {
+                setTeamsLoading(true);
+                try {
+                    const teamsData = await TeamService.getAllTeams();
+                    setTeams(teamsData);
+                } catch (error) {
+                    console.error('Failed to load teams:', error);
+                } finally {
+                    setTeamsLoading(false);
+                }
+            };
 
-        loadTeams();
-    }, []);
+            loadTeams();
+        }
+    }, [config.loadTeams]);
 
     const getFieldType = (fieldName: string) => {
-        const field = FILTER_CONFIG.fields.find(f => f.value === fieldName);
+        const field = config.fields.find(f => f.value === fieldName);
         return field?.type || 'string';
     };
 
     const getEnumValues = (fieldName: string) => {
-        return ENUM_VALUES[fieldName as keyof typeof ENUM_VALUES] || [];
+        return config.enumValues?.[fieldName as keyof typeof config.enumValues] || [];
     };
 
     const handleAddFilter = () => {
@@ -125,14 +105,14 @@ const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
     };
 
     // Опции для полей
-    const fieldOptions: SelectOption[] = FILTER_CONFIG.fields.map(field => ({
+    const fieldOptions: SelectOption[] = config.fields.map(field => ({
         value: field.value,
         label: field.label
     }));
 
     // Опции для операций
     const operationOptions: SelectOption[] = currentFilter.field
-        ? FILTER_CONFIG.operations[getFieldType(currentFilter.field) as keyof typeof FILTER_CONFIG.operations].map(op => ({
+        ? config.operations[getFieldType(currentFilter.field) as keyof typeof config.operations].map(op => ({
             value: op,
             label:
                 op === 'eq' ? '= (Equal)' :
@@ -279,6 +259,16 @@ const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
 
     return (
         <div style={{minWidth: '300px', padding: 'var(--spacing-lg)'}}>
+            <h3 style={{
+                fontFamily: 'var(--font-family-accent)',
+                fontSize: 'var(--font-size-xl)',
+                color: 'var(--color-accent)',
+                textAlign: 'center',
+                marginBottom: 'var(--spacing-lg)'
+            }}>
+                {title}
+            </h3>
+
             <div style={{
                 marginBottom: 'var(--spacing-lg)',
                 padding: 'var(--spacing-md)',
@@ -442,4 +432,4 @@ const FilterDialog = ({currentFilters, onSave}: FilterDialogProps) => {
     );
 };
 
-export default FilterDialog;
+export default GenericFilterDialog;
