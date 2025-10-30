@@ -18,9 +18,10 @@ import HumanBeingsFilterDialog from "../components/humanBeings/HumanBeingsFilter
 import HumanBeingsSortDialog from "../components/humanBeings/HumanBeingsSortDialog.tsx";
 import {type Filter, getOperationSymbol} from "../components/GenericFilterDialog.tsx";
 import type {SortRule} from "../components/GenericSortDialog.tsx";
+import { TeamService } from "../service/TeamService.ts";
+import {useToast} from "../hooks/useToast.ts";
 
 const MySwal = withReactContent(Swal);
-
 
 const HumanBeingsPage: React.FC = () => {
     const [filters, setFilters] = useState<Filter[]>(() => {
@@ -32,6 +33,11 @@ const HumanBeingsPage: React.FC = () => {
         const savedSorts = localStorage.getItem("humanBeingsSorts");
         return savedSorts ? JSON.parse(savedSorts) : [];
     });
+
+    const [searchMode, setSearchMode] = useState(false);
+    const [searchResults, setSearchResults] = useState<HumanBeingFullSchema[]>([]);
+
+    const { showLoading, updateToast } = useToast();
 
     const {
         humanBeings,
@@ -188,6 +194,118 @@ const HumanBeingsPage: React.FC = () => {
         });
     };
 
+    const handleAssignRedLada = async () => {
+        try {
+            const teams = await TeamService.getAllTeams();
+
+            const { value: selectedTeamId } = await MySwal.fire({
+                title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-primary)">Assign Red Lada Kalina</p>`,
+                html: `
+                    <div style="text-align: center; padding: var(--spacing-md); font-family: var(--font-family-primary);">
+                        <p style="font-size: var(--font-size-accent); margin-bottom: var(--spacing-md);">
+                            Select team to assign red Lada Kalina to members without cars
+                        </p>
+                        <select id="teamSelect" style="
+                            width: 100%;
+                            padding: var(--spacing-sm);
+                            font-family: var(--font-family-primary);
+                            font-size: var(--font-size-general);
+                            border: var(--border-width) var(--border-style) var(--color-black);
+                            border-radius: var(--border-radius);
+                            margin-bottom: var(--spacing-md);
+                        ">
+                            <option value="">Select a team</option>
+                            ${teams.map(team =>
+                    `<option value="${team.id}">${team.name || `Team #${team.id}`}</option>`
+                ).join('')}
+                        </select>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Assign',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: 'var(--color-primary)',
+                cancelButtonColor: 'var(--color-accent)',
+                background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
+                preConfirm: () => {
+                    const select = document.getElementById('teamSelect') as HTMLSelectElement;
+                    if (!select.value) {
+                        Swal.showValidationMessage('Please select a team');
+                        return false;
+                    }
+                    return select.value;
+                }
+            });
+
+            if (selectedTeamId) {
+                const toastId = showLoading('Assigning red Lada Kalina to team...');
+                try {
+                    await TeamService.assignRedLadaToTeam(Number(selectedTeamId));
+                    updateToast(toastId, 'success', 'Red Lada Kalina assigned successfully!');
+                    loadHumanBeings();
+                } catch (error) {
+                    updateToast(toastId, 'error', 'Failed to assign red Lada Kalina');
+                }
+            }
+        } catch (error) {
+            console.error('Failed to assign red Lada:', error);
+        }
+    };
+
+    const handleSearchHeroes = async () => {
+        const { value: realHeroOnly } = await MySwal.fire({
+            title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-primary)">Search Heroes</p>`,
+            html: `
+                <div style="text-align: center; padding: var(--spacing-md); font-family: var(--font-family-primary);">
+                    <p style="font-size: var(--font-size-accent); margin-bottom: var(--spacing-md);">
+                        Search for heroes
+                    </p>
+                    <select id="heroSearchSelect" style="
+                        width: 100%;
+                        padding: var(--spacing-sm);
+                        font-family: var(--font-family-primary);
+                        font-size: var(--font-size-general);
+                        border: var(--border-width) var(--border-style) var(--color-black);
+                        border-radius: var(--border-radius);
+                        margin-bottom: var(--spacing-md);
+                    ">
+                        <option value="false">All Heroes</option>
+                        <option value="true">Real Heroes Only</option>
+                    </select>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Search',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: 'var(--color-primary)',
+            cancelButtonColor: 'var(--color-accent)',
+            background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
+            preConfirm: () => {
+                const select = document.getElementById('heroSearchSelect') as HTMLSelectElement;
+                return select.value === 'true';
+            }
+        });
+
+        if (realHeroOnly !== undefined) {
+            const toastId = showLoading('Searching heroes...');
+            try {
+                const results = await TeamService.getHeroes(realHeroOnly);
+                setSearchResults(results);
+                setSearchMode(true);
+                updateToast(toastId, 'success', `Found ${results.length} heroes`);
+            } catch (error) {
+                updateToast(toastId, 'error', 'Failed to search heroes');
+            }
+        }
+    };
+
+    const handleBackFromSearch = () => {
+        setSearchMode(false);
+        setSearchResults([]);
+    };
+
+    const displayHumanBeings = searchMode ? searchResults : humanBeings;
+
     return (
         <>
             <Toaster
@@ -205,35 +323,37 @@ const HumanBeingsPage: React.FC = () => {
                 }}
             />
 
-            <section>
-                <div style={{display: "flex", justifyContent: "center"}}>
-                    <div style={{display: "flex", justifyContent: "center", flexWrap: "wrap", width: "70%"}}>
-                        <FilterButton
-                            onFiltersUpdate={onFiltersUpdate}
-                            currentFilters={filters}
-                            dialogComponent={HumanBeingsFilterDialog}
-                        />
-                        {filters.map((filter) => (
-                            <FilterBox
-                                key={filter.id}
-                                name={`${filter.field} ${getOperationSymbol(filter.operation)} ${filter.value}`}
+            {!searchMode && (
+                <section>
+                    <div style={{display: "flex", justifyContent: "center"}}>
+                        <div style={{display: "flex", justifyContent: "center", flexWrap: "wrap", width: "70%"}}>
+                            <FilterButton
+                                onFiltersUpdate={onFiltersUpdate}
+                                currentFilters={filters}
+                                dialogComponent={HumanBeingsFilterDialog}
                             />
-                        ))}
+                            {filters.map((filter) => (
+                                <FilterBox
+                                    key={filter.id}
+                                    name={`${filter.field} ${getOperationSymbol(filter.operation)} ${filter.value}`}
+                                />
+                            ))}
 
-                        <SortButton
-                            onSortsUpdate={onSortsUpdate}
-                            currentSorts={sorts}
-                            dialogComponent={HumanBeingsSortDialog}
-                        />
-                        {sorts.map((sort) => (
-                            <SortBox
-                                key={sort.id}
-                                name={`${sort.field} (${sort.direction})`}
+                            <SortButton
+                                onSortsUpdate={onSortsUpdate}
+                                currentSorts={sorts}
+                                dialogComponent={HumanBeingsSortDialog}
                             />
-                        ))}
+                            {sorts.map((sort) => (
+                                <SortBox
+                                    key={sort.id}
+                                    name={`${sort.field} (${sort.direction})`}
+                                />
+                            ))}
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            )}
 
             <section>
                 <div style={{padding: "var(--spacing-lg)"}}>
@@ -241,88 +361,168 @@ const HumanBeingsPage: React.FC = () => {
                         padding: "var(--spacing-lg)",
                         display: "flex",
                         gap: "var(--spacing-md)",
-                        justifyContent: "center"
+                        justifyContent: "center",
+                        flexWrap: "wrap"
                     }}>
-                        <motion.button
-                            onClick={() => loadHumanBeings()}
-                            disabled={loading}
-                            initial={{
-                                boxShadow: "none"
-                            }}
-                            whileHover={{
-                                y: loading ? 0 : -5,
-                                scale: loading ? 1 : 1.01,
-                                boxShadow: loading ? "" : "var(--shadow-hover)"
-                            }}
-                            transition={{
-                                times: [0, 0.9, 1]
-                            }}
-                            style={{
-                                padding: "var(--spacing-sm) var(--spacing-lg)",
-                                backgroundColor: loading ? "var(--color-disabled)" : "var(--color-primary)",
-                                cursor: loading ? "not-allowed" : "pointer",
-                                minWidth: "150px",
-                                fontSize: "var(--font-size-general)"
-                            }}
-                        >
-                            {loading ? "Loading..." : "Refresh"}
-                        </motion.button>
+                        {!searchMode ? (
+                            <>
+                                <motion.button
+                                    onClick={() => loadHumanBeings()}
+                                    disabled={loading}
+                                    initial={{
+                                        boxShadow: "none"
+                                    }}
+                                    whileHover={{
+                                        y: loading ? 0 : -5,
+                                        scale: loading ? 1 : 1.01,
+                                        boxShadow: loading ? "" : "var(--shadow-hover)"
+                                    }}
+                                    transition={{
+                                        times: [0, 0.9, 1]
+                                    }}
+                                    style={{
+                                        padding: "var(--spacing-sm) var(--spacing-lg)",
+                                        backgroundColor: loading ? "var(--color-disabled)" : "var(--color-primary)",
+                                        cursor: loading ? "not-allowed" : "pointer",
+                                        minWidth: "150px",
+                                        fontSize: "var(--font-size-general)"
+                                    }}
+                                >
+                                    {loading ? "Loading..." : "Refresh"}
+                                </motion.button>
 
-                        <motion.button
-                            onClick={handleOpenCreateDialog}
-                            disabled={loading}
-                            initial={{
-                                boxShadow: "none"
-                            }}
-                            whileHover={{
-                                y: loading ? 0 : -5,
-                                scale: loading ? 1 : 1.01,
-                                boxShadow: loading ? "" : "var(--shadow-hover)"
-                            }}
-                            transition={{
-                                times: [0, 0.9, 1]
-                            }}
-                            style={{
-                                padding: "var(--spacing-sm) var(--spacing-lg)",
-                                backgroundColor: loading ? "var(--color-disabled)" : "var(--color-success)",
-                                cursor: loading ? "not-allowed" : "pointer",
-                                minWidth: "150px",
-                                fontSize: "var(--font-size-general)"
-                            }}
-                        >
-                            Create
-                        </motion.button>
+                                <motion.button
+                                    onClick={handleOpenCreateDialog}
+                                    disabled={loading}
+                                    initial={{
+                                        boxShadow: "none"
+                                    }}
+                                    whileHover={{
+                                        y: loading ? 0 : -5,
+                                        scale: loading ? 1 : 1.01,
+                                        boxShadow: loading ? "" : "var(--shadow-hover)"
+                                    }}
+                                    transition={{
+                                        times: [0, 0.9, 1]
+                                    }}
+                                    style={{
+                                        padding: "var(--spacing-sm) var(--spacing-lg)",
+                                        backgroundColor: loading ? "var(--color-disabled)" : "var(--color-success)",
+                                        cursor: loading ? "not-allowed" : "pointer",
+                                        minWidth: "150px",
+                                        fontSize: "var(--font-size-general)"
+                                    }}
+                                >
+                                    Create
+                                </motion.button>
 
-                        <motion.button
-                            onClick={handleGetUniqueSpeeds}
-                            disabled={loading}
-                            initial={{
-                                boxShadow: "none"
-                            }}
-                            whileHover={{
-                                y: loading ? 0 : -5,
-                                scale: loading ? 1 : 1.01,
-                                boxShadow: loading ? "" : "var(--shadow-hover)"
-                            }}
-                            transition={{
-                                times: [0, 0.9, 1]
-                            }}
-                            style={{
-                                padding: "var(--spacing-sm) var(--spacing-lg)",
-                                backgroundColor: loading ? "var(--color-disabled)" : "var(--color-secondary)",
-                                cursor: loading ? "not-allowed" : "pointer",
-                                minWidth: "150px",
-                                fontSize: "var(--font-size-general)",
-                                color: "var(--color-black)"
-                            }}
-                        >
-                            Unique Speeds
-                        </motion.button>
+                                <motion.button
+                                    onClick={handleGetUniqueSpeeds}
+                                    disabled={loading}
+                                    initial={{
+                                        boxShadow: "none"
+                                    }}
+                                    whileHover={{
+                                        y: loading ? 0 : -5,
+                                        scale: loading ? 1 : 1.01,
+                                        boxShadow: loading ? "" : "var(--shadow-hover)"
+                                    }}
+                                    transition={{
+                                        times: [0, 0.9, 1]
+                                    }}
+                                    style={{
+                                        padding: "var(--spacing-sm) var(--spacing-lg)",
+                                        backgroundColor: loading ? "var(--color-disabled)" : "var(--color-secondary)",
+                                        cursor: loading ? "not-allowed" : "pointer",
+                                        minWidth: "150px",
+                                        fontSize: "var(--font-size-general)",
+                                        color: "var(--color-black)"
+                                    }}
+                                >
+                                    Unique Speeds
+                                </motion.button>
+
+                                <motion.button
+                                    onClick={handleAssignRedLada}
+                                    disabled={loading}
+                                    initial={{
+                                        boxShadow: "none"
+                                    }}
+                                    whileHover={{
+                                        y: loading ? 0 : -5,
+                                        scale: loading ? 1 : 1.01,
+                                        boxShadow: loading ? "" : "var(--shadow-hover)"
+                                    }}
+                                    transition={{
+                                        times: [0, 0.9, 1]
+                                    }}
+                                    style={{
+                                        padding: "var(--spacing-sm) var(--spacing-lg)",
+                                        backgroundColor: loading ? "var(--color-disabled)" : "var(--color-light-blue)",
+                                        cursor: loading ? "not-allowed" : "pointer",
+                                        minWidth: "150px",
+                                        fontSize: "var(--font-size-general)",
+                                        color: "var(--color-black)"
+                                    }}
+                                >
+                                    Assign Red Lada
+                                </motion.button>
+
+                                <motion.button
+                                    onClick={handleSearchHeroes}
+                                    disabled={loading}
+                                    initial={{
+                                        boxShadow: "none"
+                                    }}
+                                    whileHover={{
+                                        y: loading ? 0 : -5,
+                                        scale: loading ? 1 : 1.01,
+                                        boxShadow: loading ? "" : "var(--shadow-hover)"
+                                    }}
+                                    transition={{
+                                        times: [0, 0.9, 1]
+                                    }}
+                                    style={{
+                                        padding: "var(--spacing-sm) var(--spacing-lg)",
+                                        backgroundColor: loading ? "var(--color-disabled)" : "var(--color-accent)",
+                                        cursor: loading ? "not-allowed" : "pointer",
+                                        minWidth: "150px",
+                                        fontSize: "var(--font-size-general)"
+                                    }}
+                                >
+                                    Search Heroes
+                                </motion.button>
+                            </>
+                        ) : (
+                            <motion.button
+                                onClick={handleBackFromSearch}
+                                initial={{
+                                    boxShadow: "none"
+                                }}
+                                whileHover={{
+                                    y: -5,
+                                    scale: 1.01,
+                                    boxShadow: "var(--shadow-hover)"
+                                }}
+                                transition={{
+                                    times: [0, 0.9, 1]
+                                }}
+                                style={{
+                                    padding: "var(--spacing-sm) var(--spacing-lg)",
+                                    backgroundColor: "var(--color-primary)",
+                                    cursor: "pointer",
+                                    minWidth: "150px",
+                                    fontSize: "var(--font-size-general)"
+                                }}
+                            >
+                                Back to Normal View
+                            </motion.button>
+                        )}
                     </div>
 
                     <div style={{display: "flex", justifyContent: "center", flexWrap: "wrap"}}>
                         <AnimatePresence>
-                            {humanBeings.map((human) => (
+                            {displayHumanBeings.map((human) => (
                                 <motion.div
                                     key={human.id}
                                     layout
@@ -346,83 +546,86 @@ const HumanBeingsPage: React.FC = () => {
                         </AnimatePresence>
                     </div>
                 </div>
-                <div style={{
-                    display: "flex",
-                    gap: "var(--spacing-md)",
-                    justifyContent: "center",
-                    marginBottom: "12px",
-                    fontSize: "var(--font-size-general)",
-                    alignItems: "center"
-                }}>
-                    <div style={{display: "flex", alignItems: "center", gap: "var(--spacing-sm)"}}>
-                        <label style={{whiteSpace: "nowrap"}}>
-                            Page size:
-                        </label>
-                        <AnimatedSelect
-                            value={pageSize.toString()}
-                            onChange={(newValue) => {
-                                const newSize = Number(newValue);
-                                handlePageSizeChange(newSize);
+
+                {!searchMode && (
+                    <div style={{
+                        display: "flex",
+                        gap: "var(--spacing-md)",
+                        justifyContent: "center",
+                        marginBottom: "12px",
+                        fontSize: "var(--font-size-general)",
+                        alignItems: "center"
+                    }}>
+                        <div style={{display: "flex", alignItems: "center", gap: "var(--spacing-sm)"}}>
+                            <label style={{whiteSpace: "nowrap"}}>
+                                Page size:
+                            </label>
+                            <AnimatedSelect
+                                value={pageSize.toString()}
+                                onChange={(newValue) => {
+                                    const newSize = Number(newValue);
+                                    handlePageSizeChange(newSize);
+                                }}
+                                options={pageSizeOptions}
+                                width="100px"
+                                disabled={loading}
+                            />
+                        </div>
+
+                        <div style={{whiteSpace: "nowrap"}}>
+                            Total: {totalCount} • Page: {page} / {Math.max(totalPages, 1)}
+                        </div>
+
+                        <motion.button
+                            initial={{
+                                boxShadow: "none"
                             }}
-                            options={pageSizeOptions}
-                            width="100px"
-                            disabled={loading}
-                        />
+                            whileHover={{
+                                y: (loading || page <= 1) ? 0 : -5,
+                                scale: (loading || page <= 1) ? 1 : 1.01,
+                                boxShadow: (loading || page <= 1) ? "none" : "var(--shadow-hover)"
+                            }}
+                            transition={{
+                                times: [0, 0.9, 1]
+                            }}
+                            onClick={handlePrev}
+                            disabled={loading || page <= 1}
+                            style={{
+                                padding: "var(--spacing-sm) var(--spacing-md)",
+                                backgroundColor: (loading || page <= 1) ? "var(--color-disabled)" : "var(--color-primary)",
+                                cursor: (loading || page <= 1) ? "not-allowed" : "pointer",
+                                fontSize: "var(--font-size-general)",
+                                minWidth: "80px"
+                            }}
+                        >
+                            Previous
+                        </motion.button>
+                        <motion.button
+                            initial={{
+                                boxShadow: "none"
+                            }}
+                            whileHover={{
+                                y: (loading || page >= totalPages) ? 0 : -5,
+                                scale: (loading || page >= totalPages) ? 1 : 1.01,
+                                boxShadow: (loading || page >= totalPages) ? "none" : "var(--shadow-hover)"
+                            }}
+                            transition={{
+                                times: [0, 0.9, 1]
+                            }}
+                            onClick={handleNext}
+                            disabled={loading || page >= totalPages}
+                            style={{
+                                padding: "var(--spacing-sm) var(--spacing-md)",
+                                backgroundColor: (loading || page >= totalPages) ? "var(--color-disabled)" : "var(--color-primary)",
+                                cursor: (loading || page >= totalPages) ? "not-allowed" : "pointer",
+                                fontSize: "var(--font-size-general)",
+                                minWidth: "80px"
+                            }}
+                        >
+                            Next
+                        </motion.button>
                     </div>
-
-                    <div style={{whiteSpace: "nowrap"}}>
-                        Total: {totalCount} • Page: {page} / {Math.max(totalPages, 1)}
-                    </div>
-
-                    <motion.button
-                        initial={{
-                            boxShadow: "none"
-                        }}
-                        whileHover={{
-                            y: (loading || page <= 1) ? 0 : -5,
-                            scale: (loading || page <= 1) ? 1 : 1.01,
-                            boxShadow: (loading || page <= 1) ? "none" : "var(--shadow-hover)"
-                        }}
-                        transition={{
-                            times: [0, 0.9, 1]
-                        }}
-                        onClick={handlePrev}
-                        disabled={loading || page <= 1}
-                        style={{
-                            padding: "var(--spacing-sm) var(--spacing-md)",
-                            backgroundColor: (loading || page <= 1) ? "var(--color-disabled)" : "var(--color-primary)",
-                            cursor: (loading || page <= 1) ? "not-allowed" : "pointer",
-                            fontSize: "var(--font-size-general)",
-                            minWidth: "80px"
-                        }}
-                    >
-                        Previous
-                    </motion.button>
-                    <motion.button
-                        initial={{
-                            boxShadow: "none"
-                        }}
-                        whileHover={{
-                            y: (loading || page >= totalPages) ? 0 : -5,
-                            scale: (loading || page >= totalPages) ? 1 : 1.01,
-                            boxShadow: (loading || page >= totalPages) ? "none" : "var(--shadow-hover)"
-                        }}
-                        transition={{
-                            times: [0, 0.9, 1]
-                        }}
-                        onClick={handleNext}
-                        disabled={loading || page >= totalPages}
-                        style={{
-                            padding: "var(--spacing-sm) var(--spacing-md)",
-                            backgroundColor: (loading || page >= totalPages) ? "var(--color-disabled)" : "var(--color-primary)",
-                            cursor: (loading || page >= totalPages) ? "not-allowed" : "pointer",
-                            fontSize: "var(--font-size-general)",
-                            minWidth: "80px"
-                        }}
-                    >
-                        Next
-                    </motion.button>
-                </div>
+                )}
             </section>
         </>
     );

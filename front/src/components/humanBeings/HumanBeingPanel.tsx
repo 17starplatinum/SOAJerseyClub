@@ -1,12 +1,13 @@
 import {motion} from "framer-motion";
 import React, {useState} from "react";
-import {type HumanBeingFullSchema, Mood, WeaponType} from "../../humanBeingAPI.ts";
+import {Mood, WeaponType} from "../../humanBeingAPI.ts";
 import "../../styles/variables.css";
+import type {HumanBeingWithTeam} from "../../types.ts";
 
 interface Props {
-    human: HumanBeingFullSchema;
+    human: HumanBeingWithTeam;
     onDelete?: () => void;
-    onEdit?: (human: HumanBeingFullSchema) => void;
+    onEdit?: (human: HumanBeingWithTeam) => void;
 }
 
 const HumanBeingPanel = ({human, onDelete, onEdit}: Props) => {

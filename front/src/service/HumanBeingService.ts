@@ -1,6 +1,6 @@
 import type {HumanBeingDTOSchema, HumanBeingFullSchema, HumanBeingPaginatedSchema} from "../humanBeingAPI.ts";
 import {Api} from "../humanBeingAPI.ts";
-import type {SortRule} from "../components/SortDialog.tsx";
+import type {SortRule} from "../components/GenericSortDialog.tsx";
 
 export interface UiFilter {
     id: number;

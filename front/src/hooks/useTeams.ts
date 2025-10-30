@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { TeamService } from "../service/TeamService.ts";
 import type { TeamDTOSchema, TeamFullSchema } from "../heroAPI.ts";
 import { useToast } from "./useToast.ts";
-import type { SortRule } from "../components/SortDialog.tsx";
 import type { UiFilter } from "../service/HumanBeingService.ts";
+import type {SortRule} from "../components/GenericSortDialog.tsx";
 
 interface TeamsResponse {
     teams?: TeamFullSchema[];

@@ -5,7 +5,7 @@ import type { HumanBeingDTOSchema, HumanBeingFullSchema } from "../humanBeingAPI
 import type { TeamFullSchema } from "../heroAPI.ts";
 import type { HumanBeingWithTeam, TeamsState } from "../types.ts";
 import { useToast } from "./useToast.ts";
-import type { SortRule } from "../components/SortDialog.tsx";
+import type {SortRule} from "../components/GenericSortDialog.tsx";
 
 interface HumanBeingsResponse {
     humanBeingGetResponseDtos?: HumanBeingFullSchema[];
