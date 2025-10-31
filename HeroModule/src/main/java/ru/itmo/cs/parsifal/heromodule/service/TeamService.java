@@ -49,7 +49,6 @@ public class TeamService {
     public TeamResponse createTeam(TeamDTO teamDTO) {
         Team team = new Team();
         team.setName(teamDTO.getName());
-        team.setSize(0);
         Team savedTeam = teamRepository.save(team);
         return convertToResponse(savedTeam);
     }
@@ -105,33 +104,17 @@ public class TeamService {
                 if (request.getTeamId() == null) {
                     throw new RuntimeException("Team ID is required for ADD and TRANSFER operations");
                 }
-                Team newTeam = teamRepository.findById(request.getTeamId())
+                teamRepository.findById(request.getTeamId())
                         .orElseThrow(() -> new RuntimeException("Team not found with id=" + request.getTeamId()));
                 human.setTeamId(request.getTeamId());
-
-                updateTeamSize(newTeam, 1);
                 break;
             case REMOVE:
                 human.setTeamId(null);
                 break;
         }
 
-        if (oldTeamId != null && !oldTeamId.equals(human.getTeamId())) {
-            Team oldTeam = teamRepository.findById(oldTeamId)
-                    .orElseThrow(() -> new RuntimeException("Old team not found with id=" + oldTeamId));
-            updateTeamSize(oldTeam, -1);
-        }
-
         HumanBeingFullResponse updatedHuman = humanBeingServiceClient.updateHumanBeing(human.getId(), human);
         return List.of(updatedHuman);
-    }
-
-    private void updateTeamSize(Team team, int delta) {
-        List<HumanBeingFullResponse> teamMembers = humanBeingServiceClient.getHumanBeingsByTeamId(team.getId());
-        int actualSize = teamMembers.size();
-
-        team.setSize(actualSize + delta);
-        teamRepository.save(team);
     }
 
     public List<HumanBeingFullResponse> assignCarsToTeam(Long teamId) {
@@ -175,9 +158,10 @@ public class TeamService {
                         predicates.add(buildStringPredicate(root, criteriaBuilder, field, operator, value));
                         break;
                     case "id":
-                    case "size":
                         predicates.add(buildNumericPredicate(root, criteriaBuilder, field, operator, value));
                         break;
+                    case "size":
+                        throw new RuntimeException("Unsupported filter field: size (not stored in DB)");
                     default:
                         throw new RuntimeException("Unsupported filter field: " + field);
                 }
@@ -186,9 +170,10 @@ public class TeamService {
         };
     }
 
-    private Predicate buildStringPredicate(jakarta.persistence.criteria.Root<Team> root,
-                                           jakarta.persistence.criteria.CriteriaBuilder cb,
-                                           String field, String operator, String value) {
+    private jakarta.persistence.criteria.Predicate buildStringPredicate(
+            jakarta.persistence.criteria.Root<Team> root,
+            jakarta.persistence.criteria.CriteriaBuilder cb,
+            String field, String operator, String value) {
         return switch (operator) {
             case "eq" -> cb.equal(root.get(field), value);
             case "neq" -> cb.notEqual(root.get(field), value);
@@ -197,18 +182,19 @@ public class TeamService {
         };
     }
 
-    private Predicate buildNumericPredicate(jakarta.persistence.criteria.Root<Team> root,
-                                            jakarta.persistence.criteria.CriteriaBuilder cb,
-                                            String field, String operator, String value) {
-        Number numberValue = field.equals("id") ? Long.parseLong(value) : Integer.parseInt(value);
+    private jakarta.persistence.criteria.Predicate buildNumericPredicate(
+            jakarta.persistence.criteria.Root<Team> root,
+            jakarta.persistence.criteria.CriteriaBuilder cb,
+            String field, String operator, String value) {
+        Number numberValue = Long.parseLong(value);
 
         return switch (operator) {
             case "eq" -> cb.equal(root.get(field), numberValue);
             case "neq" -> cb.notEqual(root.get(field), numberValue);
-            case "gt" -> cb.gt(root.get(field), numberValue.intValue());
-            case "lt" -> cb.lt(root.get(field), numberValue.intValue());
-            case "gte" -> cb.ge(root.get(field), numberValue.intValue());
-            case "lte" -> cb.le(root.get(field), numberValue.intValue());
+            case "gt" -> cb.gt(root.get(field), numberValue.longValue());
+            case "lt" -> cb.lt(root.get(field), numberValue.longValue());
+            case "gte" -> cb.ge(root.get(field), numberValue.longValue());
+            case "lte" -> cb.le(root.get(field), numberValue.longValue());
             case "like" -> cb.like(root.get(field).as(String.class), "%" + value + "%");
             default -> throw new RuntimeException("Unsupported operator for numeric field: " + operator);
         };
@@ -227,8 +213,12 @@ public class TeamService {
             Set<String> descendingFields = new HashSet<>();
 
             for (String sortField : sort) {
+                String fieldName = sortField.startsWith("-") ? sortField.substring(1) : sortField;
+                if ("size".equals(fieldName)) {
+                    throw new IllegalArgumentException("Sorting by size is not supported (computed field)");
+                }
+
                 if (sortField.startsWith("-")) {
-                    String fieldName = sortField.substring(1);
                     if (ascendingFields.contains(fieldName)) {
                         throw new IllegalArgumentException(
                                 "Conflicting sort directions for field: " + fieldName
@@ -236,12 +226,12 @@ public class TeamService {
                     }
                     descendingFields.add(fieldName);
                 } else {
-                    if (descendingFields.contains(sortField)) {
+                    if (descendingFields.contains(fieldName)) {
                         throw new IllegalArgumentException(
-                                "Conflicting sort directions for field: " + sortField
+                                "Conflicting sort directions for field: " + fieldName
                         );
                     }
-                    ascendingFields.add(sortField);
+                    ascendingFields.add(fieldName);
                 }
             }
 
@@ -282,6 +272,13 @@ public class TeamService {
     }
 
     private TeamResponse convertToResponse(Team team) {
-        return new TeamResponse(team.getId(), team.getName(), team.getSize());
+        Integer size;
+        try {
+            List<HumanBeingFullResponse> members = humanBeingServiceClient.getHumanBeingsByTeamId(team.getId());
+            size = members != null ? members.size() : 0;
+        } catch (Exception e) {
+            size = null;
+        }
+        return new TeamResponse(team.getId(), team.getName(), size);
     }
 }

@@ -21,7 +21,4 @@ public class Team {
     @Size(min = 1, message = "Team name must not be empty")
     @Column(nullable = false)
     private String name;
-
-    @Column(nullable = false)
-    private Integer size = 0;
 }

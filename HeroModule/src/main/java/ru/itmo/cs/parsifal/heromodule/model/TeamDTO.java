@@ -13,6 +13,4 @@ public class TeamDTO {
     @NotNull(message = "Team name cannot be null")
     @Size(min = 1, message = "Team name must not be empty")
     private String name;
-
-    private Integer size;
 }
