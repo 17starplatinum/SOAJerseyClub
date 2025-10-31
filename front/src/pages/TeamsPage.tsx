@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import FilterBox from "../components/FilterBox.tsx";
 import FilterButton from "../components/FilterButton.tsx";
 import AnimatedSelect from "../components/AnimatedSelect.tsx";
-import { Toaster } from 'react-hot-toast';
 import "../styles/variables.css";
 import CreateTeamDialog from '../components/teams/CreateTeamDialog.tsx';
 import withReactContent from 'sweetalert2-react-content';
@@ -17,6 +16,7 @@ import TeamsFilterDialog from "../components/teams/TeamsFilterDialog.tsx";
 import TeamsSortDialog from "../components/teams/TeamsSortDialog.tsx";
 import {type Filter, getOperationSymbol} from "../components/GenericFilterDialog.tsx";
 import type {SortRule} from "../components/GenericSortDialog.tsx";
+import toast from 'react-hot-toast';
 
 const MySwal = withReactContent(Swal);
 
@@ -45,6 +45,13 @@ const TeamsPage: React.FC = () => {
         updateSorts,
         deleteTeam,
     } = useTeams(filters, sorts);
+
+    // Опционально: очистка тостов при размонтировании страницы
+    useEffect(() => {
+        return () => {
+            toast.dismiss();
+        };
+    }, []);
 
     useEffect(() => {
         localStorage.setItem("teamsFilters", JSON.stringify(filters));
@@ -88,71 +95,37 @@ const TeamsPage: React.FC = () => {
     const handleOpenCreateDialog = () => {
         MySwal.fire({
             title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-success)">Create Team</p>`,
-            html: <CreateTeamDialog onSuccess={() => {
-                loadTeams();
-            }} />,
+            html: <CreateTeamDialog onSuccess={() => { loadTeams(); }} />,
             width: 500,
             showConfirmButton: false,
             showCancelButton: false,
             allowOutsideClick: true,
             allowEscapeKey: true,
             background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
-            showClass: {
-                popup: 'animate__animated animate__fadeInDown'
-            },
-            hideClass: {
-                popup: 'animate__animated animate__fadeOutUp'
-            },
-            customClass: {
-                popup: 'custom-swal'
-            }
+            showClass: { popup: 'animate__animated animate__fadeInDown' },
+            hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+            customClass: { popup: 'custom-swal' }
         });
     };
 
     const handleOpenEditDialog = (team: TeamFullSchema) => {
         MySwal.fire({
             title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-primary)">Edit Team</p>`,
-            html: <CreateTeamDialog
-                onSuccess={() => {
-                    loadTeams();
-                }}
-                editingTeam={team}
-            />,
+            html: <CreateTeamDialog onSuccess={() => { loadTeams(); }} editingTeam={team} />,
             width: 500,
             showConfirmButton: false,
             showCancelButton: false,
             allowOutsideClick: true,
             allowEscapeKey: true,
             background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
-            showClass: {
-                popup: 'animate__animated animate__fadeInDown'
-            },
-            hideClass: {
-                popup: 'animate__animated animate__fadeOutUp'
-            },
-            customClass: {
-                popup: 'custom-swal'
-            }
+            showClass: { popup: 'animate__animated animate__fadeInDown' },
+            hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+            customClass: { popup: 'custom-swal' }
         });
     };
 
     return (
         <>
-            <Toaster
-                position="top-right"
-                toastOptions={{
-                    duration: 4000,
-                    style: {
-                        background: 'var(--color-primary)',
-                        color: 'var(--color-light)',
-                        fontSize: 'var(--font-size-general)',
-                        fontFamily: 'var(--font-family-primary)',
-                        border: 'var(--border-width) var(--border-style) var(--color-black)',
-                        borderRadius: 'var(--border-radius)',
-                    },
-                }}
-            />
-
             <section>
                 <div style={{display: "flex", justifyContent: "center"}}>
                     <div style={{display: "flex", justifyContent: "center", flexWrap: "wrap", width: "70%"}}>

@@ -4,7 +4,6 @@ import {useHumanBeings} from "../hooks/useHumanBeings.ts";
 import {motion, AnimatePresence} from "framer-motion";
 import FilterBox from "../components/FilterBox.tsx";
 import FilterButton from "../components/FilterButton.tsx";
-import {Toaster} from 'react-hot-toast';
 import "../styles/variables.css";
 import CreateHumanBeingDialog from '../components/humanBeings/CreateHumanBeingDialog.tsx';
 import withReactContent from 'sweetalert2-react-content';
@@ -18,8 +17,9 @@ import HumanBeingsSortDialog from "../components/humanBeings/HumanBeingsSortDial
 import {type Filter, getOperationSymbol} from "../components/GenericFilterDialog.tsx";
 import type {SortRule} from "../components/GenericSortDialog.tsx";
 import { TeamService } from "../service/TeamService.ts";
-import {useToast} from "../hooks/useToast.ts";
 import AnimatedSelect from "../components/AnimatedSelect.tsx";
+import toast from 'react-hot-toast';
+import {useToast} from "../hooks/useToast.ts";
 
 const MySwal = withReactContent(Swal);
 
@@ -53,6 +53,13 @@ const HumanBeingsPage: React.FC = () => {
         updateSorts,
         deleteHumanBeing,
     } = useHumanBeings(filters, sorts);
+
+    // Опционально: очистка тостов при размонтировании страницы
+    useEffect(() => {
+        return () => {
+            toast.dismiss();
+        };
+    }, []);
 
     useEffect(() => {
         localStorage.setItem("humanBeingsFilters", JSON.stringify(filters));
@@ -127,16 +134,9 @@ const HumanBeingsPage: React.FC = () => {
                 confirmButtonText: 'Close',
                 confirmButtonColor: 'var(--color-primary)',
                 background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
-                showClass: {
-                    popup: 'animate__animated animate__fadeInDown'
-                },
-                hideClass: {
-                    popup: 'animate__animated animate__fadeOutUp'
-                },
-                customClass: {
-                    popup: 'custom-swal',
-                    confirmButton: 'btn btn-primary'
-                }
+                showClass: { popup: 'animate__animated animate__fadeInDown' },
+                hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+                customClass: { popup: 'custom-swal', confirmButton: 'btn btn-primary' }
             });
         } catch (error) {
             console.error('Failed to get unique speeds:', error);
@@ -146,51 +146,32 @@ const HumanBeingsPage: React.FC = () => {
     const handleOpenCreateDialog = () => {
         MySwal.fire({
             title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-success)">Create Object</p>`,
-            html: <CreateHumanBeingDialog onSuccess={() => {
-                loadHumanBeings();
-            }}/>,
+            html: <CreateHumanBeingDialog onSuccess={() => { loadHumanBeings(); }}/>,
             width: 600,
             showConfirmButton: false,
             showCancelButton: false,
             allowOutsideClick: true,
             allowEscapeKey: true,
             background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
-            showClass: {
-                popup: 'animate__animated animate__fadeInDown'
-            },
-            hideClass: {
-                popup: 'animate__animated animate__fadeOutUp'
-            },
-            customClass: {
-                popup: 'custom-swal'
-            }
+            showClass: { popup: 'animate__animated animate__fadeInDown' },
+            hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+            customClass: { popup: 'custom-swal' }
         });
     };
 
     const handleOpenEditDialog = (human: HumanBeingFullSchema) => {
         MySwal.fire({
             title: `<p style="font-size: var(--font-size-xl);margin:0;font-family: var(--font-family-accent); color: var(--color-primary)">Edit Object</p>`,
-            html: <CreateHumanBeingDialog
-                onSuccess={() => {
-                    loadHumanBeings();
-                }}
-                editingHuman={human}
-            />,
+            html: <CreateHumanBeingDialog onSuccess={() => { loadHumanBeings(); }} editingHuman={human} />,
             width: 600,
             showConfirmButton: false,
             showCancelButton: false,
             allowOutsideClick: true,
             allowEscapeKey: true,
             background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
-            showClass: {
-                popup: 'animate__animated animate__fadeInDown'
-            },
-            hideClass: {
-                popup: 'animate__animated animate__fadeOutUp'
-            },
-            customClass: {
-                popup: 'custom-swal'
-            }
+            showClass: { popup: 'animate__animated animate__fadeInDown' },
+            hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+            customClass: { popup: 'custom-swal' }
         });
     };
 
@@ -232,15 +213,9 @@ const HumanBeingsPage: React.FC = () => {
             confirmButtonColor: 'var(--color-primary)',
             cancelButtonColor: 'var(--color-accent)',
             background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
-            showClass: {
-                popup: 'animate__animated animate__fadeInDown'
-            },
-            hideClass: {
-                popup: 'animate__animated animate__fadeOutUp'
-            },
-            customClass: {
-                popup: 'custom-swal'
-            },
+            showClass: { popup: 'animate__animated animate__fadeInDown' },
+            hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+            customClass: { popup: 'custom-swal' },
             preConfirm: () => {
                 const select = document.getElementById('teamSelect') as HTMLSelectElement;
                 if (!select.value) {
@@ -291,15 +266,9 @@ const HumanBeingsPage: React.FC = () => {
             confirmButtonColor: 'var(--color-primary)',
             cancelButtonColor: 'var(--color-accent)',
             background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
-            showClass: {
-                popup: 'animate__animated animate__fadeInDown'
-            },
-            hideClass: {
-                popup: 'animate__animated animate__fadeOutUp'
-            },
-            customClass: {
-                popup: 'custom-swal'
-            },
+            showClass: { popup: 'animate__animated animate__fadeInDown' },
+            hideClass: { popup: 'animate__animated animate__fadeOutUp' },
+            customClass: { popup: 'custom-swal' },
             preConfirm: () => {
                 const select = document.getElementById('heroSearchSelect') as HTMLSelectElement;
                 return select.value;
@@ -329,21 +298,6 @@ const HumanBeingsPage: React.FC = () => {
 
     return (
         <>
-            <Toaster
-                position="top-right"
-                toastOptions={{
-                    duration: 4000,
-                    style: {
-                        background: 'var(--color-primary)',
-                        color: 'var(--color-light)',
-                        fontSize: 'var(--font-size-general)',
-                        fontFamily: 'var(--font-family-primary)',
-                        border: 'var(--border-width) var(--border-style) var(--color-black)',
-                        borderRadius: 'var(--border-radius)',
-                    },
-                }}
-            />
-
             {!searchMode && (
                 <section>
                     <div style={{display: "flex", justifyContent: "center"}}>
