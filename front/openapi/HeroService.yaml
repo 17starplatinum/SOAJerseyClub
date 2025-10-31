@@ -1,3 +1,4 @@
+
 openapi: 3.1.0
 info:
   title: Hero service REST endpoints
@@ -116,6 +117,8 @@ paths:
                     time: 2025-09-03T19:14:07.642Z
         '500':
           $ref: './HumanBeingService.yaml#/components/responses/InternalError'
+        '502':
+          $ref: '#/components/responses/UpstreamBadGateway'
         default:
           description: Returns an error response in the form of **error code, message and time**.
           content:
@@ -295,6 +298,8 @@ paths:
                 time: 2025-09-03T19:14:07.629Z
         '500':
           $ref: './HumanBeingService.yaml#/components/responses/InternalError'
+        '502':
+          $ref: '#/components/responses/UpstreamBadGateway'
         default:
           description: Returns an error response in the form of error code, message and time.
           content:
@@ -420,6 +425,8 @@ paths:
                 time: 2025-09-03T19:14:07.501Z
         '500':
           $ref: './HumanBeingService.yaml#/components/responses/InternalError'
+        '502':
+          $ref: '#/components/responses/UpstreamBadGateway'
         default:
           description: Returns an error response in the form of **error code, message and time**.
           content:

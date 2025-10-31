@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage1": "https://se.ifmo.ru/~s367452/dist",
+  "homepage": "https://se.ifmo.ru/~s367452/dist",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
