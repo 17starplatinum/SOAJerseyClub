@@ -1,10 +1,10 @@
-import {useState, useEffect, useCallback, useRef} from "react";
-import { HumanBeingService, type UiFilter } from "../service/HumanBeingService.ts";
-import { TeamService } from "../service/TeamService.ts";
-import type { HumanBeingDTOSchema, HumanBeingFullSchema } from "../humanBeingAPI.ts";
-import type { TeamFullSchema } from "../heroAPI.ts";
-import type { HumanBeingWithTeam, TeamsState } from "../types.ts";
-import { useToast } from "./useToast.ts";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {HumanBeingService, type UiFilter} from "../service/HumanBeingService.ts";
+import {TeamService} from "../service/TeamService.ts";
+import type {HumanBeingDTOSchema, HumanBeingFullSchema} from "../humanBeingAPI.ts";
+import type {TeamFullSchema} from "../heroAPI.ts";
+import type {HumanBeingWithTeam, TeamsState} from "../types.ts";
+import {useToast} from "./useToast.ts";
 import type {SortRule} from "../components/GenericSortDialog.tsx";
 
 interface HumanBeingsResponse {
@@ -51,13 +51,40 @@ export const useHumanBeings = (
     const [sorts, setSorts] = useState<SortRule[]>(initialSorts);
 
     const handleError = useCallback((error: unknown): string => {
+        if (error && typeof error === 'object') {
+            const http = error as any;
+
+            if (http.error) {
+                if (typeof http.error === 'string') {
+                    return http.error;
+                }
+                if (typeof http.error?.message === 'string') {
+                    const msg = http.error.message;
+                    return msg.replace(/^Upstream service error:\s+Upstream service error:\s+/, 'Upstream service error: ');
+                }
+                try {
+                    return JSON.stringify(http.error);
+                } catch { /* empty */ }
+            }
+
+            if (typeof http.statusText === 'string' && http.statusText.length > 0) {
+                return http.statusText;
+            }
+
+            if (typeof http.status === 'number') {
+                return `HTTP Error ${http.status}`;
+            }
+        }
+
         if (error instanceof Error) {
             return error.message;
-        } else if (typeof error === 'string') {
-            return error;
-        } else {
-            return "Unknown error";
         }
+
+        if (typeof error === 'string') {
+            return error;
+        }
+
+        return 'Unknown error';
     }, []);
 
     const loadTeams = useCallback(async (): Promise<LoadTeamsResult> => {

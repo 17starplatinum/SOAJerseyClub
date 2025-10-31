@@ -4,7 +4,6 @@ import {useHumanBeings} from "../hooks/useHumanBeings.ts";
 import {motion, AnimatePresence} from "framer-motion";
 import FilterBox from "../components/FilterBox.tsx";
 import FilterButton from "../components/FilterButton.tsx";
-import AnimatedSelect from "../components/AnimatedSelect.tsx";
 import {Toaster} from 'react-hot-toast';
 import "../styles/variables.css";
 import CreateHumanBeingDialog from '../components/humanBeings/CreateHumanBeingDialog.tsx';
@@ -20,6 +19,7 @@ import {type Filter, getOperationSymbol} from "../components/GenericFilterDialog
 import type {SortRule} from "../components/GenericSortDialog.tsx";
 import { TeamService } from "../service/TeamService.ts";
 import {useToast} from "../hooks/useToast.ts";
+import AnimatedSelect from "../components/AnimatedSelect.tsx";
 
 const MySwal = withReactContent(Swal);
 
