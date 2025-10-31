@@ -12,8 +12,8 @@ import java.util.List;
 public interface HumanBeingRepository {
     Page<HumanBeing> getSortedAndFilteredPage(List<Sort> sortList, List<Filter> filtersList, Integer page, Integer size);
     HumanBeing getHumanBeing(long id);
-    HumanBeing saveHumanBeing(HumanBeing humanBeing);
-    HumanBeing updateHumanBeing(long id, HumanBeing humanBeing);
+    HumanBeing saveHumanBeing(HumanBeing humanBeing, Long teamId);
+    HumanBeing updateHumanBeing(long id, HumanBeing humanBeing, Long oldTeamId);
     void deleteHumanBeing(long id);
     List<Integer> getUniqueImpactSpeeds();
 }

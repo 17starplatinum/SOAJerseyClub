@@ -6,7 +6,6 @@ plugins {
 }
 
 group = "ru.itmo.cs.dandadan"
-version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -53,14 +52,15 @@ dependencies {
     compileOnly("jakarta.websocket:jakarta.websocket-api:2.1.1")
     compileOnly("jakarta.xml.ws:jakarta.xml.ws-api:4.0.1")
     compileOnly("org.projectlombok:lombok:1.18.42")
-    implementation("io.github.cdimascio:dotenv-java:3.2.0")
-    implementation("org.hibernate.orm:hibernate-core:7.1.4.Final")
-    implementation("org.glassfish.jersey.containers:jersey-container-servlet:3.1.6")
-    implementation("org.glassfish.jersey.media:jersey-media-json-jackson:3.1.6")
-    implementation("org.glassfish.jersey.inject:jersey-cdi2-se:3.1.6")
+
+    implementation("org.apache.httpcomponents.client5:httpclient5:5.5.1")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.0")
+    implementation("org.hibernate.orm:hibernate-core:6.0.0.Final")
+    implementation("org.glassfish.jersey.media:jersey-media-json-jackson:2.25.1")
     implementation("org.postgresql:postgresql:42.7.8")
     implementation("org.mapstruct:mapstruct:1.6.3")
     annotationProcessor("org.projectlombok:lombok:1.18.42")
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
 
     val junitVersion = rootProject.extra["junitVersion"]
     testAnnotationProcessor("org.projectlombok:lombok:1.18.42")

@@ -8,6 +8,7 @@ import lombok.*;
 @Embeddable
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Coordinates {
