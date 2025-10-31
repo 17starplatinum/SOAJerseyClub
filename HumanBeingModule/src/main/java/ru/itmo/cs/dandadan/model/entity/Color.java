@@ -21,7 +21,7 @@ public enum Color {
 
     public static Color fromValue(String value){
         return Arrays.stream(Color.values())
-                .filter(e -> Objects.equals(e.getValue(), value))
+                .filter(e -> Objects.equals(e.getValue(), value.toLowerCase()))
                 .findFirst()
                 .orElseThrow(() -> new CustomBadRequestException("color", "color should be one of the following: RED, BLUE, YELLOW, GREEN, BLACK, WHITE"));
     }

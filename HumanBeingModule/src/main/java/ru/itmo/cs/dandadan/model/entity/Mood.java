@@ -25,7 +25,7 @@ public enum Mood {
 
     public static Mood fromValue(String value) {
         return Arrays.stream(Mood.values())
-                .filter(s -> Objects.equals(s.value, value))
+                .filter(s -> Objects.equals(s.value, value.toLowerCase()))
                 .findFirst()
                 .orElseThrow(() -> new CustomBadRequestException("mood", "color should be one of the following: SADNESS, SORROW, GLOOM, APATHY, RAGE"));
     }

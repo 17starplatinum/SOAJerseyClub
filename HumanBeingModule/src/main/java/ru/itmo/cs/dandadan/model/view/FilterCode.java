@@ -26,7 +26,7 @@ public enum FilterCode {
 
     public static FilterCode fromValue(String value) {
         return Arrays.stream(FilterCode.values())
-                .filter(o -> Objects.equals(o.getValue(), value))
+                .filter(o -> Objects.equals(o.getValue(), value.toLowerCase()))
                 .findFirst()
                 .orElse(UNDEFINED);
     }

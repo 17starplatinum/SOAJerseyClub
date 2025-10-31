@@ -141,7 +141,9 @@ public class HumanBeingServiceImpl implements HumanBeingService {
     public HumanBeingResponse addHumanBeing(HumanBeingRequest requestDto) {
         HumanBeing humanBeing = humanBeingMapper.fromHumanBeingRequest(requestDto);
         Long potentialTeamId = requestDto.getTeamId();
-        manipulateToTeam(humanBeing.getId(), potentialTeamId);
+        if (potentialTeamId != null) {
+            manipulateToTeam(humanBeing.getId(), potentialTeamId);
+        }
         humanBeing = humanBeingRepository.saveHumanBeing(humanBeing, potentialTeamId);
         return humanBeingMapper.toHumanBeingResponse(humanBeing);
     }
@@ -155,7 +157,9 @@ public class HumanBeingServiceImpl implements HumanBeingService {
         Long potentialTeamId = requestDto.getTeamId();
         Long oldTeamId = humanBeingRepository.getHumanBeing(id).getTeamId();
         HumanBeing incomingHumanBeing = humanBeingMapper.fromHumanBeingRequest(requestDto);
-        manipulateToTeam(id, potentialTeamId);
+        if (potentialTeamId != null) {
+            manipulateToTeam(id, potentialTeamId);
+        }
         incomingHumanBeing.setTeamId(potentialTeamId);
 
         return humanBeingMapper.toHumanBeingResponse(humanBeingRepository.updateHumanBeing(id, incomingHumanBeing, oldTeamId));

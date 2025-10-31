@@ -18,6 +18,18 @@ public class HibernateSessionFactoryConfig {
         if (sessionFactory == null) {
             try {
                 Configuration configuration = new Configuration().configure();
+                String dbUser = System.getenv("DB_USERNAME");
+                if (dbUser == null) dbUser = "s372799";
+
+                String dbPass = System.getenv("DB_PASSWORD");
+                if (dbPass == null) dbPass = "xwVxXqHACMOxPOqS";
+
+                if (dbUser != null) {
+                    configuration.setProperty("hibernate.connection.username", dbUser);
+                }
+                if (dbPass != null) {
+                    configuration.setProperty("hibernate.connection.password", dbPass);
+                }
                 configuration.addAnnotatedClass(Coordinates.class);
                 configuration.addAnnotatedClass(Car.class);
                 configuration.addAnnotatedClass(HumanBeing.class);

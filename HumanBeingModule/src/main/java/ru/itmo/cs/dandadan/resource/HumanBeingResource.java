@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Produces(MediaType.APPLICATION_JSON)
 @ApplicationScoped
-@Path("/api/v1/human-beings")
+@Path("/human-beings")
 public class HumanBeingResource {
     private static final int DEFAULT_PAGE = 1;
     private static final int DEFAULT_PAGE_SIZE = 10;
