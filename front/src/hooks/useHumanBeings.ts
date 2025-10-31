@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import {useState, useEffect, useCallback, useRef} from "react";
 import { HumanBeingService, type UiFilter } from "../service/HumanBeingService.ts";
 import { TeamService } from "../service/TeamService.ts";
 import type { HumanBeingDTOSchema, HumanBeingFullSchema } from "../humanBeingAPI.ts";
@@ -31,6 +31,8 @@ export const useHumanBeings = (
         loading: false,
         error: null,
     });
+
+    const isFirstRender = useRef(true);
 
     const [page, setPage] = useState<number>(() => {
         const saved = localStorage.getItem("humanBeingsPage");
@@ -178,8 +180,21 @@ export const useHumanBeings = (
     }, [loadHumanBeingsData]);
 
     useEffect(() => {
-        loadHumanBeingsData({ showToast: false });
-    }, [page, pageSize, filters, sorts]);
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+
+        loadHumanBeings();
+    }, [loadHumanBeings]);
+
+    useEffect(() => {
+        const loadInitialData = async (): Promise<void> => {
+            await loadHumanBeingsData({ showToast: false });
+        };
+
+        loadInitialData();
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         localStorage.setItem("humanBeingsPage", String(page));

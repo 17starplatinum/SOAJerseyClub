@@ -124,7 +124,7 @@ const HumanBeingsPage: React.FC = () => {
             `,
                 width: 500,
                 showConfirmButton: true,
-                confirmButtonText: 'Закрыть',
+                confirmButtonText: 'Close',
                 confirmButtonColor: 'var(--color-primary)',
                 background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
                 showClass: {
@@ -232,6 +232,15 @@ const HumanBeingsPage: React.FC = () => {
             confirmButtonColor: 'var(--color-primary)',
             cancelButtonColor: 'var(--color-accent)',
             background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
+            showClass: {
+                popup: 'animate__animated animate__fadeInDown'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutUp'
+            },
+            customClass: {
+                popup: 'custom-swal'
+            },
             preConfirm: () => {
                 const select = document.getElementById('teamSelect') as HTMLSelectElement;
                 if (!select.value) {
@@ -282,6 +291,15 @@ const HumanBeingsPage: React.FC = () => {
             confirmButtonColor: 'var(--color-primary)',
             cancelButtonColor: 'var(--color-accent)',
             background: "repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 50px, var(--color-background-secondary) 50px, var(--color-background-secondary) 100px)",
+            showClass: {
+                popup: 'animate__animated animate__fadeInDown'
+            },
+            hideClass: {
+                popup: 'animate__animated animate__fadeOutUp'
+            },
+            customClass: {
+                popup: 'custom-swal'
+            },
             preConfirm: () => {
                 const select = document.getElementById('heroSearchSelect') as HTMLSelectElement;
                 return select.value;

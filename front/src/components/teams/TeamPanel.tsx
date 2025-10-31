@@ -72,7 +72,7 @@ const TeamPanel = ({team, onDelete, onEdit}: Props) => {
 
                     <div style={{display: "flex", justifyContent: "space-between", marginTop: "var(--spacing-md)"}}>
                         <div style={{fontSize: "var(--font-size-sm)"}}>
-                            Size: {team.size}
+                            Size: {team.size || "couldn't upload"}
                         </div>
                         <motion.button
                             initial={{

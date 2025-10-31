@@ -21,7 +21,7 @@ export interface TeamDTOSchema {
     /**
      * The size of team of heroes
      * @format int32
-     * @exclusiveMin 1
+     * @exclusiveMin 0
      */
     size?: number;
 }

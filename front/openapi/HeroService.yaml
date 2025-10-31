@@ -560,7 +560,7 @@ components:
         size:
           type: integer
           format: int32
-          exclusiveMinimum: 1
+          exclusiveMinimum: 0
           examples: [ 5 ]
           description: The size of team of heroes
     TeamFullSchema:

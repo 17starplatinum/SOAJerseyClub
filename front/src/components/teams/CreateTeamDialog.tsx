@@ -26,12 +26,10 @@ const CreateTeamDialog = ({ onSuccess, editingTeam }: CreateTeamDialogProps) => 
         if (editingTeam) {
             return {
                 name: editingTeam.name,
-                size: editingTeam.size,
             };
         }
         return {
             name: '',
-            size: 0,
         };
     });
     const [loading, setLoading] = useState(false);
@@ -51,7 +49,6 @@ const CreateTeamDialog = ({ onSuccess, editingTeam }: CreateTeamDialogProps) => 
         try {
             const submitData: TeamDTOSchema = {
                 name: formData.name || '',
-                size: Number(formData.size),
             };
 
             if (editingTeam) {
