@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-    @Value("${cors.allowed-origins:https://localhost:5174}")
+    @Value("${cors.allowed-origins}")
     private String[] allowedOrigins;
 
     @Override
