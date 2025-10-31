@@ -49,7 +49,7 @@ public class TeamService {
     public TeamResponse createTeam(TeamDTO teamDTO) {
         Team team = new Team();
         team.setName(teamDTO.getName());
-        team.setSize(teamDTO.getSize());
+        team.setSize(0);
         Team savedTeam = teamRepository.save(team);
         return convertToResponse(savedTeam);
     }
@@ -58,7 +58,6 @@ public class TeamService {
         Team team = teamRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Team not found with id=" + id));
         team.setName(teamDTO.getName());
-        team.setSize(teamDTO.getSize());
         Team updatedTeam = teamRepository.save(team);
         return convertToResponse(updatedTeam);
     }
@@ -98,23 +97,41 @@ public class TeamService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Human being not found with id=" + request.getHumanId()));
 
+        Long oldTeamId = human.getTeamId();
+
         switch (request.getOperation()) {
             case ADD:
             case TRANSFER:
                 if (request.getTeamId() == null) {
                     throw new RuntimeException("Team ID is required for ADD and TRANSFER operations");
                 }
-                teamRepository.findById(request.getTeamId())
+                Team newTeam = teamRepository.findById(request.getTeamId())
                         .orElseThrow(() -> new RuntimeException("Team not found with id=" + request.getTeamId()));
                 human.setTeamId(request.getTeamId());
+
+                updateTeamSize(newTeam, 1);
                 break;
             case REMOVE:
                 human.setTeamId(null);
                 break;
         }
 
+        if (oldTeamId != null && !oldTeamId.equals(human.getTeamId())) {
+            Team oldTeam = teamRepository.findById(oldTeamId)
+                    .orElseThrow(() -> new RuntimeException("Old team not found with id=" + oldTeamId));
+            updateTeamSize(oldTeam, -1);
+        }
+
         HumanBeingFullResponse updatedHuman = humanBeingServiceClient.updateHumanBeing(human.getId(), human);
         return List.of(updatedHuman);
+    }
+
+    private void updateTeamSize(Team team, int delta) {
+        List<HumanBeingFullResponse> teamMembers = humanBeingServiceClient.getHumanBeingsByTeamId(team.getId());
+        int actualSize = teamMembers.size();
+
+        team.setSize(actualSize + delta);
+        teamRepository.save(team);
     }
 
     public List<HumanBeingFullResponse> assignCarsToTeam(Long teamId) {
