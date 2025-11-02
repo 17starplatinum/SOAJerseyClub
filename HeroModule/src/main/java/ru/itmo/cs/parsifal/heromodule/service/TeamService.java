@@ -13,6 +13,7 @@ import ru.itmo.cs.parsifal.heromodule.repository.TeamRepository;
 import jakarta.persistence.criteria.Predicate;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,15 +26,33 @@ public class TeamService {
     private final HumanBeingServiceClient humanBeingServiceClient;
 
     public TeamPaginatedResponse getTeams(List<String> sort, List<String> filter, Integer page, Integer pageSize) {
-        Specification<Team> specification = buildSpecification(filter);
-        Pageable pageable = buildPageable(sort, page, pageSize);
+        ParsedFilters parsed = parseFilters(filter);
+        boolean sortBySize = hasSizeSorting(sort);
+        boolean needInMemoryProcessing = sortBySize || !parsed.sizeFilters.isEmpty();
 
-        if (pageable != null) {
-            Page<Team> teamPage = teamRepository.findAll(specification, pageable);
-            return convertToPaginatedResponse(teamPage);
+        if (!needInMemoryProcessing) {
+            Specification<Team> specification = buildSpecification(parsed.dbFilters);
+            Pageable pageable = buildPageable(sort, page, pageSize);
+            if (pageable != null && pageable.isPaged()) {
+                Page<Team> teamPage = teamRepository.findAll(specification, pageable);
+                return convertToPaginatedResponse(teamPage);
+            } else {
+                List<Team> teams = teamRepository.findAll(specification);
+                return convertToPaginatedResponse(teams);
+            }
         } else {
-            List<Team> teams = teamRepository.findAll(specification);
-            return convertToPaginatedResponse(teams);
+            Specification<Team> dbSpec = buildSpecification(parsed.dbFilters);
+            List<Team> baseTeams = teamRepository.findAll(dbSpec);
+
+            List<TeamResponse> enriched = baseTeams.stream()
+                    .map(this::convertToResponse)
+                    .toList();
+
+            List<TeamResponse> afterSizeFilter = applySizeFilters(enriched, parsed.sizeFilters);
+
+            List<TeamResponse> sorted = applyInMemorySorting(afterSizeFilter, sort);
+
+            return paginate(sorted, page, pageSize);
         }
     }
 
@@ -148,7 +167,7 @@ public class TeamService {
 
             List<Predicate> predicates = new ArrayList<>();
             for (String filterItem : filter) {
-                String[] parts = filterItem.split("\\[|\\]=");
+                String[] parts = filterItem.split("\\[|]=");
                 if (parts.length != 3) {
                     throw new RuntimeException("Invalid filter format: " + filterItem);
                 }
@@ -165,7 +184,7 @@ public class TeamService {
                         predicates.add(buildNumericPredicate(root, criteriaBuilder, field, operator, value));
                         break;
                     case "size":
-                        throw new RuntimeException("Unsupported filter field: size (not stored in DB)");
+                        break;
                     default:
                         throw new RuntimeException("Unsupported filter field: " + field);
                 }
@@ -219,7 +238,7 @@ public class TeamService {
             for (String sortField : sort) {
                 String fieldName = sortField.startsWith("-") ? sortField.substring(1) : sortField;
                 if ("size".equals(fieldName)) {
-                    throw new IllegalArgumentException("Sorting by size is not supported (computed field)");
+                    return PageRequest.of(pageNumber, size);
                 }
 
                 if (sortField.startsWith("-")) {
@@ -284,5 +303,161 @@ public class TeamService {
             size = null;
         }
         return new TeamResponse(team.getId(), team.getName(), size);
+    }
+
+    private static class ParsedFilters {
+        List<String> dbFilters = new ArrayList<>();
+        List<String> sizeFilters = new ArrayList<>();
+    }
+
+    private ParsedFilters parseFilters(List<String> filters) {
+        ParsedFilters parsed = new ParsedFilters();
+        if (filters == null) return parsed;
+
+        for (String filterItem : filters) {
+            String[] parts = filterItem.split("\\[|]=");
+            if (parts.length != 3) {
+                throw new RuntimeException("Invalid filter format: " + filterItem);
+            }
+            String field = parts[0];
+            if ("size".equals(field)) {
+                parsed.sizeFilters.add(filterItem);
+            } else {
+                parsed.dbFilters.add(filterItem);
+            }
+        }
+        return parsed;
+    }
+
+    private boolean hasSizeSorting(List<String> sort) {
+        if (sort == null) return false;
+        for (String s : sort) {
+            String fieldName = s.startsWith("-") ? s.substring(1) : s;
+            if ("size".equals(fieldName)) return true;
+        }
+        return false;
+    }
+
+    private List<TeamResponse> applySizeFilters(List<TeamResponse> teams, List<String> sizeFilters) {
+        if (sizeFilters == null || sizeFilters.isEmpty()) return teams;
+
+        List<TeamResponse> result = new ArrayList<>(teams);
+        for (String filterItem : sizeFilters) {
+            String[] parts = filterItem.split("\\[|]=");
+            if (parts.length != 3) {
+                throw new RuntimeException("Invalid filter format: " + filterItem);
+            }
+            String operator = parts[1];
+            String valueStr = parts[2];
+
+            switch (operator) {
+                case "eq" -> {
+                    long v = Long.parseLong(valueStr);
+                    result = result.stream()
+                            .filter(t -> t.getSize() != null && t.getSize().longValue() == v)
+                            .toList();
+                }
+                case "neq" -> {
+                    long v = Long.parseLong(valueStr);
+                    result = result.stream()
+                            .filter(t -> t.getSize() == null || t.getSize().longValue() != v)
+                            .toList();
+                }
+                case "gt" -> {
+                    long v = Long.parseLong(valueStr);
+                    result = result.stream()
+                            .filter(t -> t.getSize() != null && t.getSize() > v)
+                            .toList();
+                }
+                case "lt" -> {
+                    long v = Long.parseLong(valueStr);
+                    result = result.stream()
+                            .filter(t -> t.getSize() != null && t.getSize() < v)
+                            .toList();
+                }
+                case "gte" -> {
+                    long v = Long.parseLong(valueStr);
+                    result = result.stream()
+                            .filter(t -> t.getSize() != null && t.getSize() >= v)
+                            .toList();
+                }
+                case "lte" -> {
+                    long v = Long.parseLong(valueStr);
+                    result = result.stream()
+                            .filter(t -> t.getSize() != null && t.getSize() <= v)
+                            .toList();
+                }
+                case "like" -> {
+                    result = result.stream()
+                            .filter(t -> {
+                                String s = t.getSize() == null ? null : String.valueOf(t.getSize());
+                                return s != null && s.contains(valueStr);
+                            })
+                            .toList();
+                }
+                default -> throw new RuntimeException("Unsupported operator for size: " + operator);
+            }
+        }
+        return result;
+    }
+
+    private List<TeamResponse> applyInMemorySorting(List<TeamResponse> teams, List<String> sort) {
+        if (sort == null || sort.isEmpty()) return teams;
+
+        Comparator<TeamResponse> comparator = null;
+
+        for (String sortField : sort) {
+            boolean desc = sortField.startsWith("-");
+            String field = desc ? sortField.substring(1) : sortField;
+
+            Comparator<TeamResponse> next;
+            switch (field) {
+                case "size" -> {
+                    next = Comparator.comparing(
+                            TeamResponse::getSize,
+                            Comparator.nullsFirst(Integer::compareTo)
+                    );
+                }
+                case "name" -> {
+                    next = Comparator.comparing(
+                            TeamResponse::getName,
+                            Comparator.nullsFirst(String::compareTo)
+                    );
+                }
+                case "id" -> {
+                    next = Comparator.comparing(
+                            TeamResponse::getId,
+                            Comparator.nullsFirst(Long::compareTo)
+                    );
+                }
+                default -> throw new RuntimeException("Unsupported sort field: " + field);
+            }
+
+            if (desc) {
+                next = next.reversed();
+            }
+
+            comparator = comparator == null ? next : comparator.thenComparing(next);
+        }
+
+        return teams.stream().sorted(comparator).toList();
+    }
+
+    private TeamPaginatedResponse paginate(List<TeamResponse> teams, Integer page, Integer pageSize) {
+        if (page == null || pageSize == null) {
+            return new TeamPaginatedResponse(teams, null, null, null, teams.size());
+        }
+        int size = Math.max(pageSize, 1);
+        int pageNumber = Math.max(page - 1, 0);
+
+        int totalCount = teams.size();
+        int totalPages = (int) Math.ceil(totalCount / (double) size);
+
+        int fromIndex = Math.min(pageNumber * size, totalCount);
+        int toIndex = Math.min(fromIndex + size, totalCount);
+
+        List<TeamResponse> slice = teams.subList(fromIndex, toIndex);
+
+        return new TeamPaginatedResponse(slice, pageNumber + 1, size, totalPages, totalCount);
     }
 }

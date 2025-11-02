@@ -19,6 +19,6 @@ public class Team {
 
     @NotNull(message = "Team name cannot be null")
     @Size(min = 1, message = "Team name must not be empty")
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String name;
 }
