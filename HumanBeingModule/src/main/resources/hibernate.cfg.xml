@@ -6,7 +6,7 @@
 <hibernate-configuration>
     <session-factory>
         <property name="connection.driver_class">org.postgresql.Driver</property>
-        <property name="connection.url">jdbc:postgresql://localhost:5432/human-beings</property>
+        <property name="connection.url">jdbc:postgresql://pg:5432/studs</property>
         <property name="connection.pool_size">15</property>
         <property name="hibernate.current_session_context_class">thread</property>
         <property name="show_sql">true</property>
