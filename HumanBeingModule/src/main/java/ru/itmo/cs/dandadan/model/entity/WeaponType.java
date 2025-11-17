@@ -22,7 +22,7 @@ public enum WeaponType {
 
     public static WeaponType fromValue(final String value) {
         return Arrays.stream(WeaponType.values())
-                .filter(s -> Objects.equals(s.value, value))
+                .filter(s -> Objects.equals(s.value, value.toLowerCase()))
                 .findFirst()
                 .orElse(null);
     }

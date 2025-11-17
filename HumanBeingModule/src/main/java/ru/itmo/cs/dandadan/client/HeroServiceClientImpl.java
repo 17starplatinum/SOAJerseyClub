@@ -3,6 +3,11 @@ package ru.itmo.cs.dandadan.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.PATCH;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.apache.hc.client5.http.classic.methods.HttpPatch;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -18,6 +23,7 @@ import ru.itmo.cs.dandadan.exception.ConflictException;
 import java.io.IOException;
 
 @ApplicationScoped
+@Path("{hero.service.url:https://localhost:15478/api/v1/heroes/teams}")
 public class HeroServiceClientImpl implements HeroServiceClient {
     private final String baseUrl;
     private final CloseableHttpClient httpClient;
@@ -46,6 +52,9 @@ public class HeroServiceClientImpl implements HeroServiceClient {
     }
 
     @Override
+    @PATCH
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response manipulateHumanBeingToTeam(TeamRequest teamRequest) {
         HttpPatch patch = new HttpPatch(baseUrl);
         TeamResponse response;

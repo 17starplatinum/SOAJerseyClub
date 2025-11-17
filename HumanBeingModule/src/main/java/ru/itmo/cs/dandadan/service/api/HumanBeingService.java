@@ -1,6 +1,5 @@
 package ru.itmo.cs.dandadan.service.api;
 
-import jakarta.ejb.Local;
 import ru.itmo.cs.dandadan.dto.request.HumanBeingRequest;
 import ru.itmo.cs.dandadan.dto.response.HumanBeingResponse;
 import ru.itmo.cs.dandadan.dto.response.UniqueSpeedResponse;
@@ -8,7 +7,6 @@ import ru.itmo.cs.dandadan.model.view.Page;
 
 import java.util.List;
 
-@Local
 public interface HumanBeingService {
     Page<HumanBeingResponse> getHumanBeings(List<String> sortsList, List<String> filtersList, Integer page, Integer pageSize);
 

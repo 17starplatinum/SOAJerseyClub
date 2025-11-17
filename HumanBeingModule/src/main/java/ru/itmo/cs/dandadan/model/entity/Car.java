@@ -1,32 +1,28 @@
 package ru.itmo.cs.dandadan.model.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
+
+@JsonPropertyOrder({"cool", "color", "model"})
 @Embeddable
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Car {
+public class Car implements Serializable {
 
     @Column(name = "car_cool")
     private Boolean cool;
 
-    @Size(min = 3, max = 6)
-    @NotNull(message = "Цвет машины не должно быть null")
+    @Builder.Default
     @Enumerated(EnumType.STRING)
-    @Column(name = "car_color", nullable = false)
-    private Color color;
+    @Column(name = "car_color")
+    private Color color = Color.UNDEFINED;
 
-    @NotBlank(message = "Модель машины не должно быть пустым")
     @Column(name = "car_model")
     private String model;
 }

@@ -1,6 +1,6 @@
 package ru.itmo.cs.dandadan.service.impl;
 
-import jakarta.ejb.Stateless;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import ru.itmo.cs.dandadan.client.HeroServiceClient;
@@ -10,6 +10,7 @@ import ru.itmo.cs.dandadan.dto.response.HumanBeingResponse;
 import ru.itmo.cs.dandadan.dto.response.TeamRequest;
 import ru.itmo.cs.dandadan.dto.response.UniqueSpeedResponse;
 import ru.itmo.cs.dandadan.exception.CustomBadRequestException;
+import ru.itmo.cs.dandadan.exception.ValidationFailedException;
 import ru.itmo.cs.dandadan.mapper.HumanBeingMapper;
 import ru.itmo.cs.dandadan.model.entity.HumanBeing;
 import ru.itmo.cs.dandadan.model.view.Filter;
@@ -19,6 +20,9 @@ import ru.itmo.cs.dandadan.model.view.Sort;
 import ru.itmo.cs.dandadan.repository.api.HumanBeingRepository;
 import ru.itmo.cs.dandadan.service.api.HumanBeingService;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -26,7 +30,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Stateless
+@ApplicationScoped
 public class HumanBeingServiceImpl implements HumanBeingService {
     private final Set<FilterCode> stringAllowedCodes = Set.of(FilterCode.EQ, FilterCode.NEQ, FilterCode.LIKE);
     private final Set<FilterCode> booleanAllowedCodes = Set.of(FilterCode.EQ, FilterCode.NEQ, FilterCode.GT, FilterCode.LT, FilterCode.LIKE);
@@ -87,7 +91,7 @@ public class HumanBeingServiceImpl implements HumanBeingService {
                     fieldName = nestedFieldMatcher.group(1);
                     nestedName = nestedField;
                 }
-                filterCode = FilterCode.fromValue(fieldName);
+                filterCode = FilterCode.fromValue(matcher.group(2).toLowerCase());
                 handleFiltrationCases(fieldName, filterCode);
                 if (Objects.equals(fieldName, "weaponType") || Objects.equals(fieldName, "mood") || Objects.equals(fieldName, "car.color")) {
                     fieldValue = matcher.group(3).toLowerCase();
@@ -117,7 +121,7 @@ public class HumanBeingServiceImpl implements HumanBeingService {
                     sorts, filters, page, pageSize
             );
             return new Page<>(
-                    humanBeingMapper.fromEntityList(humanBeingResultPage.getContent()),
+                    humanBeingMapper.fromEntityList(humanBeingResultPage.getHumanBeingGetResponseDtos()),
                     humanBeingResultPage.getPage(),
                     humanBeingResultPage.getPageSize(),
                     humanBeingResultPage.getTotalPages(),
@@ -139,11 +143,15 @@ public class HumanBeingServiceImpl implements HumanBeingService {
     @Override
     @Transactional
     public HumanBeingResponse addHumanBeing(HumanBeingRequest requestDto) {
+        if (requestDto == null) {
+            throw new ValidationFailedException("incoming request is null");
+        }
         HumanBeing humanBeing = humanBeingMapper.fromHumanBeingRequest(requestDto);
         Long potentialTeamId = requestDto.getTeamId();
         if (potentialTeamId != null) {
             manipulateToTeam(humanBeing.getId(), potentialTeamId);
         }
+        humanBeing.setCreationDate(ZonedDateTime.now(ZoneId.systemDefault()));
         humanBeing = humanBeingRepository.saveHumanBeing(humanBeing, potentialTeamId);
         return humanBeingMapper.toHumanBeingResponse(humanBeing);
     }
@@ -154,15 +162,16 @@ public class HumanBeingServiceImpl implements HumanBeingService {
         if (id == null || id < 1) {
             throw new CustomBadRequestException("id", "positive integer", String.valueOf(id));
         }
+        if (requestDto == null) {
+            throw new ValidationFailedException("incoming request is null");
+        }
         Long potentialTeamId = requestDto.getTeamId();
-        Long oldTeamId = humanBeingRepository.getHumanBeing(id).getTeamId();
         HumanBeing incomingHumanBeing = humanBeingMapper.fromHumanBeingRequest(requestDto);
         if (potentialTeamId != null) {
             manipulateToTeam(id, potentialTeamId);
         }
         incomingHumanBeing.setTeamId(potentialTeamId);
-
-        return humanBeingMapper.toHumanBeingResponse(humanBeingRepository.updateHumanBeing(id, incomingHumanBeing, oldTeamId));
+        return humanBeingMapper.toHumanBeingResponse(humanBeingRepository.updateHumanBeing(id, incomingHumanBeing));
     }
 
     @Override
@@ -202,12 +211,10 @@ public class HumanBeingServiceImpl implements HumanBeingService {
     }
 
     private void manipulateToTeam(Long humanId, Long teamId) {
-        Long.parseLong(
-                heroServiceClient.manipulateHumanBeingToTeam(
-                        new TeamRequest(
-                                humanId, teamId, Event.ADD
-                        )
-                ).readEntity(String.class)
-        );
+        heroServiceClient.manipulateHumanBeingToTeam(
+                new TeamRequest(
+                        humanId, teamId, Event.ADD
+                )
+        ).readEntity(String.class);
     }
 }

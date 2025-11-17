@@ -1,20 +1,39 @@
 package ru.itmo.cs.dandadan.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.annotations.Type;
 
+import java.io.Serializable;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
+@JsonPropertyOrder({
+        "id",
+        "creationDate",
+        "name",
+        "coordinates",
+        "realHero",
+        "hasToothpick",
+        "impactSpeed",
+        "weaponType",
+        "teamId",
+        "mood",
+        "car"
+})
 @Entity(name = "human_beings")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class HumanBeing {
+public class HumanBeing implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -30,8 +49,9 @@ public class HumanBeing {
     @NotNull(message = "Поле 'coordinates' не должно быть null")
     private Coordinates coordinates;
 
-    @Column(name = "creation_date", nullable = false)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.XXX'Z'")
+    @Column(name = "creation_date", nullable = false, updatable = false,
+            columnDefinition = "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private java.time.ZonedDateTime creationDate;
 
     @NotNull(message = "Поле 'realHero' не должно быть null")

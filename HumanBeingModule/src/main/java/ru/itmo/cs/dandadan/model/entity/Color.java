@@ -14,7 +14,8 @@ public enum Color {
     YELLOW("yellow"),
     GREEN("green"),
     BLACK("black"),
-    WHITE("white");
+    WHITE("white"),
+    UNDEFINED("undefined");
 
     @Getter
     private final String value;
@@ -23,6 +24,6 @@ public enum Color {
         return Arrays.stream(Color.values())
                 .filter(e -> Objects.equals(e.getValue(), value.toLowerCase()))
                 .findFirst()
-                .orElseThrow(() -> new CustomBadRequestException("color", "color should be one of the following: RED, BLUE, YELLOW, GREEN, BLACK, WHITE"));
+                .orElseThrow(() -> new CustomBadRequestException("color", "color should be one of the following: RED, BLUE, YELLOW, GREEN, BLACK, WHITE, or undefined"));
     }
 }

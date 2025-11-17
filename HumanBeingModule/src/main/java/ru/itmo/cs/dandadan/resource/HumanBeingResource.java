@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 @Path("/human-beings")
 public class HumanBeingResource {
+    private static final String DEFAULT_SORT_PARAM = "id";
     private static final int DEFAULT_PAGE = 1;
     private static final int DEFAULT_PAGE_SIZE = 10;
     @Inject
@@ -49,7 +50,7 @@ public class HumanBeingResource {
         } catch (CustomBadRequestException e) {
             return Response.status(400).entity(new ErrorResponse(400, e.getMessage())).build();
         }
-        List<String> sort = sortParameters == null ? new ArrayList<>() :
+        List<String> sort = sortParameters == null ? new ArrayList<>(List.of(DEFAULT_SORT_PARAM)) :
                 sortParameters.stream()
                         .filter(Objects::nonNull)
                         .filter(Predicate.not(String::isBlank))

@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Page<T> {
-    private List<T> content;
+    private List<T> humanBeingGetResponseDtos;
     private Integer page;
     private Integer pageSize;
     private Integer totalPages;
