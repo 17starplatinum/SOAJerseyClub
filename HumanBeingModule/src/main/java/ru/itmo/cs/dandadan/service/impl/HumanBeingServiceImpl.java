@@ -21,7 +21,6 @@ import ru.itmo.cs.dandadan.repository.api.HumanBeingRepository;
 import ru.itmo.cs.dandadan.service.api.HumanBeingService;
 
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
