@@ -5,7 +5,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.PATCH;
-import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -23,7 +22,6 @@ import ru.itmo.cs.dandadan.exception.ConflictException;
 import java.io.IOException;
 
 @ApplicationScoped
-@Path("{hero.service.url:https://localhost:15478/api/v1/heroes/teams}")
 public class HeroServiceClientImpl implements HeroServiceClient {
     private final String baseUrl;
     private final CloseableHttpClient httpClient;
