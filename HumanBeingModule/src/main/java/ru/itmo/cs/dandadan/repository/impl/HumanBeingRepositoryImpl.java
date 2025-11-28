@@ -105,7 +105,11 @@ public class HumanBeingRepositoryImpl implements HumanBeingRepository {
         Session session = getSessionFactory().openSession();
         EntityTransaction transaction = session.getTransaction();
         transaction.begin();
-        session.persist(humanBeing);
+        if (humanBeing.getId() != null) {
+            session.merge(humanBeing);
+        } else {
+            session.persist(humanBeing);
+        }
         transaction.commit();
         session.close();
         return humanBeing;

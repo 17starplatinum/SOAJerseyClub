@@ -3,21 +3,13 @@ package ru.itmo.cs.dandadan.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.PATCH;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.apache.hc.client5.http.classic.methods.HttpPatch;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
-import org.apache.hc.core5.http.io.entity.StringEntity;
 import ru.itmo.cs.dandadan.config.qualifier.BaseUrl;
-import ru.itmo.cs.dandadan.dto.response.TeamRequest;
 import ru.itmo.cs.dandadan.dto.response.TeamResponse;
-import ru.itmo.cs.dandadan.exception.ConflictException;
 
 import java.io.IOException;
 
@@ -43,26 +35,21 @@ public class HeroServiceClientImpl implements HeroServiceClient {
     private HttpClientResponseHandler<TeamResponse> createResponseHandler() {
         return response -> {
             if (response.getCode() != HttpStatus.SC_OK) {
-                throw new IOException("Request to People API failed: HTTP " + response.getCode());
+                throw new IOException("Request to People API failed: HTTP " + response);
             }
             return mapper.readValue(response.getEntity().getContent(), TeamResponse.class);
         };
     }
 
     @Override
-    @PATCH
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response manipulateHumanBeingToTeam(TeamRequest teamRequest) {
-        HttpPatch patch = new HttpPatch(baseUrl);
+    public Response manipulateHumanBeingToTeam(Long teamId) throws Exception {
+        String url = baseUrl + teamId;
+        HttpGet get = new HttpGet(url);
         TeamResponse response;
         try {
-            String json = mapper.writeValueAsString(teamRequest);
-            patch.setHeader("Content-Type", ContentType.APPLICATION_JSON.toString());
-            patch.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
-            response = httpClient.execute(patch, responseHandler);
+            response = httpClient.execute(get, responseHandler);
         } catch (IOException e) {
-            throw new ConflictException(teamRequest.getOperation(), teamRequest.getTeamId());
+            throw new Exception(e.getMessage(), e);
         }
         String result = String.valueOf(response.getId());
         return Response.ok(result).build();
