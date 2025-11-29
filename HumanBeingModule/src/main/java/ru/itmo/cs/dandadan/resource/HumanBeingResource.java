@@ -2,6 +2,7 @@ package ru.itmo.cs.dandadan.resource;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import ru.itmo.cs.dandadan.dto.request.HumanBeingRequest;
@@ -17,7 +18,6 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-@Produces(MediaType.APPLICATION_JSON)
 @ApplicationScoped
 @Path("/human-beings")
 public class HumanBeingResource {
@@ -28,6 +28,7 @@ public class HumanBeingResource {
     private HumanBeingService humanBeingService;
 
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getHumanBeings(@Context UriInfo uriInfo) {
         MultivaluedMap<String, String> qp = uriInfo.getQueryParameters();
 
@@ -66,26 +67,29 @@ public class HumanBeingResource {
 
     @GET
     @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getUserById(@PathParam("id") long id) {
         return Response.ok(humanBeingService.getHumanBeing(id), MediaType.APPLICATION_JSON).build();
     }
 
     @GET
     @Path("/unique-speeds")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getUniqueSpeeds() {
         return Response.ok(humanBeingService.getUniqueImpactSpeeds(), MediaType.APPLICATION_JSON).build();
     }
 
     @POST
+    @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addHumanBeing(HumanBeingRequest humanBeingRequest) {
+    public Response addHumanBeing(@Valid HumanBeingRequest humanBeingRequest) {
         return Response.ok(humanBeingService.addHumanBeing(humanBeingRequest), MediaType.APPLICATION_JSON).build();
     }
 
     @PUT
     @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateHumanBeing(@PathParam("id") long id, HumanBeingRequest humanBeingRequest) {
+    public Response updateHumanBeing(@PathParam("id") long id, @Valid HumanBeingRequest humanBeingRequest) {
         return Response.ok(humanBeingService.updateHumanBeing(id, humanBeingRequest), MediaType.APPLICATION_JSON).build();
     }
 

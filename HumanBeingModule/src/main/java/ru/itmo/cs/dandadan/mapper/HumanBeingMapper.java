@@ -28,6 +28,11 @@ public interface HumanBeingMapper {
     @Mapping(target = "weaponType", source = "weaponType", qualifiedByName = "weaponTypeConverter")
     HumanBeing fromHumanBeingRequest(HumanBeingRequest humanBeingRequest);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "creationDate", ignore = true)
+    @Mapping(target = "car.color", source = "car.color", qualifiedByName = "colorConverter")
+    @Mapping(target = "mood", source = "mood", qualifiedByName = "moodConverter")
+    @Mapping(target = "weaponType", source = "weaponType", qualifiedByName = "weaponTypeConverter")
     void updateFromHumanBeingRequest(HumanBeing incoming, @MappingTarget HumanBeing existing);
 
     List<HumanBeingResponse> fromEntityList(List<HumanBeing> humanBeings);
@@ -36,18 +41,18 @@ public interface HumanBeingMapper {
     default Color convertColor(String color){
         return (color != null &&
                 Stream.of(Color.values()).anyMatch(v -> v.name().equals(color)))
-                ? Color.fromValue(color) : Color.UNDEFINED;
+                ? Color.fromValue(color) : null;
     }
 
     @Named(value = "moodConverter")
     default Mood convertMood(String mood){
-        return Mood.fromValue(mood);
+        return (mood != null &&
+                Stream.of(Mood.values()).anyMatch(m -> m.name().equals(mood)))
+                ? Mood.fromValue(mood) : null;
     }
 
     @Named(value = "weaponTypeConverter")
     default WeaponType convertWeaponType(String weaponType) {
-        return (weaponType != null &&
-                Stream.of(WeaponType.values()).anyMatch(v -> v.name().equals(weaponType)))
-                ? WeaponType.fromValue(weaponType) : null;
+        return WeaponType.fromValue(weaponType);
     }
 }

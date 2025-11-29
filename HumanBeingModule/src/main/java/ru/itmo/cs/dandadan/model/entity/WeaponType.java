@@ -21,6 +21,7 @@ public enum WeaponType {
     }
 
     public static WeaponType fromValue(final String value) {
+        if (Objects.isNull(value)) return null;
         return Arrays.stream(WeaponType.values())
                 .filter(s -> Objects.equals(s.value, value.toLowerCase()))
                 .findFirst()

@@ -6,7 +6,7 @@ import ru.itmo.cs.dandadan.config.qualifier.*;
 
 @ApplicationScoped
 public class ApplicationConfig {
-    private final String peopleServiceBaseUrl = System.getenv().getOrDefault("PEOPLE_SERVICE_URL", "https://localhost:15478/api/v1/heroes/teams");
+    private final String peopleServiceBaseUrl = System.getenv().getOrDefault("PEOPLE_SERVICE_URL", "https://localhost:15479/api/v1/heroes/teams/");
     private final Integer httpClientConnectTimeoutSec = getIntEnv("HTTP_CLIENT_CONNECT_TIMEOUT", 5);
     private final Integer httpClientResponseTimeoutSec = getIntEnv("HTTP_CLIENT_RESPONSE_TIMEOUT", 10);
     private final Integer httpClientMaxTotal = getIntEnv("HTTP_CLIENT_MAX_TOTAL", 10);
