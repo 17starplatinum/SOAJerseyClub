@@ -9,7 +9,6 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import ru.itmo.cs.dandadan.config.qualifier.BaseUrl;
 import ru.itmo.cs.dandadan.dto.response.TeamResponse;
-import ru.itmo.cs.dandadan.exception.ConflictException;
 
 import java.io.IOException;
 
