@@ -3,43 +3,44 @@ package ru.itmo.cs.dandadan.dto.request;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import lombok.ToString;
+import ru.itmo.cs.dandadan.validation.annotation.ValidImpactSpeed;
 
 @Data
 public class HumanBeingRequest {
 
-    @NotNull(message = "Поле 'name' не должно быть null")
-    @NotBlank(message = "Поле 'name' не должно быть пустым")
+    @NotBlank(message = "'name' must be non-empty")
     private String name;
 
-    @NotNull(message = "Поле 'coordinates' не должно быть null")
+    @NotNull(message = "Поле 'coordinates' cannot be null")
     private CoordinatesRequest coordinates;
 
-    @NotNull(message = "Поле 'realHero' не должно быть null")
+    @NotNull(message = "Поле 'realHero' cannot be null")
     private Boolean realHero;
 
-    @NotNull(message = "Поле 'hasToothpick' не должно быть null")
+    @NotNull(message = "'hasToothpick' cannot be null")
     private Boolean hasToothpick;
 
-    @Max(value = 58, message = "Поле 'impactSpeed' не должно быть больше 58")
-    @NotNull(message = "Поле 'impactSpeed' не должно быть null")
+    @ValidImpactSpeed
+    @Max(value = 58, message = "'impactSpeed' maximum value is 58, got ${impactSpeed}")
+    @NotNull(message = "'impactSpeed' cannot be null")
     private Integer impactSpeed;
 
     private String weaponType;
 
-    @Min(value = 1, message = "Поле 'teamId' является идентификатором")
+    @Min(value = 1, message = "'teamId' minimum value is 1, got ${teamId}")
     private Long teamId;
 
-    @NotNull(message = "Поле 'mood' не может быть null")
+    @NotNull(message = "'mood' cannot be null")
     private String mood;
 
     public CarRequest car;
 
     @Data
     public static class CoordinatesRequest {
-        @DecimalMin(value = "-63", inclusive = false, message = "Coordinates X не должен быть меньше или равно -63")
-        @NotNull(message = "Coordinates X не может быть null")
+        @DecimalMin(value = "-63", inclusive = false, message = "'coordinates.x' minimum value is -63, got ${x}")
+        @NotNull(message = "'coordinates.x' cannot be null")
         private Integer x;
-        @NotNull(message = "Coordinates Y не может быть null")
+        @NotNull(message = "'coordinates.y' cannot be null")
         private Double y;
     }
 
@@ -47,12 +48,8 @@ public class HumanBeingRequest {
     @ToString
     public static class CarRequest {
         private Boolean cool;
-
-        @Size(min = 3, max = 6)
-        @NotNull(message = "Цвет машины не должно быть null")
+        @NotNull(message = "'car.color' cannot be null")
         private String color;
-
-        @NotBlank(message = "Модель машины не должно быть пустым")
         private String model;
     }
 }

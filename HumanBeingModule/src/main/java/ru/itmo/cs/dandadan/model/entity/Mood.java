@@ -2,7 +2,6 @@ package ru.itmo.cs.dandadan.model.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import ru.itmo.cs.dandadan.exception.CustomBadRequestException;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -27,6 +26,6 @@ public enum Mood {
         return Arrays.stream(Mood.values())
                 .filter(s -> Objects.equals(s.value, value.toLowerCase()))
                 .findFirst()
-                .orElseThrow(() -> new CustomBadRequestException("mood", "color should be one of the following: SADNESS, SORROW, GLOOM, APATHY, RAGE"));
+                .orElse(null);
     }
 }

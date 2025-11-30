@@ -115,15 +115,15 @@ public class HumanBeingRepositoryImpl implements HumanBeingRepository {
         return humanBeing;
     }
 
+    // למה ג'קרטה E.E. עדיין קיימת
     @Override
     public HumanBeing updateHumanBeing(long id, HumanBeing incoming) {
         Session session = getSessionFactory().openSession();
         EntityTransaction transaction = session.getTransaction();
         transaction.begin();
         HumanBeing humanBeing = session.get(HumanBeing.class, id);
-        incoming.setCreationDate(humanBeing.getCreationDate());
-        incoming.setId(humanBeing.getId());
         humanBeingMapper.updateFromHumanBeingRequest(incoming, humanBeing);
+        session.merge(humanBeing);
         transaction.commit();
         session.close();
         return humanBeing;
@@ -211,9 +211,8 @@ public class HumanBeingRepositoryImpl implements HumanBeingRepository {
                         throw new CustomBadRequestException("filter", "LIKE value must be string for enum fields");
                     }
 
-                    Object finalValue = value;
                     List<Predicate> enumMatches = Arrays.stream(javaType.getEnumConstants())
-                            .filter(enumConstant -> enumConstant.toString().toLowerCase().contains(finalValue.toString().toLowerCase()))
+                            .filter(enumConstant -> enumConstant.toString().toLowerCase().contains(value.toString().toLowerCase()))
                             .map(enumConstant -> cb.equal(expr, enumConstant))
                             .collect(Collectors.toList());
 
@@ -264,7 +263,10 @@ public class HumanBeingRepositoryImpl implements HumanBeingRepository {
             return dateTimeConverter.parseZonedDateTime(fieldValue);
         } else if (Objects.equals(fieldName, "mood")) {
             try {
-                return Mood.fromValue(fieldValue);
+                Mood mood = Mood.fromValue(fieldValue);
+                if(mood == null) {
+                    throw new CustomBadRequestException("mood", "mood value is not valid");
+                }
             } catch (CustomBadRequestException ex) {
                 boolean isValid = Arrays.stream(Mood.values()).anyMatch(
                         mood -> mood.toString().toLowerCase().contains(fieldValue.toLowerCase()));
@@ -286,14 +288,17 @@ public class HumanBeingRepositoryImpl implements HumanBeingRepository {
             return weaponType;
         } else if (Objects.equals(fieldName, "color")) {
             try {
-                return Color.fromValue(fieldValue);
+                Color color = Color.fromValue(fieldValue);
+                if (color == null) {
+                    throw new CustomBadRequestException("color", "color value is not valid");
+                }
             } catch (CustomBadRequestException ex) {
                 boolean isValid = Arrays.stream(Color.values()).anyMatch(
                         color -> color.toString().toLowerCase().contains(fieldValue.toLowerCase()));
                 if (isValid) {
                     return fieldValue;
                 }
-                return Color.UNDEFINED;
+                throw new CustomBadRequestException("color", "no value matches one of the given values, directly or via 'like'");
             }
         }
         return fieldValue;

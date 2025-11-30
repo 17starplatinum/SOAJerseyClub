@@ -52,7 +52,7 @@ dependencies {
     compileOnly("jakarta.websocket:jakarta.websocket-api:2.1.1")
     compileOnly("jakarta.xml.ws:jakarta.xml.ws-api:4.0.1")
     compileOnly("org.projectlombok:lombok:1.18.42")
-
+    implementation("jakarta.validation:jakarta.validation-api:3.1.1")
     implementation("org.apache.httpcomponents.client5:httpclient5:5.5.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.20.0")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.0")

@@ -2,6 +2,7 @@ package ru.itmo.cs.dandadan.resource;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import ru.itmo.cs.dandadan.dto.request.HumanBeingRequest;
@@ -79,9 +80,9 @@ public class HumanBeingResource {
     }
 
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addHumanBeing(HumanBeingRequest humanBeingRequest) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response addHumanBeing(@Valid HumanBeingRequest humanBeingRequest) {
         return Response.ok(humanBeingService.addHumanBeing(humanBeingRequest), MediaType.APPLICATION_JSON).build();
     }
 
@@ -89,7 +90,7 @@ public class HumanBeingResource {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateHumanBeing(@PathParam("id") long id, HumanBeingRequest humanBeingRequest) {
+    public Response updateHumanBeing(@PathParam("id") long id, @Valid HumanBeingRequest humanBeingRequest) {
         return Response.ok(humanBeingService.updateHumanBeing(id, humanBeingRequest), MediaType.APPLICATION_JSON).build();
     }
 

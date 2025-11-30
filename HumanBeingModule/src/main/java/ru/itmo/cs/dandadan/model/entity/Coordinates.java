@@ -18,7 +18,7 @@ import java.io.Serializable;
 public class Coordinates implements Serializable {
 
     @Column(name = "coordinates_x", nullable = false)
-    @DecimalMin(value = "-63", inclusive = false)
+    @DecimalMin(value = "-63", inclusive = false, message = "'coordinates.x' minimum value is -63, got ${x}")
     private Integer x;
 
     @Column(name = "coordinates_y", nullable = false)

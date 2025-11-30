@@ -146,10 +146,8 @@ public class HumanBeingServiceImpl implements HumanBeingService {
         HumanBeing humanBeing = humanBeingMapper.fromHumanBeingRequest(requestDto);
         Long potentialTeamId = requestDto.getTeamId();
         humanBeing.setCreationDate(ZonedDateTime.now(ZoneId.systemDefault()));
-        humanBeing = humanBeingRepository.saveHumanBeing(humanBeing, potentialTeamId);
         if (potentialTeamId != null) {
             checkTeam(potentialTeamId);
-            humanBeing.setTeamId(potentialTeamId);
         }
         humanBeing = humanBeingRepository.saveHumanBeing(humanBeing, potentialTeamId);
         return humanBeingMapper.toHumanBeingResponse(humanBeing);
@@ -166,9 +164,10 @@ public class HumanBeingServiceImpl implements HumanBeingService {
         }
         Long potentialTeamId = requestDto.getTeamId();
         HumanBeing incomingHumanBeing = humanBeingMapper.fromHumanBeingRequest(requestDto);
-        if (potentialTeamId != null && !humanBeingRepository.getHumanBeing(id).getTeamId().equals(potentialTeamId)) {
+        if (potentialTeamId != null &&
+                humanBeingRepository.getHumanBeing(id).getTeamId() != null &&
+                !humanBeingRepository.getHumanBeing(id).getTeamId().equals(potentialTeamId)) {
             checkTeam(potentialTeamId);
-            incomingHumanBeing.setTeamId(potentialTeamId);
         }
         incomingHumanBeing = humanBeingRepository.updateHumanBeing(id, incomingHumanBeing);
         return humanBeingMapper.toHumanBeingResponse(incomingHumanBeing);
@@ -205,7 +204,7 @@ public class HumanBeingServiceImpl implements HumanBeingService {
 
     private void checkTeam(Long teamId) {
         try {
-            heroServiceClient.manipulateHumanBeingToTeam(teamId).readEntity(Long.class);
+            heroServiceClient.manipulateHumanBeingToTeam(teamId);
         } catch (Exception e) {
             throw new CustomBadRequestException(e.getMessage());
         }
