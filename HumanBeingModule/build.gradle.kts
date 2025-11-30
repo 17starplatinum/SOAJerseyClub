@@ -15,6 +15,7 @@ buildscript {
     extra.apply {
         set("junitVersion", "5.12.0")
         set("tcVersion", "1.21.3")
+        set("platformVersion", "1.14.0")
     }
 }
 
@@ -61,20 +62,28 @@ dependencies {
     implementation("org.glassfish.jersey.media:jersey-media-json-jackson:2.25.1")
     implementation("org.postgresql:postgresql:42.7.8")
     implementation("org.mapstruct:mapstruct:1.6.3")
+    implementation("org.glassfish:jakarta.el:4.0.2")
     annotationProcessor("org.projectlombok:lombok:1.18.42")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
 
     val junitVersion = rootProject.extra["junitVersion"]
     val tcVersion = rootProject.extra["tcVersion"]
+    val platformVersion = rootProject.extra["platformVersion"]
     testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
 
     // Обнаружены уязвимости в этих 2 фреймворках, советую поменять в будущем
     testImplementation("io.rest-assured:rest-assured:5.5.6")
     testImplementation("org.testcontainers:junit-jupiter:${tcVersion}")
 
+    testImplementation("org.mockito:mockito-core:5.20.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.20.0")
     testImplementation("org.testcontainers:postgresql:${tcVersion}")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
+    testImplementation("org.hibernate.validator:hibernate-validator:9.0.1.Final")
+    testImplementation("org.glassfish:jakarta.el:4.0.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    testRuntimeOnly("org.junit.platform:junit-platform-engine:${platformVersion}")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:${platformVersion}")
 }
 
 tasks.test {

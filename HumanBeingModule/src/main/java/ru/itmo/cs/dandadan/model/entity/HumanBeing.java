@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 import ru.itmo.cs.dandadan.validation.annotation.ValidEnum;
 import ru.itmo.cs.dandadan.validation.annotation.ValidImpactSpeed;
@@ -37,7 +40,7 @@ public class HumanBeing implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @NotBlank(message = "'name' must be non empty")
+    @NotBlank(message = "'name' cannot be empty")
     @Column(name = "name", nullable = false, columnDefinition = "TEXT")
     private String name;
 
@@ -64,7 +67,7 @@ public class HumanBeing implements Serializable {
     private int impactSpeed;
 
     @Column(name = "team_id")
-    @Positive(message = "expected a positive integer, got ${teamId}")
+    @Positive(message = "expected a positive integer, got ${validatedValue}")
     private Long teamId;
 
     @Enumerated(EnumType.STRING)
@@ -74,7 +77,7 @@ public class HumanBeing implements Serializable {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "mood", nullable = false)
-    @NotNull(message = "Поле 'mood' не может быть null")
+    @NotNull(message = "'mood' cannot be null")
     @ValidEnum(message = "should be one of the following: ${validValues}", enumClass = Mood.class)
     private Mood mood;
 

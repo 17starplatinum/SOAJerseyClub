@@ -59,7 +59,7 @@ public class EnumValidator implements ConstraintValidator<ValidEnum, Object> {
         if (!isValid && context != null) {
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate(
-                    messageTemplate.replace("${validValues}", validValuesString) +
+                    messageTemplate.replaceAll("\\$\\{validValues}", validValuesString) +
                             ". Provided value: '" + value + "'"
             ).addConstraintViolation();
         }

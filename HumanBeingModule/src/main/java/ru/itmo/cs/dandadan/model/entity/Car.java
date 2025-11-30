@@ -1,7 +1,10 @@
 package ru.itmo.cs.dandadan.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import ru.itmo.cs.dandadan.validation.annotation.ValidEnum;
