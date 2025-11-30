@@ -1,4 +1,4 @@
-package unit;
+package ru.itmo.cs.dandadan.unit;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -6,15 +6,14 @@ import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.itmo.cs.dandadan.model.entity.Coordinates;
-import ru.itmo.cs.dandadan.model.entity.HumanBeing;
-import ru.itmo.cs.dandadan.model.entity.Mood;
+import ru.itmo.cs.dandadan.model.entity.*;
 
-import java.time.ZonedDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class EntityTests {
     private Validator validator;
@@ -38,7 +37,7 @@ public class EntityTests {
         humanBeing.setName(null);
 
         Set<ConstraintViolation<HumanBeing>> violations = validator.validate(humanBeing);
-        assertViolation(violations, "name", "Поле 'name' не должно быть пустым");
+        assertViolation(violations, "name", "'name' cannot be empty");
     }
 
     @Test
@@ -47,7 +46,7 @@ public class EntityTests {
         humanBeing.setName("");
 
         Set<ConstraintViolation<HumanBeing>> violations = validator.validate(humanBeing);
-        assertViolation(violations, "name", "Поле 'name' не должно быть пустым");
+        assertViolation(violations, "name", "'name' cannot be empty");
     }
 
     @Test
@@ -56,7 +55,7 @@ public class EntityTests {
         humanBeing.setCoordinates(null);
 
         Set<ConstraintViolation<HumanBeing>> violations = validator.validate(humanBeing);
-        assertViolation(violations, "coordinates", "Поле 'coordinates' не должно быть null");
+        assertViolation(violations, "coordinates", "'coordinates' cannot be null");
     }
 
     // Тест чисто для покрытия, всм примитив будет null?
@@ -72,7 +71,25 @@ public class EntityTests {
         humanBeing.setHasToothpick(null);
 
         Set<ConstraintViolation<HumanBeing>> violations = validator.validate(humanBeing);
-        assertViolation(violations, "hasToothpick", "Поле 'hasToothpick' не должно быть null");
+        assertViolation(violations, "hasToothpick", "'hasToothpick' cannot be null");
+    }
+
+    @Test
+    void weaponType_invalidValue_shouldBecomeNull() {
+        HumanBeing humanBeing = createValidHumanBeing();
+        humanBeing.setWeaponType(WeaponType.fromValue("SWORD"));
+
+        Set<ConstraintViolation<HumanBeing>> violations = validator.validate(humanBeing);
+        assertEquals(0, violations.size());
+    }
+
+    @Test
+    void mood_invalidValue_shouldBecomeNull() {
+        HumanBeing humanBeing = createValidHumanBeing();
+        humanBeing.setMood(Mood.fromValue("HAPPINESS"));
+
+        Set<ConstraintViolation<HumanBeing>> violations = validator.validate(humanBeing);
+        assertViolation(violations, "mood", "'mood' cannot be null");
     }
 
     @Test
@@ -81,7 +98,7 @@ public class EntityTests {
         humanBeing.setMood(null);
 
         Set<ConstraintViolation<HumanBeing>> violations = validator.validate(humanBeing);
-        assertViolation(violations, "mood", "Поле 'mood' не может быть null");
+        assertViolation(violations, "mood", "'mood' cannot be null");
     }
 
     // Тест чисто для покрытия, всм примитив будет null?
@@ -94,38 +111,63 @@ public class EntityTests {
     @Test
     void impactSpeed_maxLimit_shouldFailValidation() {
         HumanBeing humanBeing = createValidHumanBeing();
-        humanBeing.setImpactSpeed(59);
+        int intValue = 59;
+        humanBeing.setImpactSpeed(intValue);
 
         Set<ConstraintViolation<HumanBeing>> violations = validator.validate(humanBeing);
-        assertViolation(violations, "impactSpeed", "Поле 'impactSpeed' не должно быть больше 58");
+        assertViolation(violations, "impactSpeed", "'impactSpeed' maximum value is 58, got " + intValue + ". Possible underflow");
+    }
+
+    @Test
+    void impactSpeed_minLimit_shouldFailValidation() {
+        HumanBeing humanBeing = createValidHumanBeing();
+        int intValue = -3;
+        humanBeing.setImpactSpeed(intValue);
+
+        Set<ConstraintViolation<HumanBeing>> violations = validator.validate(humanBeing);
+        assertViolation(violations, "impactSpeed", "'impactSpeed' minimum value is 0, got " + intValue + ". Possible overflow");
     }
 
     @Test
     void teamId_nonPositive_shouldFailValidation() {
         HumanBeing humanBeing = createValidHumanBeing();
-        humanBeing.setTeamId(0L);
+        Long invalidTeamId = 0L;
+        humanBeing.setTeamId(invalidTeamId);
 
         Set<ConstraintViolation<HumanBeing>> violations = validator.validate(humanBeing);
-        assertViolation(violations, "teamId", "Поле 'teamId' должно быть натуральным числом");
+        assertViolation(violations, "teamId", "expected a positive integer, got " + invalidTeamId);
     }
 
     @Test
     void embedded_coordinates_shouldFailValidation() {
         HumanBeing humanBeing = createValidHumanBeing();
-        new Coordinates();
+        Integer intValue = -63;
         Coordinates invalidCoordinates = Coordinates.builder()
-                .x(-63)
+                .x(intValue)
                 .y(12.05454)
                 .build();
         humanBeing.setCoordinates(invalidCoordinates);
 
         Set<ConstraintViolation<HumanBeing>> violations = validator.validate(humanBeing);
-        assertViolation(violations, "x", "Поле 'x' должно быть больше -63");
+        assertViolation(violations, "coordinates.x", "'coordinates.x' exclusive minimum value is -63, got " + intValue);
+    }
+
+    @Test
+    void embedded_car_shouldFailValidation() {
+        HumanBeing humanBeing = createValidHumanBeing();
+        Car invalidCar = Car.builder()
+                .cool(null)
+                .color(Color.fromValue("CYAN"))
+                .model("Grand National Experimental")
+                .build();
+        humanBeing.setCar(invalidCar);
+        Set<ConstraintViolation<HumanBeing>> violations = validator.validate(humanBeing);
+        assertViolation(violations, "car.color", "'car.color' cannot be null");
     }
 
     private HumanBeing createValidHumanBeing() {
         return HumanBeing.builder()
-                .name("")
+                .name("Redgry")
                 .creationDate(ZonedDateTime.now(ZoneId.of("UTC")))
                 .realHero(true)
                 .hasToothpick(true)

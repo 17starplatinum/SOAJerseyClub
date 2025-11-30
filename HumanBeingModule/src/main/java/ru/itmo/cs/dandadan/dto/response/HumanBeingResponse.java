@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-import jakarta.validation.constraints.Positive;
 import ru.itmo.cs.dandadan.model.entity.Car;
 import ru.itmo.cs.dandadan.model.entity.Coordinates;
 import ru.itmo.cs.dandadan.model.entity.Mood;
@@ -34,6 +34,7 @@ import java.time.ZonedDateTime;
 @Setter
 @Builder
 public class HumanBeingResponse implements Serializable {
+    @Positive
     @NotNull
     private Long id;
     @NotNull
