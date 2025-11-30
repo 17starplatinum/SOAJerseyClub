@@ -88,6 +88,7 @@ public class HumanBeingResource {
 
     @PUT
     @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response updateHumanBeing(@PathParam("id") long id, @Valid HumanBeingRequest humanBeingRequest) {
         return Response.ok(humanBeingService.updateHumanBeing(id, humanBeingRequest), MediaType.APPLICATION_JSON).build();
