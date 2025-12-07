@@ -91,7 +91,7 @@ public class TeamService {
                 humanBeingServiceClient.updateHumanBeing(human.getId(), human);
             }
         } catch (RuntimeException e) {
-            throw new RuntimeException("Upstream service error: " + e.getMessage(), e);
+            throw new RuntimeException("Upstream service unavailable: " + e.getMessage(), e);
         }
 
         teamRepository.delete(team);

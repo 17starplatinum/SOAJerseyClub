@@ -84,15 +84,15 @@ public class GlobalExceptionHandler {
                 ex.getMessage().contains("expected") || ex.getMessage().contains("must")) {
             error.setCode(400);
             error.setMessage(ex.getMessage());
-        } else if (ex.getMessage().contains("Upstream")) {
-            error.setCode(502);
-            error.setMessage("Upstream service error: " + ex.getMessage());
+        } else if (ex.getMessage().contains("unavailable") || ex.getMessage().contains("Unavailable")) {
+            error.setCode(503);
+            error.setMessage("Upstream service unavailable: " + ex.getMessage());
         } else if (ex.getMessage().contains("timeout") || ex.getMessage().contains("Timeout")) {
             error.setCode(504);
             error.setMessage("Upstream timeout: " + ex.getMessage());
-        } else if (ex.getMessage().contains("unavailable") || ex.getMessage().contains("Unavailable")) {
-            error.setCode(503);
-            error.setMessage("Service unavailable: " + ex.getMessage());
+        } else if (ex.getMessage().contains("Upstream")) {
+            error.setCode(502);
+            error.setMessage("Upstream service error: " + ex.getMessage());
         } else {
             error.setCode(500);
             error.setMessage("Internal server error: " + ex.getMessage());

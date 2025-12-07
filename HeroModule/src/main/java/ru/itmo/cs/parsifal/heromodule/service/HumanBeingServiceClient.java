@@ -49,7 +49,7 @@ public class HumanBeingServiceClient {
             throw new RuntimeException("Upstream timeout: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("Error calling HumanBeing service", e);
-            throw new RuntimeException("Upstream service error", e);
+            throw new RuntimeException("Upstream service unavailable", e);
         }
     }
 
@@ -86,9 +86,12 @@ public class HumanBeingServiceClient {
                     ? response.getBody().getHumanBeingGetResponseDtos()
                     : Collections.emptyList();
 
+        } catch (org.springframework.web.client.ResourceAccessException e) {
+            log.error("Service unavailable getting human beings by team id", e);
+            throw new RuntimeException("Upstream service unavailable: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("Error getting human beings by team id", e);
-            throw new RuntimeException("Upstream service unavailable", e);
+            throw new RuntimeException("Upstream service error", e);
         }
     }
 }
