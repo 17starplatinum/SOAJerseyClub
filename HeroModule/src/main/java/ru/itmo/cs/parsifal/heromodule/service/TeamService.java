@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import ru.itmo.cs.parsifal.heromodule.exception.NotFoundException;
+import ru.itmo.cs.parsifal.heromodule.exception.ValidationException;
 import ru.itmo.cs.parsifal.heromodule.model.*;
 import ru.itmo.cs.parsifal.heromodule.repository.TeamRepository;
 
@@ -58,10 +60,10 @@ public class TeamService {
 
     public TeamResponse getTeamById(Long id) {
         if (id == null || id <= 0) {
-            throw new IllegalArgumentException("Team ID must be a positive integer");
+            throw new ValidationException("Team ID must be a positive integer");
         }
         Team team = teamRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Team not found with id=" + id));
+                .orElseThrow(() -> new NotFoundException("Team not found with id=" + id));
         return convertToResponse(team);
     }
 
@@ -74,7 +76,7 @@ public class TeamService {
 
     public TeamResponse updateTeam(Long id, TeamDTO teamDTO) {
         Team team = teamRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Team not found with id=" + id));
+                .orElseThrow(() -> new NotFoundException("Team not found with id=" + id));
         team.setName(teamDTO.getName());
         Team updatedTeam = teamRepository.save(team);
         return convertToResponse(updatedTeam);
@@ -82,7 +84,7 @@ public class TeamService {
 
     public void deleteTeam(Long id) {
         Team team = teamRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Team not found with id=" + id));
+                .orElseThrow(() -> new NotFoundException("Team not found with id=" + id));
 
         try {
             List<HumanBeingFullResponse> teamMembers = humanBeingServiceClient.getHumanBeingsByTeamId(id);
@@ -100,26 +102,25 @@ public class TeamService {
     public List<HumanBeingFullResponse> manipulateTeamMembers(TeamPatchRequest request) {
         if (request.getOperation() == OperationType.ADD || request.getOperation() == OperationType.TRANSFER) {
             if (request.getTeamId() == null) {
-                throw new IllegalArgumentException("Team ID is required for ADD and TRANSFER operations");
+                throw new ValidationException("Team ID is required for ADD and TRANSFER operations");
             }
             if (request.getTeamId() <= 0) {
-                throw new IllegalArgumentException("Team ID must be a positive integer");
+                throw new ValidationException("Team ID must be a positive integer");
             }
         }
 
         if (request.getOperation() == OperationType.REMOVE && request.getTeamId() != null) {
-            throw new IllegalArgumentException("Team ID must be null for REMOVE operation");
+            throw new ValidationException("Team ID must be null for REMOVE operation");
         }
 
         if (request.getHumanId() == null || request.getHumanId() <= 0) {
-            throw new IllegalArgumentException("Human ID must be a positive integer");
+            throw new ValidationException("Human ID must be a positive integer");
         }
+
         HumanBeingFullResponse human = humanBeingServiceClient.getHumanBeings(null).stream()
                 .filter(h -> h.getId().equals(request.getHumanId()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Human being not found with id=" + request.getHumanId()));
-
-        Long oldTeamId = human.getTeamId();
+                .orElseThrow(() -> new NotFoundException("Human being not found with id=" + request.getHumanId()));
 
         switch (request.getOperation()) {
             case ADD:
@@ -142,7 +143,7 @@ public class TeamService {
 
     public List<HumanBeingFullResponse> assignCarsToTeam(Long teamId) {
         teamRepository.findById(teamId)
-                .orElseThrow(() -> new RuntimeException("Team not found with id=" + teamId));
+                .orElseThrow(() -> new NotFoundException("Team not found with id=" + teamId));
 
         List<HumanBeingFullResponse> teamMembers = humanBeingServiceClient.getHumanBeingsByTeamId(teamId);
         List<HumanBeingFullResponse> updatedHumans = new ArrayList<>();

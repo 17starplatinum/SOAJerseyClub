@@ -8,6 +8,8 @@ import ru.itmo.cs.parsifal.heromodule.service.HumanBeingServiceClient;
 import ru.itmo.cs.parsifal.heromodule.service.TeamService;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
 import java.util.List;
 
 @RestController
@@ -28,7 +30,7 @@ public class HeroController {
 
     @PatchMapping("/team/{team-id}/car/add")
     public ResponseEntity<List<HumanBeingFullResponse>> assignCarsToTeam(
-            @PathVariable("team-id") @NotNull Long teamId) {
+            @PathVariable("team-id") @NotNull @Positive Long teamId) {
 
         List<HumanBeingFullResponse> updatedHumans = teamService.assignCarsToTeam(teamId);
         return ResponseEntity.ok(updatedHumans);
