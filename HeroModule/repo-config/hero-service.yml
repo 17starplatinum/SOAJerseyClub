@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: hero-service
+
+humanbeing:
+  service:
+    name: HUMANBEING-SERVICE
+
+server:
+  port: 0
+
+cors:
+  allowed-origins: http://localhost:5173,https://se.ifmo.ru

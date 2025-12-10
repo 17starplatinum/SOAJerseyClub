@@ -1,0 +1,22 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    config:
+      uri: http://localhost:8888
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+zuul:
+  routes:
+    hero-service:
+      path: /api/v1/**          # наружный URL
+      serviceId: hero-service
+  prefix: /
+  sensitive-headers: Cookie,Set-Cookie
