@@ -7,6 +7,22 @@ spring:
     config:
       server:
         native:
-          search-locations: file:///D:/Programming/IdeaProjects/hero-cloud/repo-config
+          search-locations: ${CONFIG_REPO_PATH:file:./repo-config}
+
 server:
   port: 8888
+  ssl:
+    enabled: true
+    key-store: classpath:keystore/config-server.p12
+    key-store-password: changeit
+    key-password: changeit
+    key-store-type: PKCS12
+    key-alias: config-server
+    trust-store: classpath:keystore/truststore.p12
+    trust-store-password: changeit
+    trust-store-type: PKCS12
+    client-auth: need
+
+eureka:
+  client:
+    enabled: false
