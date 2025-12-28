@@ -4,7 +4,7 @@ spring:
 
 humanbeing:
   service:
-    name: HUMANBEING-SERVICE
+    url: https://localhost:15478
 
 server:
   port: 12345

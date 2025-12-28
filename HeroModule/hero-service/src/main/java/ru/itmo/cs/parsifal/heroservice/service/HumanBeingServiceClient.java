@@ -23,10 +23,10 @@ public class HumanBeingServiceClient {
 
     private final RestTemplate restTemplate;
 
-    @Value("${humanbeing.service.name:HUMANBEING-SERVICE}")
+    @Value("${humanbeing.service.url:https://localhost:15478}")
     private String humanBeingServiceName;
 
-    String baseUrl = "http://" + humanBeingServiceName + "/api/v1";
+    String baseUrl = humanBeingServiceName + "/api/v1";
 
     public List<HumanBeingFullResponse> getHumanBeings(Boolean realHeroOnly) {
         try {
