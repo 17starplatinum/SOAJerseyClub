@@ -7,7 +7,7 @@ humanbeing:
     name: HUMANBEING-SERVICE
 
 server:
-  port: 0
+  port: 12345
 
 cors:
   allowed-origins: http://localhost:5173,https://se.ifmo.ru

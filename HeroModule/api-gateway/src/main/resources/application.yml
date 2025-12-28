@@ -3,7 +3,7 @@ spring:
     name: api-gateway
 
 server:
-  port: 8443
+  port: 15479
   ssl:
     enabled: true
     key-store: classpath:keystore/api-gateway.p12
@@ -36,7 +36,20 @@ zuul:
     hero-service:
       path: /api/v1/**
       serviceId: hero-service
-      stripPrefix: false
+      stripPrefix: true
+      sensitive-headers: Cookie,Set-Cookie
+
+  ignored-headers: Access-Control-Allow-Credentials,Access-Control-Allow-Origin
+  host:
+    connect-timeout-millis: 60000
+    socket-timeout-millis: 60000
+
+cors:
+  allowed-origins: https://se.ifmo.ru,http://localhost:5173
 
 ribbon:
   is-secure: true
+
+hero-service:
+  ribbon:
+    IsSecure: true

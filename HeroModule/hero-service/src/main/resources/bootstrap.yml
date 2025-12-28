@@ -30,6 +30,7 @@ eureka:
       trust-store-password: changeit
       trust-store-type: PKCS12
   instance:
-    hostname: hero-service
+    hostname: localhost
     secure-port-enabled: true
     non-secure-port-enabled: false
+    secure-port: 12345

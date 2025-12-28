@@ -1,5 +1,5 @@
 server:
-  port: 0
+  port: 12345
   ssl:
     enabled: true
     key-store: classpath:keystore/hero-service.p12
@@ -10,7 +10,7 @@ server:
     trust-store: classpath:keystore/truststore.p12
     trust-store-password: changeit
     trust-store-type: PKCS12
-    client-auth: need
+    client-auth: none
 
 management:
   endpoints:

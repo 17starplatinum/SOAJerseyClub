@@ -23,9 +23,9 @@ eureka:
     register-with-eureka: false
     fetch-registry: false
     service-url:
-      defaultZone: https://discovery-service:8761/eureka
+      defaultZone: https://localhost:8761/eureka
   instance:
-    hostname: discovery-service
+    hostname: localhost
     secure-port-enabled: true
     non-secure-port-enabled: false
     secure-port: 8761
