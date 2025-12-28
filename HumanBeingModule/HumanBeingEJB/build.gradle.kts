@@ -36,7 +36,7 @@ dependencies {
 }
 
 tasks.jar {
-    archiveFileName.set("human-being-web.jar")
+    archiveFileName.set("human-being-ejb.jar")
 }
 
 tasks.test {

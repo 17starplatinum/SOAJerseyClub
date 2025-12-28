@@ -1,6 +1,5 @@
 package ru.itmo.cs.dandadan.config;
 
-import jakarta.ejb.Stateless;
 import lombok.NoArgsConstructor;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -10,7 +9,6 @@ import ru.itmo.cs.dandadan.model.entity.Coordinates;
 import ru.itmo.cs.dandadan.model.entity.HumanBeing;
 
 @NoArgsConstructor
-@Stateless
 public class HibernateSessionFactoryConfig {
     private static SessionFactory sessionFactory;
 

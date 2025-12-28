@@ -1,7 +1,7 @@
 rootProject.name = "HumanBeingModule"
 
-include("HumanBeingEJB")
-include("HumanBeingWeb")
+include("human-being-ejb")
+include("human-being-web")
 
 pluginManagement {
     repositories {
