@@ -21,11 +21,13 @@ public class ConsulRegistrar {
     private static final Logger LOG = Logger.getLogger(ConsulRegistrar.class.getName());
     private static final String SERVICE_NAME = "human-being-service";
     private static final String CONSUL_HOST = System.getenv().getOrDefault("CONSUL_HOST", "localhost");
-    private static final int CONSUL_PORT = Integer.parseInt(System.getenv().getOrDefault("CONSUL_PORT", "8500"));
-
-    private static final String HEALTH_CHECK_URL = "https://172.17.0.1:8080/api/v1/health-check";
     private static final String SERVICE_ADDRESS = "172.17.0.1";
     private static final int SERVICE_PORT = 8080;
+    private static final int CONSUL_PORT = Integer.parseInt(System.getenv().getOrDefault("CONSUL_PORT", "8500"));
+
+    private static final String HEALTH_CHECK_URL = "https://" + SERVICE_ADDRESS +":" + SERVICE_PORT + "/api/v1/health-check";
+
+
 
     private CloseableHttpClient httpClient;
 

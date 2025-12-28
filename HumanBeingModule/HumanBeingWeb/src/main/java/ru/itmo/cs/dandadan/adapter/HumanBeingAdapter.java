@@ -15,22 +15,22 @@ import java.util.function.Supplier;
 
 @ApplicationScoped
 public class HumanBeingAdapter {
-    @EJB(lookup = "java:global/human-being-ejb/AddHumanBeingBean!ru.itmo.cs.dandadan.ejb.remote.AddHumanBeingRemote")
+    @EJB(lookup = "java:global/human-being-web/AddHumanBeingBean!ru.itmo.cs.dandadan.ejb.remote.AddHumanBeingRemote")
     private AddHumanBeingRemote addHumanBeingService;
 
-    @EJB(lookup = "java:global/human-being-ejb/DeleteHumanBeingBean!ru.itmo.cs.dandadan.ejb.remote.DeleteHumanBeingRemote")
+    @EJB(lookup = "java:global/human-being-web/DeleteHumanBeingBean!ru.itmo.cs.dandadan.ejb.remote.DeleteHumanBeingRemote")
     private DeleteHumanBeingRemote deleteHumanBeingService;
 
-    @EJB(lookup = "java:global/human-being-ejb/GetHumanBeingBean!ru.itmo.cs.dandadan.ejb.remote.GetHumanBeingRemote")
+    @EJB(lookup = "java:global/human-being-web/GetHumanBeingBean!ru.itmo.cs.dandadan.ejb.remote.GetHumanBeingRemote")
     private GetHumanBeingRemote getHumanBeingService;
 
-    @EJB(lookup = "java:global/human-being-ejb/GetHumanBeingsBean!ru.itmo.cs.dandadan.ejb.remote.GetHumanBeingsRemote")
+    @EJB(lookup = "java:global/human-being-web/GetHumanBeingsBean!ru.itmo.cs.dandadan.ejb.remote.GetHumanBeingsRemote")
     private GetHumanBeingsRemote getHumanBeingsService;
 
-    @EJB(lookup = "java:global/human-being-ejb/GetUniqueImpactSpeedsBean!ru.itmo.cs.dandadan.ejb.remote.GetUniqueImpactSpeedsRemote")
+    @EJB(lookup = "java:global/human-being-web/GetUniqueImpactSpeedsBean!ru.itmo.cs.dandadan.ejb.remote.GetUniqueImpactSpeedsRemote")
     private GetUniqueImpactSpeedsRemote getUniqueImpactSpeedsService;
 
-    @EJB(lookup = "java:global/human-being-ejb/UpdateHumanBeingBean!ru.itmo.cs.dandadan.ejb.remote.UpdateHumanBeingRemote")
+    @EJB(lookup = "java:global/human-being-web/UpdateHumanBeingBean!ru.itmo.cs.dandadan.ejb.remote.UpdateHumanBeingRemote")
     private UpdateHumanBeingRemote updateHumanBeingService;
 
     private <T> T unwrap(Supplier<Object> supplier) {
