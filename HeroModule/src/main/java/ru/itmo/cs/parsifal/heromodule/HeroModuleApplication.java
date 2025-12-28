@@ -9,18 +9,18 @@ import org.springframework.validation.beanvalidation.MethodValidationPostProcess
 
 @SpringBootApplication
 public class HeroModuleApplication extends SpringBootServletInitializer {
-
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(HeroModuleApplication.class);
-    }
+//
+//    @Override
+//    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+//        return application.sources(HeroModuleApplication.class);
+//    }
 
     public static void main(String[] args) {
         SpringApplication.run(HeroModuleApplication.class, args);
     }
 
-    @Bean
-    public MethodValidationPostProcessor methodValidationPostProcessor() {
-        return new MethodValidationPostProcessor();
-    }
+//    @Bean
+//    public MethodValidationPostProcessor methodValidationPostProcessor() {
+//        return new MethodValidationPostProcessor();
+//    }
 }
