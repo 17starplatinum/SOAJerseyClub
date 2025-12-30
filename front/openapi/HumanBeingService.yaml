@@ -1,0 +1,581 @@
+openapi: 3.1.0
+info:
+  title: Human Being service REST endpoints
+  description: This is the first part of our assignment in our course 'Service-Oriented Architecture' where we generate Swagger documentation before implementing it in practice.
+  version: 1.0.3
+servers:
+  - url: https://localhost:15478/api/v1
+paths:
+  # Crud
+  /human-beings:
+    get:
+      summary: Get list of human beings.
+      description: |
+        **Get all human beings** in the collection in the form of a _list_.
+      operationId: getHumanBeings
+      parameters:
+        - name: sort
+          in: query
+          description: |
+            Array of fields used for **sorting**. "-" is used for sorting in **descending** order. _If queries and deletion request are provided for one of these fields, independent of "-", an error will be returned._
+          required: false
+          explode: true
+          schema:
+            type: array
+            default: id
+            enum:
+              - id
+              - name
+              - coordinates.x
+              - coordinates.y
+              - creationDate
+              - realHero
+              - hasToothpick
+              - impactSpeed
+              - weaponType
+              - mood
+              - car.color
+              - car.model
+              - car.cool
+              - -id
+              - -name
+              - -coordinates.x
+              - -coordinates.y
+              - -creationDate
+              - -realHero
+              - -hasToothpick
+              - -impactSpeed
+              - -weaponType
+              - -mood
+              - -car.color
+              - -car.model
+              - -car.cool
+            example:
+              - -creationDate
+              - name
+        - name: filter
+          in: query
+          required: false
+          description: |
+            Array of fields used for **filtering**. Each element must contain the name of the filterable field and the filtering method in square parentheses, as well as the value that will be used for filtering. An _invalid_ value will result in an **error response**. Below is a list of available operations and their code values, their descriptions and available datatypes for said operations.
+
+            ![No fucking way](https://64.media.tumblr.com/4b218f9ce82898062e6b56c88d160a18/49cb9142a33ad8da-30/s540x810/8cb2e0f908fa078eb8d37aec836d9c9ed066a661.gifv)
+            | **Operation**         | **Code** | **Description**                                                                                                               | **Datatype**                                                   |
+            |-----------------------|----------|-------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------|
+            | Equal                 | eq       | Filters objects by their chosen field and returns objects which have a value equal to the provided                            | String, int, float, double, long, boolean, enum, ZonedDateTime |
+            | Not equal             | neq      | Filters objects by their chosen field and returns objects which have a value not equal to the provided                        | String, int, float, double, long, boolean, enum, ZonedDateTime |
+            | Greater than          | gt       | Filters objects by their chosen field and returns objects which have a value greater than the provided                        | int, float, double, long, boolean, enum, ZonedDateTime         |
+            | Lesser than           | lt       | Filters objects by their chosen field and returns objects which have a value lesser than the provided                         | int, float, double, long, boolean, enum, ZonedDateTime         |
+            | Greater than or equal | gte      | Filters objects by their chosen field and returns objects which have a value greater than or equal to the provided            | int, float, double, long, enum, ZonedDateTime               |
+            | Lesser than or equal  | lte      | Filters objects by their chosen field and returns objects which have a value lesser than or equal to the provided             | int, float, double, long, enum, ZonedDateTime                  |
+            | Substring search      | like     | Filters objects by their chosen field and returns objects which have a value matched using substring search with the provided | String, int, float, double, long, boolean, enum, ZonedDateTime |
+          schema:
+            type: array
+            items:
+              type: string
+              examples:
+                - coordinates.x[eq]=-62
+              pattern: '^(?:(?:id|coordinates\.x|coordinates\.y|creationDate|impactSpeed)\[(?:eq|neq|gt|lt|gte|lte|like)\]|(?:name|realHero|hasToothpick|weaponType|mood|car\.model|car\.color|car\.cool)\[(?:eq|neq|like)\])=.+$'
+            example:
+              - 'name[eq]=Sean%20Combs'
+              - 'realHero[eq]=true'
+              - 'weaponType[eq]=null'
+              - 'car.cool[neq]=false'
+              - 'mood[neq]=GLOOM'
+              - 'creationDate[gt]=2027-12-06T13:35:27.265Z'
+              - 'impactSpeed[lt]=53'
+              - 'coordinates.x[gte]=-5'
+              - 'coordinates.y[lte]=3.41'
+              - 'impactSpeed[like]=2'
+          style: form
+          explode: true
+        - name: page
+          in: query
+          required: false
+          description: |
+            Specifies the **page number to be paginated**. If used without the "pageSize" parameter, the page size will be **10** by default. If _none_ of the parameters "page" and "pageSize" are used, then **all** human beings will be returned.
+          schema:
+            type: integer
+            default: 1
+            exclusiveMinimum: 0
+        - name: pageSize
+          in: query
+          required: false
+          description: |
+            Specifies the **page size**. If used _without the "page" parameter_, the **first** page will be displayed by default. If _none_ of the parameters "page" and "pageSize" are used, then **all** human beings will be returned.
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+      tags:
+        - Human beings
+      responses:
+        '200':
+          description: Returns an **array** of human beings based on specified parameters.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HumanBeingPaginatedSchema'
+        '400':
+          description: One or more query parameters are _invalid_.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidSort:
+                  summary: Invalid sort field
+                  value:
+                    code: 400
+                    message: "Invalid 'sort' value: '-babyOil' is not a sortable field"
+                    time: 2025-09-03T19:14:07.339Z
+                invalidPage:
+                  summary: Invalid page number
+                  value:
+                    code: 400
+                    message: "Invalid 'page': must be >= 0, got -1"
+                    time: 2025-09-03T19:14:07.874Z
+                invalidFilter:
+                  summary: Invalid filter pattern
+                  value:
+                    code: 400
+                    message: "Invalid 'filter' format: expected 'field[op]=value', got 'name(eq)John'"
+                    time: 2025-09-03T19:14:07.642Z
+        '500':
+          $ref: '#/components/responses/InternalError'
+        default:
+          description: Returns an error response in the form of **error code, message and time**.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Add a new human being.
+      description: |
+        **Add** a new human being with valid fields.
+      operationId: addHumanBeing
+      tags:
+        - Human beings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HumanBeingDTOSchema'
+      responses:
+        '200':
+          description: Returns the momentarily added human being.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HumanBeingFullSchema'
+        '400':
+          description: Request body is missing or malformed JSON.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 400
+                message: "Malformed JSON body or missing required fields"
+                time: 2025-09-03T19:14:07.006Z
+        '422':
+          description: Validation failed for input data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                emptyName:
+                  summary: Name is empty
+                  value:
+                    code: 422
+                    message: "Validation failed: 'name' must be non-empty"
+                    time: 2025-09-03T19:14:07.696Z
+                speedTooHigh:
+                  summary: Impact speed exceeds maximum
+                  value:
+                    code: 422
+                    message: "Validation failed: 'impactSpeed' maximum value is 58, got 77"
+                    time: 2025-09-03T19:14:07.804Z
+        '500':
+          $ref: '#/components/responses/InternalError'
+        default:
+          description: Returns an error response in the form of **error code, message and time**.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /human-beings/{id}:
+    get:
+      summary: Get existing human being by given ID.
+      description: Get **a singular human being** via their ID.
+      operationId: getHumanBeing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID via which a human being will be found.
+          schema:
+            type: integer
+            format: int64
+            exclusiveMinimum: 0
+            examples: [ 228 ]
+      tags:
+        - Human beings
+      responses:
+        '200':
+          description: Returns human being by given ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HumanBeingFullSchema'
+        '400':
+          description: The path parameter 'id' is _invalid_.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 400
+                message: "Invalid id: expected a positive integer, got 0"
+                time: 2025-09-03T19:14:07.362Z
+        '404':
+          description: Human being with the given ID _does not exist_.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 404
+                message: "Human being not found with id=228"
+                time: 2025-09-03T19:14:07.629Z
+        '500':
+          $ref: '#/components/responses/InternalError'
+        default:
+          description: Returns an error response in the form of **error code, message and time**.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      summary: Update an existing human being by their ID.
+      description: Update a specific human being's fields by their ID.
+      operationId: updateHumanBeing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID via which a human being will be **updated**.
+          schema:
+            type: integer
+            format: int64
+            exclusiveMinimum: 0
+            examples: [ 67 ]
+      tags:
+        - Human beings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HumanBeingDTOSchema'
+      responses:
+        '200':
+          description: Returns the updated human being.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HumanBeingFullSchema'
+        '400':
+          description: The path parameter 'id' is *invalid* or *body is malformed*.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidId:
+                  summary: Invalid ID
+                  value:
+                    code: 400
+                    message: "Invalid 'id': expected positive integer, got -5"
+                    time: 2025-09-03T19:14:07.782Z
+                malformedBody:
+                  summary: Malformed JSON body
+                  value:
+                    code: 400
+                    message: "Malformed JSON body"
+                    time: 2025-09-03T19:14:07.336Z
+        '404':
+          description: Human being with the given ID *does not exist*.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 404
+                message: "Cannot update: human being with id=67 not found"
+                time: 2025-09-03T19:14:07.001Z
+        '422':
+          description: |
+            *Validation failed* for input data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 422
+                message: "Validation failed: 'coordinates.x' must be > -63"
+                time: 2025-09-03T19:14:07.942Z
+        '500':
+          $ref: '#/components/responses/InternalError'
+        default:
+          description: Returns an error response in the form of **error code, message and time**.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Deletes a human being by their ID.
+      description: |
+        **Deletes a human being** (and their associated objects) by their given ID.
+      operationId: deleteHumanBeing
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID via which a human being will be found.
+          schema:
+            type: integer
+            format: int64
+            exclusiveMinimum: 0
+            examples: [ 228 ]
+      tags:
+        - Human beings
+      responses:
+        '204':
+          description: No content indicating successful deletion of a human being.
+        '400':
+          description: The path parameter 'id' is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 400
+                message: "Invalid id: expected positive integer, got 0"
+                time: 2025-09-03T19:14:07.024Z
+        '404':
+          description: Human being with the given ID *does not exist*.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 404
+                message: "Cannot delete: human being with id=228 not found"
+                time: 2025-09-03T19:14:07.501Z
+        '500':
+          $ref: '#/components/responses/InternalError'
+        default:
+          description: Returns an error response in the form of **error code, message and time**.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /human-beings/unique-speeds:
+    get:
+      summary: Get an array of unique impactSpeed values in the collection.
+      description: Returns an array of **unique** integers which belong to human beings in the collection.
+      operationId: getUniqueImpactSpeeds
+      tags:
+        - Human beings
+      responses:
+        '200':
+          description: Returns an array of **unique** impactSpeeds.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImpactSpeedPaginatedSchema'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        default:
+          description: Returns an error response in the form of **error code, message and time**.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+# Models
+components:
+  responses:
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            code: 500
+            message: "Internal server error: unexpected failure while processing the request"
+            time: 2025-09-03T19:14:07.214Z
+  schemas:
+    HumanBeingDTOSchema:
+      type: object
+      properties:
+        name:
+          type: string
+          examples: [ "Sean Combs" ]
+          minLength: 1
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        realHero:
+          type: boolean
+          examples: [ true, false ]
+        hasToothpick:
+          type: boolean
+          examples: [ true, false ]
+        impactSpeed:
+          type: integer
+          format: int32
+          maximum: 58
+        weaponType:
+          oneOf:
+            - $ref: '#/components/schemas/WeaponType'
+            - type: 'null'
+        teamId:
+          oneOf:
+            - type: integer
+              format: int64
+              exclusiveMinimum: 0
+              examples: [ 15 ]
+              description: Id of a team the human being belons to. Can be updated, but only indirectly.
+            - type: 'null'
+        mood:
+          $ref: '#/components/schemas/Mood'
+        car:
+          oneOf:
+            - $ref: '#/components/schemas/Car'
+            - type: 'null'
+    HumanBeingFullSchema:
+      allOf:
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: integer
+              format: int64
+              exclusiveMinimum: 0
+              examples: [ 1488 ]
+              description: ID of a human being
+            creationDate:
+              type: string
+              format: date-time
+              examples: [ "2027-12-06T13:35:27.265Z" ]
+              description: Creation date of a human being
+        - $ref: '#/components/schemas/HumanBeingDTOSchema'
+    HumanBeingPaginatedSchema:
+      type: object
+      properties:
+        humanBeingGetResponseDtos:
+          type: array
+          items:
+            $ref: '#/components/schemas/HumanBeingFullSchema'
+        page:
+          type: integer
+          default: null
+          description: "Page number (nullable if not paginated)"
+        pageSize:
+          type: integer
+          default: null
+          description: "Page size (nullable if not paginated)"
+        totalPages:
+          type: integer
+          default: null
+          description: "Total pages (nullable if not paginated)"
+        totalCount:
+          type: integer
+          default: null
+          description: "Total count (nullable if not paginated)"
+    ImpactSpeedPaginatedSchema:
+      type: object
+      properties:
+        uniqueSpeeds:
+          type: array
+          items:
+            type: integer
+            format: int32
+            maximum: 58
+      examples:
+        - uniqueSpeeds: [ 1, 5, 8 ]
+    Coordinates:
+      type: object
+      properties:
+        x:
+          type: integer
+          format: int32
+          exclusiveMinimum: -63
+        y:
+          type: number
+          format: double
+    Car:
+      type: object
+      properties:
+        cool:
+          type:
+            - 'null'
+            - boolean
+          examples: [ true, false ]
+        color:
+          $ref: '#/components/schemas/Color'
+        model:
+          type:
+            - 'null'
+            - string
+          examples: [ Lada Kalina ]
+    WeaponType:
+      type:
+        - 'null'
+        - string
+      enum:
+        - AXE
+        - SHOTGUN
+        - MACHINE_GUN
+      examples: [ AXE ]
+    Mood:
+      type: string
+      enum:
+        - SADNESS
+        - SORROW
+        - GLOOM
+        - APATHY
+        - RAGE
+      examples: [ RAGE ]
+    Color:
+      type: string
+      enum:
+        - RED
+        - BLUE
+        - YELLOW
+        - GREEN
+        - BLACK
+        - WHITE
+      examples: [ RED ]
+    Error:
+      type: object
+      required:
+        - code
+        - message
+        - time
+      properties:
+        code:
+          type: integer
+          format: int32
+          examples: [ 400 ]
+        message:
+          type: string
+          examples: [ "Bad Request" ]
+        time:
+          type: string
+          format: date-time
+          examples: [ "2025-09-03T01:23:45.678Z" ]
