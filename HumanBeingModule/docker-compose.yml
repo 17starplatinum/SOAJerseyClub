@@ -18,14 +18,13 @@ services:
     container_name: consul
     restart: unless-stopped
     environment:
-      - CONSUL_HOST=$CONSUL_HOST
-      - CONSUL_PORT=$CONSUL_PORT
-      - CONSUL_DNS_PORT=$CONSUL_DNS_PORT
+      - CONSUL_HOST=${CONSUL_HOST}
+      - CONSUL_PORT=${CONSUL_PORT}
+      - CONSUL_DNS_PORT=${CONSUL_DNS_PORT}
     ports:
       - "${CONSUL_PORT}:${CONSUL_PORT}"
-      - "${CONSUL_PORT_SEC}:${CONSUL_PORT_SEC}"
       - "${CONSUL_DNS_PORT}:${CONSUL_DNS_PORT}/udp"
-    command: "agent -server -bootstrap-expect=1 -ui -client-0.0.0.0 -bind=0.0.0.0 -datacenter=dc1 -config-file=/consul/consul-config.json"
+    command: "agent -server -bootstrap-expect=1 -ui -client=0.0.0.0 -bind=0.0.0.0 -datacenter=dc1"
 
 volumes:
   database_data:
