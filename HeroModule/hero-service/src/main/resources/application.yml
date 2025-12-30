@@ -1,15 +1,15 @@
 server:
-  port: 12345
+  port: ${PORT:0}
   ssl:
     enabled: true
-    key-store: classpath:keystore/hero-service.p12
+    key-store: classpath:keystore/hero-service.jks
     key-store-password: changeit
     key-password: changeit
-    key-store-type: PKCS12
+    key-store-type: JKS
     key-alias: hero-service
-    trust-store: classpath:keystore/truststore.p12
+    trust-store: classpath:keystore/truststore.jks
     trust-store-password: changeit
-    trust-store-type: PKCS12
+    trust-store-type: JKS
     client-auth: none
 
 management:
@@ -17,3 +17,7 @@ management:
     web:
       exposure:
         include: health,info,refresh
+
+humanbeing:
+  service:
+    url: https://localhost:15478

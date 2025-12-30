@@ -2,6 +2,8 @@ package ru.itmo.cs.parsifal.heroservice.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -18,15 +20,14 @@ import java.util.List;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class HumanBeingServiceClient {
+    public HumanBeingServiceClient(@Qualifier("externalRestTemplate") RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     private final RestTemplate restTemplate;
 
-    @Value("${humanbeing.service.url:https://localhost:15478}")
-    private String humanBeingServiceName;
-
-    String baseUrl = humanBeingServiceName + "/api/v1";
+    String baseUrl = "https://localhost:15478" + "/api/v1";
 
     public List<HumanBeingFullResponse> getHumanBeings(Boolean realHeroOnly) {
         try {

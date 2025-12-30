@@ -2,12 +2,15 @@ spring:
   application:
     name: hero-service
 
-humanbeing:
-  service:
-    url: https://localhost:15478
-
 server:
-  port: 12345
+  port: ${PORT:0}
 
-cors:
-  allowed-origins: http://localhost:5173,https://se.ifmo.ru
+eureka:
+  instance:
+    prefer-ip-address: true
+    secure-port-enabled: true
+    non-secure-port-enabled: false
+
+    secure-port: ${local.server.port}
+
+    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${local.server.port}

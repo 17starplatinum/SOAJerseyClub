@@ -17,6 +17,32 @@ import java.security.KeyStore;
 @Configuration
 public class SSLConfig {
 
+    @Bean("externalRestTemplate")
+    public RestTemplate externalRestTemplate(
+            @Value("${server.ssl.key-store}") Resource keyStore,
+            @Value("${server.ssl.key-store-password}") String keyPass,
+            @Value("${server.ssl.trust-store}") Resource trustStore,
+            @Value("${server.ssl.trust-store-password}") String trustPass
+    ) throws Exception {
+
+        KeyStore ks = KeyStore.getInstance("JKS");
+        ks.load(keyStore.getInputStream(), keyPass.toCharArray());
+
+        KeyStore ts = KeyStore.getInstance("JKS");
+        ts.load(trustStore.getInputStream(), trustPass.toCharArray());
+
+        SSLContext sslContext = SSLContextBuilder.create()
+                .loadKeyMaterial(ks, keyPass.toCharArray())
+                .loadTrustMaterial(ts, null)
+                .build();
+
+        CloseableHttpClient client = HttpClients.custom()
+                .setSSLContext(sslContext)
+                .build();
+
+        return new RestTemplate(new HttpComponentsClientHttpRequestFactory(client));
+    }
+
     @Bean
     @LoadBalanced
     public RestTemplate restTemplate(
@@ -26,10 +52,10 @@ public class SSLConfig {
             @Value("${server.ssl.trust-store-password}") String trustPass
     ) throws Exception {
 
-        KeyStore ks = KeyStore.getInstance("PKCS12");
+        KeyStore ks = KeyStore.getInstance("JKS");
         ks.load(keyStore.getInputStream(), keyPass.toCharArray());
 
-        KeyStore ts = KeyStore.getInstance("PKCS12");
+        KeyStore ts = KeyStore.getInstance("JKS");
         ts.load(trustStore.getInputStream(), trustPass.toCharArray());
 
         SSLContext sslContext = SSLContextBuilder.create()
