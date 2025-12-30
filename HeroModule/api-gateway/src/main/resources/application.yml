@@ -6,14 +6,14 @@ server:
   port: 15479
   ssl:
     enabled: true
-    key-store: classpath:keystore/api-gateway.jks
+    key-store: classpath:keystore/api-gateway.p12
     key-store-password: changeit
     key-password: changeit
-    key-store-type: JKS
+    key-store-type: PKCS12
     key-alias: api-gateway
-    trust-store: classpath:keystore/truststore.jks
+    trust-store: classpath:keystore/truststore.p12
     trust-store-password: changeit
-    trust-store-type: JKS
+    trust-store-type: PKCS12
     client-auth: need
 
 eureka:
@@ -22,13 +22,13 @@ eureka:
       defaultZone: https://localhost:8761/eureka
     tls:
       enabled: true
-      key-store: classpath:keystore/api-gateway.jks
+      key-store: classpath:keystore/api-gateway.p12
       key-store-password: changeit
       key-password: changeit
-      key-store-type: JKS
-      trust-store: classpath:keystore/truststore.jks
+      key-store-type: PKCS12
+      trust-store: classpath:keystore/truststore.p12
       trust-store-password: changeit
-      trust-store-type: JKS
+      trust-store-type: PKCS12
 
 zuul:
   routes:

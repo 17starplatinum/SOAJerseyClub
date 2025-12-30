@@ -7,13 +7,13 @@ spring:
       fail-fast: true
       tls:
         enabled: true
-        key-store: classpath:keystore/hero-service.jks
+        key-store: classpath:keystore/hero-service.p12
         key-store-password: changeit
         key-password: changeit
-        key-store-type: JKS
-        trust-store: classpath:keystore/truststore.jks
+        key-store-type: PKCS12
+        trust-store: classpath:keystore/truststore.p12
         trust-store-password: changeit
-        trust-store-type: JKS
+        trust-store-type: PKCS12
 
 eureka:
   client:
@@ -21,15 +21,16 @@ eureka:
       defaultZone: https://localhost:8761/eureka
     tls:
       enabled: true
-      key-store: classpath:keystore/hero-service.jks
+      key-store: classpath:keystore/hero-service.p12
       key-store-password: changeit
       key-password: changeit
-      key-store-type: JKS
-      trust-store: classpath:keystore/truststore.jks
+      key-store-type: PKCS12
+      trust-store: classpath:keystore/truststore.p12
       trust-store-password: changeit
-      trust-store-type: JKS
+      trust-store-type: PKCS12
   instance:
+    instance-id: ${spring.application.name}:${random.value}
     hostname: localhost
     secure-port-enabled: true
     non-secure-port-enabled: false
-    secure-port: 12345
+    secure-port: ${server.port}

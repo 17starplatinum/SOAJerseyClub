@@ -24,11 +24,10 @@ public class SSLConfig {
             @Value("${server.ssl.trust-store}") Resource trustStore,
             @Value("${server.ssl.trust-store-password}") String trustPass
     ) throws Exception {
-
-        KeyStore ks = KeyStore.getInstance("JKS");
+        KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(keyStore.getInputStream(), keyPass.toCharArray());
 
-        KeyStore ts = KeyStore.getInstance("JKS");
+        KeyStore ts = KeyStore.getInstance("PKCS12");
         ts.load(trustStore.getInputStream(), trustPass.toCharArray());
 
         SSLContext sslContext = SSLContextBuilder.create()
@@ -52,10 +51,10 @@ public class SSLConfig {
             @Value("${server.ssl.trust-store-password}") String trustPass
     ) throws Exception {
 
-        KeyStore ks = KeyStore.getInstance("JKS");
+        KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(keyStore.getInputStream(), keyPass.toCharArray());
 
-        KeyStore ts = KeyStore.getInstance("JKS");
+        KeyStore ts = KeyStore.getInstance("PKCS12");
         ts.load(trustStore.getInputStream(), trustPass.toCharArray());
 
         SSLContext sslContext = SSLContextBuilder.create()

@@ -6,14 +6,14 @@ server:
   port: 8761
   ssl:
     enabled: true
-    key-store: classpath:keystore/discovery-service.jks
+    key-store: classpath:keystore/discovery-service.p12
     key-store-password: changeit
     key-password: changeit
-    key-store-type: JKS
+    key-store-type: PKCS12
     key-alias: discovery-service
-    trust-store: classpath:keystore/truststore.jks
+    trust-store: classpath:keystore/truststore.p12
     trust-store-password: changeit
-    trust-store-type: JKS
+    trust-store-type: PKCS12
     client-auth: need
 
 eureka:
