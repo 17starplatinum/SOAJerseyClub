@@ -17,10 +17,10 @@ public class HibernateSessionFactoryConfig {
             try {
                 Configuration configuration = new Configuration().configure();
                 String dbUser = System.getenv("DB_USERNAME");
-                if (dbUser == null) dbUser = "s372799";
+                if (dbUser == null) dbUser = "sXXXXXX";
 
                 String dbPass = System.getenv("DB_PASSWORD");
-                if (dbPass == null) dbPass = "xwVxXqHACMOxPOqS";
+                if (dbPass == null) dbPass = "****************";
 
                 configuration.setProperty("hibernate.connection.username", dbUser);
                 configuration.setProperty("hibernate.connection.password", dbPass);
