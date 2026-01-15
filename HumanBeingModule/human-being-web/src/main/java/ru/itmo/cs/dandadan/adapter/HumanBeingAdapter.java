@@ -14,22 +14,22 @@ import java.util.function.Supplier;
 
 @ApplicationScoped
 public class HumanBeingAdapter {
-    @EJB
+    @EJB(lookup = "java:global/human-being-ejb/AddHumanBeingBean!ru.itmo.cs.dandadan.ejb.remote.AddHumanBeingRemote")
     private AddHumanBeingRemote addHumanBeingService;
 
-    @EJB
+    @EJB(lookup = "java:global/human-being-ejb/DeleteHumanBeingBean!ru.itmo.cs.dandadan.ejb.remote.DeleteHumanBeingRemote")
     private DeleteHumanBeingRemote deleteHumanBeingService;
 
-    @EJB
+    @EJB(lookup = "java:global/human-being-ejb/GetHumanBeingBean!ru.itmo.cs.dandadan.ejb.remote.GetHumanBeingRemote")
     private GetHumanBeingRemote getHumanBeingService;
 
-    @EJB
+    @EJB(lookup = "java:global/human-being-ejb/GetHumanBeingsBean!ru.itmo.cs.dandadan.ejb.remote.GetHumanBeingsRemote")
     private GetHumanBeingsRemote getHumanBeingsService;
 
-    @EJB
+    @EJB(lookup = "java:global/human-being-ejb/GetUniqueImpactSpeedsBean!ru.itmo.cs.dandadan.ejb.remote.GetUniqueImpactSpeedsRemote")
     private GetUniqueImpactSpeedsRemote getUniqueImpactSpeedsService;
 
-    @EJB
+    @EJB(lookup = "java:global/human-being-ejb/UpdateHumanBeingsBean!ru.itmo.cs.dandadan.ejb.remote.UpdateHumanBeingRemote")
     private UpdateHumanBeingRemote updateHumanBeingService;
 
     private <T> T unwrap(Supplier<Object> supplier) {

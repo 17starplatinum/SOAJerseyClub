@@ -1,9 +1,9 @@
 package ru.itmo.cs.dandadan.ejb.remote;
 
-import jakarta.ejb.Local;
+import jakarta.ejb.Remote;
 import ru.itmo.cs.dandadan.util.Result;
 
-@Local
+@Remote
 public interface DeleteHumanBeingRemote {
     Result<Void> deleteHumanBeing(Long id);
 }
