@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.3">
+    <deployment>
+        <exclusions>
+            <module name="org.apache.httpcomponents"/>
+        </exclusions>
+
+        <dependencies>
+            <module name="com.fasterxml.jackson.core.jackson-core"/>
+            <module name="com.fasterxml.jackson.core.jackson-databind"/>
+            <module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310"/>
+
+            <module name="org.hibernate.orm" services="import"/>
+            <module name="org.hibernate.validator" services="import"/>
+        </dependencies>
+
+        <local-last value="false"/>
+    </deployment>
+</jboss-deployment-structure>

@@ -3,10 +3,10 @@ package ru.itmo.cs.dandadan.repository.impl;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
-import org.hibernate.Session;
+import jakarta.transaction.Transactional;
 import ru.itmo.cs.dandadan.exception.CustomBadRequestException;
 import ru.itmo.cs.dandadan.exception.NotFoundException;
 import ru.itmo.cs.dandadan.mapper.HumanBeingMapper;
@@ -25,8 +25,6 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static ru.itmo.cs.dandadan.config.HibernateSessionFactoryConfig.getSessionFactory;
-
 @ApplicationScoped
 public class HumanBeingRepositoryImpl implements HumanBeingRepository {
 
@@ -36,15 +34,16 @@ public class HumanBeingRepositoryImpl implements HumanBeingRepository {
     @Inject
     private DateTimeConverter dateTimeConverter;
 
+    @PersistenceContext(unitName = "human-being-pu")
+    private EntityManager entityManager;
+
     @Override
     public Page<HumanBeing> getSortedAndFilteredPage(List<Sort> sortList, List<Filter> filtersList, Integer page, Integer size) {
-        try (Session session = getSessionFactory().openSession();
-             EntityManager entityManager = session.getEntityManagerFactory().createEntityManager()) {
-            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-            CriteriaQuery<HumanBeing> query = cb.createQuery(HumanBeing.class);
-            Root<HumanBeing> root = query.from(HumanBeing.class);
-            query.select(root);
-            List<Predicate> predicates = buildPredicates(filtersList, root, cb);
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<HumanBeing> query = cb.createQuery(HumanBeing.class);
+        Root<HumanBeing> root = query.from(HumanBeing.class);
+        query.select(root);
+        List<Predicate> predicates = buildPredicates(filtersList, root, cb);
 
             if (!predicates.isEmpty()) {
                 query.where(cb.and(predicates.toArray(new Predicate[0])));
@@ -83,70 +82,48 @@ public class HumanBeingRepositoryImpl implements HumanBeingRepository {
             }
             result.setHumanBeingGetResponseDtos(typedQuery.getResultList());
             return result;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
     public HumanBeing getHumanBeing(long id) {
-        HumanBeing humanBeing;
-        Session session = getSessionFactory().openSession();
-        humanBeing = session.get(HumanBeing.class, id);
+        HumanBeing humanBeing = entityManager.find(HumanBeing.class, id);
         if (humanBeing == null) {
             throw new NotFoundException("", "id", String.valueOf(id));
         }
-        session.close();
         return humanBeing;
     }
 
     @Override
+    @Transactional
     public HumanBeing saveHumanBeing(HumanBeing humanBeing, Long teamId) {
-        Session session = getSessionFactory().openSession();
-        EntityTransaction transaction = session.getTransaction();
-        transaction.begin();
         if (humanBeing.getId() != null) {
-            session.merge(humanBeing);
+            return entityManager.merge(humanBeing);
         } else {
-            session.persist(humanBeing);
+            entityManager.persist(humanBeing);
+            return humanBeing;
         }
-        transaction.commit();
-        session.close();
-        return humanBeing;
     }
 
-    // למה ג'קרטה E.E. עדיין קיימת
     @Override
+    @Transactional
     public HumanBeing updateHumanBeing(long id, HumanBeing incoming) {
-        Session session = getSessionFactory().openSession();
-        EntityTransaction transaction = session.getTransaction();
-        transaction.begin();
-        HumanBeing humanBeing = session.get(HumanBeing.class, id);
+        HumanBeing humanBeing = entityManager.find(HumanBeing.class, id);
         if (humanBeing == null) {
             throw new NotFoundException("", "id", String.valueOf(id));
         }
         humanBeingMapper.updateFromHumanBeingRequest(incoming, humanBeing);
-        session.merge(humanBeing);
-        transaction.commit();
-        session.close();
         return humanBeing;
     }
 
     @Override
+    @Transactional
     public void deleteHumanBeing(long id) {
-        Session session = getSessionFactory().openSession();
-        EntityTransaction transaction = session.getTransaction();
-        transaction.begin();
         HumanBeing humanBeing = getHumanBeing(id);
-        session.remove(humanBeing);
-        transaction.commit();
-        session.close();
+        entityManager.remove(humanBeing);
     }
 
     @Override
     public List<Integer> getUniqueImpactSpeeds() {
-        Session session = getSessionFactory().openSession();
-        EntityManager entityManager = session.getEntityManagerFactory().createEntityManager();
         return entityManager.createQuery("SELECT DISTINCT hb.impactSpeed FROM human_beings hb", Integer.class).getResultList();
     }
 

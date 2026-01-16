@@ -40,6 +40,20 @@ dependencies {
 
 tasks.jar {
     archiveFileName.set("human-being-ejb.jar")
+    from ({
+        configurations.runtimeClasspath.get()
+            .filter { file ->
+                file.name.startsWith("httpclient5") ||
+                file.name.startsWith("httpcore5") ||
+                file.name.startsWith("jackson-") ||
+                file.name.startsWith("mapstruct")
+            }
+            .map { zipTree(it) }
+    }) {
+        exclude("META-INF/*.SF", "META-INF/*.DSA", "META-INF/*.RSA")
+        exclude("META-INF/LICENSE*", "META-INF/NOTICE*")
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.test {

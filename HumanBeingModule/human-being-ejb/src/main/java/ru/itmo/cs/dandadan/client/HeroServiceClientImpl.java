@@ -1,7 +1,6 @@
 package ru.itmo.cs.dandadan.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -13,7 +12,6 @@ import ru.itmo.cs.dandadan.exception.ConflictException;
 
 import java.io.IOException;
 
-@ApplicationScoped
 public class HeroServiceClientImpl implements HeroServiceClient {
     private final String baseUrl;
     private final CloseableHttpClient httpClient;
