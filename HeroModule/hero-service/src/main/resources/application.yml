@@ -20,4 +20,4 @@ management:
 
 humanbeing:
   service:
-    url: https://localhost:15478
+    url: https://localhost:15478/human-being-web

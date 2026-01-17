@@ -6,14 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import ru.itmo.cs.parsifal.heroservice.exception.*;
 import ru.itmo.cs.parsifal.heroservice.model.HumanBeingFullResponse;
 import ru.itmo.cs.parsifal.heroservice.model.HumanBeingPaginatedResponse;
+import ru.itmo.cs.parsifal.heroservice.model.HumanBeingUpdateRequest;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +26,7 @@ public class HumanBeingServiceClient {
 
     private final RestTemplate restTemplate;
 
-    String baseUrl = "https://localhost:15478" + "/api/v1";
+    String baseUrl = "https://localhost:15478" + "/human-being-web/api/v1";
 
     public List<HumanBeingFullResponse> getHumanBeings(Boolean realHeroOnly) {
         try {
@@ -71,10 +70,15 @@ public class HumanBeingServiceClient {
         try {
             String url = baseUrl + "/human-beings/" + humanId;
 
+            HumanBeingUpdateRequest requestBody = toUpdateRequest(humanBeing);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
             ResponseEntity<HumanBeingFullResponse> response = restTemplate.exchange(
                     url,
-                    HttpMethod.PUT,
-                    new HttpEntity<>(humanBeing),
+                    org.springframework.http.HttpMethod.PUT,
+                    new HttpEntity<>(requestBody, headers),
                     HumanBeingFullResponse.class
             );
 
@@ -101,6 +105,23 @@ public class HumanBeingServiceClient {
             log.error("Error updating human being", e);
             throw new UpstreamServiceUnavailableException("HumanBeing service error", e);
         }
+    }
+
+    private HumanBeingUpdateRequest toUpdateRequest(HumanBeingFullResponse hb) {
+        if (hb == null) {
+            return null;
+        }
+        return new HumanBeingUpdateRequest(
+                hb.getName(),
+                hb.getCoordinates(),
+                hb.getRealHero(),
+                hb.getHasToothpick(),
+                hb.getImpactSpeed(),
+                hb.getWeaponType() == null ? null : hb.getWeaponType().name(),
+                hb.getTeamId(),
+                hb.getMood() == null ? null : hb.getMood().name(),
+                hb.getCar()
+        );
     }
 
     public List<HumanBeingFullResponse> getHumanBeingsByTeamId(Long teamId) {

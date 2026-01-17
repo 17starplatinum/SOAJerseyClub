@@ -1,3 +1,6 @@
+server:
+  port: 0
+
 spring:
   application:
     name: hero-service
@@ -29,8 +32,7 @@ eureka:
       trust-store-password: changeit
       trust-store-type: PKCS12
   instance:
-    instance-id: ${spring.application.name}:${random.value}
+    instance-id: ${spring.application.name}:${random.uuid}
     hostname: localhost
     secure-port-enabled: true
     non-secure-port-enabled: false
-    secure-port: ${server.port}

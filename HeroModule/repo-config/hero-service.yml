@@ -2,8 +2,5 @@ spring:
   application:
     name: hero-service
 
-server:
-  port: 0
-
 cors:
   allowed-origins: http://localhost:5173,https://se.ifmo.ru
