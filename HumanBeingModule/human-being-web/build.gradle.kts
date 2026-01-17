@@ -10,7 +10,7 @@ val httpClientVersion by extra { "5.2.1" }
 dependencies {
     compileOnly("jakarta.platform:jakarta.jakartaee-api:10.0.0")
     compileOnly("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
-    implementation(project(":human-being-ejb"))
+    compileOnly(project(":human-being-ejb"))
     implementation("jakarta.validation:jakarta.validation-api:3.0.2")
     implementation("org.glassfish.jersey.media:jersey-media-jaxb:2.25.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}")

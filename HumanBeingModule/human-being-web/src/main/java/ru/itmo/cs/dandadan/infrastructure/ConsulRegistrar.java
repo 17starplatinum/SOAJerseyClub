@@ -27,7 +27,7 @@ public class ConsulRegistrar {
 
     private final String serviceHost;
     private final int servicePort;
-    private final String serviceId;
+    private String serviceId;
     private final String healthCheckUrl;
 
     private CloseableHttpClient httpClient;
@@ -36,14 +36,17 @@ public class ConsulRegistrar {
         this.consulHost = System.getenv().getOrDefault("CONSUL_HOST", "localhost");
         this.consulPort = Integer.parseInt(System.getenv().getOrDefault("CONSUL_PORT", "8500"));
         this.serviceHost = System.getenv().getOrDefault("SERVICE_HOST", "host.docker.internal");
-        this.servicePort = 8080;
-        this.serviceId = serviceName + "-" + UUID.randomUUID().toString().substring(0, 8);
-        this.healthCheckUrl = "http://host.docker.internal:8080/api/v1/health-check";
+        this.servicePort = Integer.parseInt(System.getenv().getOrDefault("SERVICE_PORT", "15478"));
+        this.serviceId = serviceName + "-main";
+        String scheme = System.getenv().getOrDefault("SERVICE_SCHEME", "https");
+        this.healthCheckUrl = String.format("%s://%s:%d/human-being-web/api/v1/health-check",
+                scheme, serviceHost, servicePort);
     }
 
     @PostConstruct
     public void register() {
         httpClient = HttpClients.createDefault();
+        deregisterService();
         String registrationUrl = "http://" + consulHost + ":" + consulPort + "/v1/agent/service/register";
 
         String payload = String.format("{\n" +
@@ -54,8 +57,8 @@ public class ConsulRegistrar {
         "\"Check\": {\n" +
           "\"HTTP\": \"%s\",\n" +
           "\"Interval\": \"10s\",\n" +
-          "\"Timeout\": \"3s\",\n" +
-          "\"tls_skip_verify\": true\n" +
+          "\"Timeout\": \"30s\",\n" +
+          "\"TLSSkipVerify\": true\n" +
         "}\n" +
       "}", serviceName, serviceId, serviceHost, servicePort, healthCheckUrl);
 
@@ -66,7 +69,8 @@ public class ConsulRegistrar {
             httpClient.execute(request, response -> {
                 int status = response.getCode();
                 if (status >= 200 && status < 300) {
-                    log.info("Successfully registered in Consul");
+                    log.info("Successfully registered in Consul with ID: " + serviceId);
+                    log.info("Health check URL: " + healthCheckUrl);
                 } else {
                     log.severe("Failed to register in Consul: HTTP " + status);
                 }
@@ -79,23 +83,26 @@ public class ConsulRegistrar {
 
     @PreDestroy
     public void close() {
+        deregisterService();
+        try {
+            if (httpClient != null) {
+                httpClient.close();
+            }
+        } catch (IOException e) {
+            log.warning("Failed to close HTTP client: " + e.getMessage());
+        }
+    }
+
+    private void deregisterService() {
         String deregisterUrl = "http://" + consulHost + ":" + consulPort + "/v1/agent/service/deregister/" + serviceId;
         try {
             var request = ClassicRequestBuilder.put(deregisterUrl).build();
             httpClient.execute(request, response -> {
-                log.info("Deregistered from Consul");
+                log.info("Deregistered from Consul (if existed)");
                 return null;
             });
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.warning("Failed to deregister from Consul: " + e.getMessage());
-        } finally {
-            try {
-                if (httpClient != null) {
-                    httpClient.close();
-                }
-            } catch (IOException e) {
-                log.warning("Failed to close HTTP client: " + e.getMessage());
-            }
         }
     }
 }

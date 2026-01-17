@@ -14,6 +14,7 @@ import ru.itmo.cs.dandadan.model.entity.Mood;
 import ru.itmo.cs.dandadan.model.entity.WeaponType;
 import ru.itmo.cs.dandadan.validation.annotation.ValidImpactSpeed;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 
@@ -35,6 +36,7 @@ import java.time.ZonedDateTime;
 @Builder
 public class HumanBeingResponse implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Positive

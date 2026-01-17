@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 // IShowUniqueSpeeds
@@ -11,6 +12,7 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 public class UniqueSpeedResponse implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
     int[] uniqueSpeeds;
 }

@@ -3,11 +3,13 @@ package ru.itmo.cs.dandadan.model.view;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
 @RequiredArgsConstructor
-public enum FilterCode {
+public enum FilterCode implements Serializable {
     EQ("eq"),
     NEQ("neq"),
     GT("gt"),
@@ -17,6 +19,8 @@ public enum FilterCode {
     LIKE("like"),
     UNDEFINED("undefined");
 
+    @Serial
+    private static final long serialVersionUID = 1L;
     @Getter
     private final String value;
 

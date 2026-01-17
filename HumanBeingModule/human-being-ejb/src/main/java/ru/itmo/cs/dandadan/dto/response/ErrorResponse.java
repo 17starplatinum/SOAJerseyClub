@@ -3,6 +3,7 @@ package ru.itmo.cs.dandadan.dto.response;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -11,6 +12,7 @@ import java.time.format.DateTimeFormatter;
 @Getter
 @Setter
 public class ErrorResponse implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private int code;

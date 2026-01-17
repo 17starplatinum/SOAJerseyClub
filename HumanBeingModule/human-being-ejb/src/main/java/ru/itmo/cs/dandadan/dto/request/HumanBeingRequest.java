@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import ru.itmo.cs.dandadan.validation.annotation.ValidImpactSpeed;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 @Data
@@ -17,6 +18,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class HumanBeingRequest implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @NotBlank(message = "'name' cannot be empty")
@@ -49,6 +51,7 @@ public class HumanBeingRequest implements Serializable {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CoordinatesRequest implements Serializable {
+        @Serial
         private static final long serialVersionUID = 1L;
         @DecimalMin(value = "-63", inclusive = false, message = "'coordinates.x' exclusive minimum value is -63, got ${validatedValue}")
         @NotNull(message = "'coordinates.x' cannot be null")
@@ -62,6 +65,7 @@ public class HumanBeingRequest implements Serializable {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class CarRequest implements Serializable {
+        @Serial
         private static final long serialVersionUID = 1L;
         private Boolean cool;
         @NotNull(message = "'car.color' cannot be null")

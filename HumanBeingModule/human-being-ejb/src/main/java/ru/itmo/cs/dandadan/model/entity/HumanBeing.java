@@ -13,6 +13,7 @@ import org.hibernate.annotations.ColumnDefault;
 import ru.itmo.cs.dandadan.validation.annotation.ValidEnum;
 import ru.itmo.cs.dandadan.validation.annotation.ValidImpactSpeed;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 
@@ -36,6 +37,9 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HumanBeing implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")

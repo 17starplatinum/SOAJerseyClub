@@ -29,7 +29,7 @@ public class HumanBeingAdapter {
     @EJB(lookup = "java:global/human-being-ejb/GetUniqueImpactSpeedsBean!ru.itmo.cs.dandadan.ejb.remote.GetUniqueImpactSpeedsRemote")
     private GetUniqueImpactSpeedsRemote getUniqueImpactSpeedsService;
 
-    @EJB(lookup = "java:global/human-being-ejb/UpdateHumanBeingsBean!ru.itmo.cs.dandadan.ejb.remote.UpdateHumanBeingRemote")
+    @EJB(lookup = "java:global/human-being-ejb/UpdateHumanBeingBean!ru.itmo.cs.dandadan.ejb.remote.UpdateHumanBeingRemote")
     private UpdateHumanBeingRemote updateHumanBeingService;
 
     private <T> T unwrap(Supplier<Object> supplier) {

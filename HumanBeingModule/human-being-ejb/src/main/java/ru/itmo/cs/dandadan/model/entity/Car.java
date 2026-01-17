@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import ru.itmo.cs.dandadan.validation.annotation.ValidEnum;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 @JsonPropertyOrder({"cool", "color", "model"})
@@ -19,6 +20,9 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Car implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @Column(name = "car_cool")
     private Boolean cool;

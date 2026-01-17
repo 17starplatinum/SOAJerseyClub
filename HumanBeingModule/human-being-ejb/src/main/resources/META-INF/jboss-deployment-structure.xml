@@ -10,7 +10,7 @@
             <module name="com.fasterxml.jackson.core.jackson-databind"/>
             <module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310"/>
 
-            <module name="org.hibernate.orm" services="import"/>
+            <module name="org.hibernate" services="import"/>
             <module name="org.hibernate.validator" services="import"/>
         </dependencies>
 
