@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glassfish-ejb-jar PUBLIC "-//GlassFish.org//DTD GlassFish Application Server 3.1 EJB 3.1//EN"
+        "http://glassfish.org/dtds/glassfish-ejb-jar_3_1-1.dtd">
+<glassfish-ejb-jar>
+    <enterprise-beans>
+        <ejb>
+            <ejb-name>AddHumanBeingBean</ejb-name>
+            <bean-pool>
+                <steady-pool-size>5</steady-pool-size>
+                <resize-quantity>3</resize-quantity>
+                <max-pool-size>50</max-pool-size>
+                <pool-idle-timeout-in-seconds>600</pool-idle-timeout-in-seconds>
+                <max-wait-time-in-millis>10000</max-wait-time-in-millis>
+            </bean-pool>
+        </ejb>
+
+        <ejb>
+            <ejb-name>DeleteHumanBeingBean</ejb-name>
+            <bean-pool>
+                <steady-pool-size>5</steady-pool-size>
+                <resize-quantity>3</resize-quantity>
+                <max-pool-size>50</max-pool-size>
+                <pool-idle-timeout-in-seconds>600</pool-idle-timeout-in-seconds>
+                <max-wait-time-in-millis>10000</max-wait-time-in-millis>
+            </bean-pool>
+        </ejb>
+
+        <ejb>
+            <ejb-name>GetHumanBeingBean</ejb-name>
+            <bean-pool>
+                <steady-pool-size>10</steady-pool-size>
+                <resize-quantity>5</resize-quantity>
+                <max-pool-size>100</max-pool-size>
+                <pool-idle-timeout-in-seconds>600</pool-idle-timeout-in-seconds>
+                <max-wait-time-in-millis>10000</max-wait-time-in-millis>
+            </bean-pool>
+        </ejb>
+
+        <ejb>
+            <ejb-name>GetHumanBeingsBean</ejb-name>
+            <bean-pool>
+                <steady-pool-size>10</steady-pool-size>
+                <resize-quantity>5</resize-quantity>
+                <max-pool-size>100</max-pool-size>
+                <pool-idle-timeout-in-seconds>600</pool-idle-timeout-in-seconds>
+                <max-wait-time-in-millis>10000</max-wait-time-in-millis>
+            </bean-pool>
+        </ejb>
+
+        <ejb>
+            <ejb-name>GetUniqueImpactSpeedsBean</ejb-name>
+            <bean-pool>
+                <steady-pool-size>5</steady-pool-size>
+                <resize-quantity>3</resize-quantity>
+                <max-pool-size>50</max-pool-size>
+                <pool-idle-timeout-in-seconds>600</pool-idle-timeout-in-seconds>
+                <max-wait-time-in-millis>10000</max-wait-time-in-millis>
+            </bean-pool>
+        </ejb>
+
+        <ejb>
+            <ejb-name>UpdateHumanBeingBean</ejb-name>
+            <bean-pool>
+                <steady-pool-size>5</steady-pool-size>
+                <resize-quantity>3</resize-quantity>
+                <max-pool-size>50</max-pool-size>
+                <pool-idle-timeout-in-seconds>600</pool-idle-timeout-in-seconds>
+                <max-wait-time-in-millis>10000</max-wait-time-in-millis>
+            </bean-pool>
+        </ejb>
+    </enterprise-beans>
+</glassfish-ejb-jar>

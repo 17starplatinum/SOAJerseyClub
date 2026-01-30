@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: hero-service
+  cloud:
+    config:
+      uri: https://localhost:8888
+      fail-fast: true
+      tls:
+        enabled: true
+        key-store: classpath:keystore/hero-service.p12
+        key-store-password: changeit
+        key-password: changeit
+        key-store-type: PKCS12
+        trust-store: classpath:keystore/truststore.p12
+        trust-store-password: changeit
+        trust-store-type: PKCS12
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: https://localhost:8761/eureka
+    tls:
+      enabled: true
+      key-store: classpath:keystore/hero-service.p12
+      key-store-password: changeit
+      key-password: changeit
+      key-store-type: PKCS12
+      trust-store: classpath:keystore/truststore.p12
+      trust-store-password: changeit
+      trust-store-type: PKCS12
+  instance:
+    hostname: localhost
+    secure-port-enabled: true
+    non-secure-port-enabled: false
+    secure-port: 12345

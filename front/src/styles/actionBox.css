@@ -1,0 +1,44 @@
+.filter_box,
+.sort_box {
+    border: 6px solid;
+    border-left: 0;
+    border-right: 0;
+    position: relative;
+    background: inherit;
+}
+
+.filter_box:before,
+.filter_box:after,
+.sort_box:before,
+.sort_box:after {
+    content: "";
+    position: absolute;
+    top: -6px;
+    bottom: -6px;
+    width: 35px;
+    transform: skew(-30deg);
+    z-index: -1;
+    background: inherit;
+}
+
+.filter_box:before,
+.sort_box:before {
+    left: -20px;
+    border-right: 0;
+}
+
+.filter_box:after,
+.sort_box:after {
+    right: -20px;
+    border-left: 0;
+}
+
+.filter_box {
+    border-color: var(--color-secondary);
+    background: var(--color-secondary);
+}
+
+.sort_box {
+    border-color: var(--color-light-blue);
+    background: var(--color-light-blue);
+}

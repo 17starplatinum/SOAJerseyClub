@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: api-gateway
+
+server:
+  port: 15479
+  ssl:
+    enabled: true
+    key-store: classpath:keystore/api-gateway.p12
+    key-store-password: changeit
+    key-password: changeit
+    key-store-type: PKCS12
+    key-alias: api-gateway
+    trust-store: classpath:keystore/truststore.p12
+    trust-store-password: changeit
+    trust-store-type: PKCS12
+    client-auth: need
+
+eureka:
+  client:
+    service-url:
+      defaultZone: https://localhost:8761/eureka
+    tls:
+      enabled: true
+      key-store: classpath:keystore/api-gateway.p12
+      key-store-password: changeit
+      key-password: changeit
+      key-store-type: PKCS12
+      trust-store: classpath:keystore/truststore.p12
+      trust-store-password: changeit
+      trust-store-type: PKCS12
+
+
+zuul:
+  routes:
+    hero-service:
+      path: /api/v1/**
+      serviceId: hero-service
+      stripPrefix: true
+      sensitive-headers: Cookie,Set-Cookie
+
+  ignored-headers: Access-Control-Allow-Credentials,Access-Control-Allow-Origin
+  host:
+    connect-timeout-millis: 60000
+    socket-timeout-millis: 60000
+
+cors:
+  allowed-origins: https://se.ifmo.ru,http://localhost:5173
+
+ribbon:
+  is-secure: true
+
+hero-service:
+  ribbon:
+    IsSecure: true

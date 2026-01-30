@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/studs
+    username: ${SPRING_DATASOURCE_USERNAME:s367452}
+    password: ${SPRING_DATASOURCE_PASSWORD:CSui7vGaIue5t9n6}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true

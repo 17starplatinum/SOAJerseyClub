@@ -1,0 +1,13 @@
+spring:
+  cloud:
+    config:
+      uri: https://localhost:8888
+      tls:
+        enabled: true
+        key-store: classpath:keystore/api-gateway.p12
+        key-store-password: changeit
+        key-password: changeit
+        key-store-type: PKCS12
+        trust-store: classpath:keystore/truststore.p12
+        trust-store-password: changeit
+        trust-store-type: PKCS12
