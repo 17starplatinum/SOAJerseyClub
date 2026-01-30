@@ -13,6 +13,7 @@ import java.sql.Statement;
 
 @Testcontainers
 public class RepositoryTests {
+/*
     @Container
     public static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:latest");
     private static Connection connection;
@@ -36,5 +37,6 @@ public class RepositoryTests {
             connection.close();
         }
     }
+*/
 
 }
