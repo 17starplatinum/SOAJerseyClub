@@ -19,7 +19,9 @@ public class HibernateSessionFactoryConfig {
             try {
                 Configuration configuration = new Configuration().configure();
                 String dbUser = System.getenv("DB_USERNAME");
+                if (dbUser == null) dbUser = "postgres";
                 String dbPass = System.getenv("DB_PASSWORD");
+                if (dbPass == null) dbPass = "postgres";
 
                 configuration.setProperty("hibernate.connection.username", dbUser);
                 configuration.setProperty("hibernate.connection.password", dbPass);

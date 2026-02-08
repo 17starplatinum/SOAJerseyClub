@@ -16,9 +16,9 @@ buildscript {
         set("junitVersion", "5.12.0")
         set("tcVersion", "1.21.3")
         set("platformVersion", "1.14.0")
+        set("buildDirectory", layout.buildDirectory.get().asFile)
     }
 }
-
 
 sourceSets {
     main {
@@ -28,12 +28,16 @@ sourceSets {
     }
 }
 
-java.sourceCompatibility = JavaVersion.VERSION_17
-java.targetCompatibility = JavaVersion.VERSION_17
+java{
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
+    options.compilerArgs.add("-parameters")
 }
+
 tasks.withType<Javadoc> {
     options.encoding = "UTF-8"
 }
@@ -51,7 +55,12 @@ dependencies {
     compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
     compileOnly("jakarta.transaction:jakarta.transaction-api:2.0.1")
     compileOnly("jakarta.websocket:jakarta.websocket-api:2.1.1")
-    compileOnly("jakarta.xml.ws:jakarta.xml.ws-api:4.0.1")
+
+    implementation("jakarta.xml.ws:jakarta.xml.ws-api:4.0.1")
+    implementation("com.sun.xml.ws:jaxws-rt:4.0.0")
+
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:4.0.0")
+    implementation("org.glassfish.jaxb:jaxb-runtime:4.0.2")
     compileOnly("org.projectlombok:lombok:1.18.42")
     implementation("jakarta.validation:jakarta.validation-api:3.1.1")
     implementation("org.apache.httpcomponents.client5:httpclient5:5.5.1")

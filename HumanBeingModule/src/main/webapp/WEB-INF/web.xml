@@ -4,10 +4,25 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
       http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          version="3.0">
+    <servlet>
+        <servlet-name>HumanBeingWebService</servlet-name>
+        <servlet-class>com.sun.xml.ws.transport.http.servlet.WSServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>HumanBeingWebService</servlet-name>
+        <url-pattern>/ws/*</url-pattern>
+    </servlet-mapping>
+
+    <listener>
+        <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
+    </listener>
+
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>Secured</web-resource-name>
-            <url-pattern>/api/v1/*</url-pattern>
+            <url-pattern>/ws/*</url-pattern>
             <http-method>GET</http-method>
             <http-method>POST</http-method>
             <http-method>DELETE</http-method>
