@@ -7,11 +7,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.xml.bind.annotation.*;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import lombok.*;
 import ru.itmo.cs.dandadan.model.entity.Car;
 import ru.itmo.cs.dandadan.model.entity.Coordinates;
 import ru.itmo.cs.dandadan.model.entity.Mood;
 import ru.itmo.cs.dandadan.model.entity.WeaponType;
+import ru.itmo.cs.dandadan.soap.adapter.ZonedDateTimeAdapter;
 import ru.itmo.cs.dandadan.validation.annotation.ValidImpactSpeed;
 
 import java.io.Serializable;
@@ -47,6 +49,7 @@ public class HumanBeingResponseSoap implements Serializable {
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     @XmlElement(name = "creationDate")
+    @XmlJavaTypeAdapter(ZonedDateTimeAdapter.class)
     private ZonedDateTime creationDate;
 
     @NotBlank
