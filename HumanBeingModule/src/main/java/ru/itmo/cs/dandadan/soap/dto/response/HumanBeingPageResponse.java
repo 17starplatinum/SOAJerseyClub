@@ -11,7 +11,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@XmlRootElement(name = "humanBeingPageResponse")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class HumanBeingPageResponse {
 

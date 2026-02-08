@@ -1,6 +1,7 @@
 package ru.itmo.cs.dandadan.soap.service.impl;
 
-import jakarta.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.inject.spi.CDI;
 import jakarta.jws.WebService;
 import ru.itmo.cs.dandadan.dto.request.HumanBeingRequest;
 import ru.itmo.cs.dandadan.dto.response.HumanBeingResponse;
@@ -23,7 +24,6 @@ import ru.itmo.cs.dandadan.soap.service.api.HumanBeingWebService;
 import java.util.ArrayList;
 import java.util.List;
 
-
 @WebService(
         serviceName = "HumanBeingWebService",
         portName = "HumanBeingWebServicePort",
@@ -32,11 +32,14 @@ import java.util.List;
 )
 public class HumanBeingWebServiceImpl implements HumanBeingWebService {
 
-    @Inject
     private HumanBeingService humanBeingService;
-
-    @Inject
     private SoapDtoMapper soapDtoMapper;
+
+    @PostConstruct
+    public void init() {
+        this.humanBeingService = CDI.current().select(HumanBeingService.class).get();
+        this.soapDtoMapper = CDI.current().select(SoapDtoMapper.class).get();
+    }
 
     @Override
     public HumanBeingPageResponse getHumanBeings(HumanBeingQueryRequest queryRequest)
@@ -52,7 +55,7 @@ public class HumanBeingWebServiceImpl implements HumanBeingWebService {
                 sortParams.add("id");
             }
 
-            Page<HumanBeingResponse> resultPage =  humanBeingService.getHumanBeings(
+            Page<HumanBeingResponse> resultPage = humanBeingService.getHumanBeings(
                     sortParams, filterParams, page, pageSize
             );
 
@@ -138,8 +141,8 @@ public class HumanBeingWebServiceImpl implements HumanBeingWebService {
             );
         } catch (NotFoundException e) {
             throw new HumanBeingServiceFault(
-                  e.getMessage(),
-                  new HumanBeingServiceFaultInfo(404, e.getMessage())
+                    e.getMessage(),
+                    new HumanBeingServiceFaultInfo(404, e.getMessage())
             );
         } catch (ValidationFailedException e) {
             throw new HumanBeingServiceFault(

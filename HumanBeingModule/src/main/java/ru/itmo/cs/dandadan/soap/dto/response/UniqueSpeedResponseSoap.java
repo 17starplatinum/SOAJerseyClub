@@ -10,7 +10,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@XmlRootElement(name = "getUniqueImpactSpeeds")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "UniqueSpeedResponseType")
 public class UniqueSpeedResponseSoap {

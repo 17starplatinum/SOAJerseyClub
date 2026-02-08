@@ -1,11 +1,15 @@
 package ru.itmo.cs.dandadan.model.entity;
 
+import jakarta.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 import java.util.Objects;
 
+@XmlType(name = "mood")
+@XmlEnum
 @RequiredArgsConstructor
 public enum Mood {
     SADNESS("sadness"),

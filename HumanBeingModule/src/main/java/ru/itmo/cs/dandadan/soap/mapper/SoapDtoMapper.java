@@ -58,19 +58,19 @@ public class SoapDtoMapper {
         response.setTeamId(internalResponse.getTeamId());
         response.setMood(internalResponse.getMood());
 
-        if (response.getCoordinates() != null) {
+        if (internalResponse.getCoordinates() != null) {
             Coordinates coords = new Coordinates(
-                    response.getCoordinates().getX(),
-                    response.getCoordinates().getY()
+                    internalResponse.getCoordinates().getX(),
+                    internalResponse.getCoordinates().getY()
             );
             response.setCoordinates(coords);
         }
 
-        if (response.getCar() != null) {
+        if (internalResponse.getCar() != null) {
             Car car = new Car(
-                    response.getCar().getCool(),
-                    response.getCar().getColor(),
-                    response.getCar().getModel()
+                    internalResponse.getCar().getCool(),
+                    internalResponse.getCar().getColor(),
+                    internalResponse.getCar().getModel()
             );
             response.setCar(car);
         }

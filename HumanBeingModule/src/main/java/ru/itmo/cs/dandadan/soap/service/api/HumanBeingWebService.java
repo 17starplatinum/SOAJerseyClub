@@ -24,25 +24,25 @@ import ru.itmo.cs.dandadan.soap.exception.HumanBeingServiceFault;
 public interface HumanBeingWebService {
 
     @WebMethod(operationName = "getHumanBeings")
-    @WebResult(name = "humanBeingPageResponse")
+    @WebResult(name = "return")
     HumanBeingPageResponse getHumanBeings(
             @WebParam(name = "queryRequest") HumanBeingQueryRequest queryRequest
     ) throws HumanBeingServiceFault;
 
     @WebMethod(operationName = "getHumanBeing")
-    @WebResult(name = "humanBeingResponse")
+    @WebResult(name = "return")
     HumanBeingResponseSoap getHumanBeing(
             @WebParam(name = "id") Long id
     ) throws HumanBeingServiceFault;
 
     @WebMethod(operationName = "addHumanBeing")
-    @WebResult(name = "humanBeingResponse")
+    @WebResult(name = "return")
     HumanBeingResponseSoap addHumanBeing(
             @WebParam(name = "humanBeingRequest") SoapHumanBeingRequest humanBeingRequest
     ) throws HumanBeingServiceFault;
 
     @WebMethod(operationName = "updateHumanBeing")
-    @WebResult(name = "humanBeingResponse")
+    @WebResult(name = "return")
     HumanBeingResponseSoap updateHumanBeing(
             @WebParam(name = "id") Long id,
             @WebParam(name = "humanBeingRequest") SoapHumanBeingRequest humanBeingRequest
@@ -54,6 +54,6 @@ public interface HumanBeingWebService {
     ) throws HumanBeingServiceFault;
 
     @WebMethod(operationName = "getUniqueImpactSpeeds")
-    @WebResult(name = "uniqueSpeedResponse")
+    @WebResult(name = "return")
     UniqueSpeedResponseSoap getUniqueImpactSpeeds() throws HumanBeingServiceFault;
 }

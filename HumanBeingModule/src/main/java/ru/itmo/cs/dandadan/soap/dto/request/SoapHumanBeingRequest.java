@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@XmlRootElement(name = "humanBeingRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class SoapHumanBeingRequest {
 

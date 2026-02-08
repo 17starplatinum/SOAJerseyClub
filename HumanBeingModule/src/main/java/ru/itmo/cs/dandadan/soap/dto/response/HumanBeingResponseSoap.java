@@ -31,7 +31,6 @@ import java.time.ZonedDateTime;
         "mood",
         "car"
 })
-@XmlRootElement(name = "humanBeingResponse")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SoapHumanBeingResponseType")
 @Getter

@@ -11,7 +11,6 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@XmlRootElement(name = "humanBeingQueryRequest")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class HumanBeingQueryRequest {
 
@@ -20,7 +19,7 @@ public class HumanBeingQueryRequest {
     private List<String> sortParameters;
 
     @XmlElement(name = "filterParameter")
-    @XmlElementWrapper(name = "sortParameters")
+    @XmlElementWrapper(name = "filterParameters")
     private List<String> filterParameters;
 
     @XmlElement(name = "page")
