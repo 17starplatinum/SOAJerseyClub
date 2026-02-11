@@ -42,6 +42,7 @@ public class HumanBeingRequest {
     public CarRequest car;
 
     @Data
+    @NoArgsConstructor
     @AllArgsConstructor
     public static class CoordinatesRequest {
         @DecimalMin(value = "-63", inclusive = false, message = "'coordinates.x' exclusive minimum value is -63, got ${validatedValue}")
@@ -53,6 +54,7 @@ public class HumanBeingRequest {
 
     @Data
     @ToString
+    @NoArgsConstructor
     @AllArgsConstructor
     public static class CarRequest {
         private Boolean cool;

@@ -82,7 +82,7 @@ public class HumanBeingResource {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addHumanBeing(@Valid HumanBeingRequest humanBeingRequest) {
+    public Response addHumanBeing(@Valid HumanBeingRequest humanBeingRequest) throws Exception {
         return Response.ok(humanBeingService.addHumanBeing(humanBeingRequest), MediaType.APPLICATION_JSON).build();
     }
 
@@ -90,7 +90,7 @@ public class HumanBeingResource {
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response updateHumanBeing(@PathParam("id") long id, @Valid HumanBeingRequest humanBeingRequest) {
+    public Response updateHumanBeing(@PathParam("id") long id, @Valid HumanBeingRequest humanBeingRequest) throws Exception {
         return Response.ok(humanBeingService.updateHumanBeing(id, humanBeingRequest), MediaType.APPLICATION_JSON).build();
     }
 

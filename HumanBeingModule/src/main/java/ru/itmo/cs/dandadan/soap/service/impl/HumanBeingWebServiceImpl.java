@@ -3,6 +3,7 @@ package ru.itmo.cs.dandadan.soap.service.impl;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.inject.spi.CDI;
 import jakarta.jws.WebService;
+import jakarta.validation.ConstraintViolationException;
 import ru.itmo.cs.dandadan.dto.request.HumanBeingRequest;
 import ru.itmo.cs.dandadan.dto.response.HumanBeingResponse;
 import ru.itmo.cs.dandadan.exception.ConflictException;
@@ -115,7 +116,7 @@ public class HumanBeingWebServiceImpl implements HumanBeingWebService {
             return soapDtoMapper.fromInternalResponse(
                     humanBeingService.addHumanBeing(internalRequest)
             );
-        } catch (ValidationFailedException e) {
+        } catch (ValidationFailedException | ConstraintViolationException e) {
             throw new HumanBeingServiceFault(
                     e.getMessage(),
                     new HumanBeingServiceFaultInfo(422, e.getMessage())
@@ -151,7 +152,7 @@ public class HumanBeingWebServiceImpl implements HumanBeingWebService {
                     e.getMessage(),
                     new HumanBeingServiceFaultInfo(404, e.getMessage())
             );
-        } catch (ValidationFailedException e) {
+        } catch (ValidationFailedException | ConstraintViolationException e) {
             throw new HumanBeingServiceFault(
                     e.getMessage(),
                     new HumanBeingServiceFaultInfo(422, e.getMessage())

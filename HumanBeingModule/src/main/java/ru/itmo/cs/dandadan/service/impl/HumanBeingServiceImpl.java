@@ -7,6 +7,7 @@ import ru.itmo.cs.dandadan.client.api.HeroServiceClient;
 import ru.itmo.cs.dandadan.dto.request.HumanBeingRequest;
 import ru.itmo.cs.dandadan.dto.response.HumanBeingResponse;
 import ru.itmo.cs.dandadan.dto.response.UniqueSpeedResponse;
+import ru.itmo.cs.dandadan.exception.ConflictException;
 import ru.itmo.cs.dandadan.exception.CustomBadRequestException;
 import ru.itmo.cs.dandadan.exception.ValidationFailedException;
 import ru.itmo.cs.dandadan.mapper.HumanBeingMapper;
@@ -139,7 +140,7 @@ public class HumanBeingServiceImpl implements HumanBeingService {
 
     @Override
     @Transactional
-    public HumanBeingResponse addHumanBeing(HumanBeingRequest requestDto) {
+    public HumanBeingResponse addHumanBeing(HumanBeingRequest requestDto) throws Exception {
         if (requestDto == null) {
             throw new ValidationFailedException("incoming request is null");
         }
@@ -147,7 +148,7 @@ public class HumanBeingServiceImpl implements HumanBeingService {
         Long potentialTeamId = requestDto.getTeamId();
         humanBeing.setCreationDate(ZonedDateTime.now(ZoneId.systemDefault()));
         if (potentialTeamId != null) {
-            checkTeam(potentialTeamId);
+            heroServiceClient.manipulateHumanBeingToTeam(potentialTeamId);
         }
         humanBeing = humanBeingRepository.saveHumanBeing(humanBeing, potentialTeamId);
         return humanBeingMapper.toHumanBeingResponse(humanBeing);
@@ -155,7 +156,7 @@ public class HumanBeingServiceImpl implements HumanBeingService {
 
     @Override
     @Transactional
-    public HumanBeingResponse updateHumanBeing(Long id, HumanBeingRequest requestDto) {
+    public HumanBeingResponse updateHumanBeing(Long id, HumanBeingRequest requestDto) throws Exception {
         if (id == null || id < 1) {
             throw new CustomBadRequestException("id", "positive integer", String.valueOf(id));
         }
@@ -167,7 +168,7 @@ public class HumanBeingServiceImpl implements HumanBeingService {
         if (potentialTeamId != null &&
                 humanBeingRepository.getHumanBeing(id).getTeamId() != null &&
                 !humanBeingRepository.getHumanBeing(id).getTeamId().equals(potentialTeamId)) {
-            checkTeam(potentialTeamId);
+            heroServiceClient.manipulateHumanBeingToTeam(potentialTeamId);
         }
         incomingHumanBeing = humanBeingRepository.updateHumanBeing(id, incomingHumanBeing);
         return humanBeingMapper.toHumanBeingResponse(incomingHumanBeing);
@@ -199,14 +200,6 @@ public class HumanBeingServiceImpl implements HumanBeingService {
             if (booleanAllowedCodes.stream().noneMatch(filterCode::equals)) {
                 throw new CustomBadRequestException("Invalid filter operation '" + filterCode + "': allowed operations for field '" + fieldName + "' are: 'eq', 'neq', 'gt', 'lt', 'like'");
             }
-        }
-    }
-
-    private void checkTeam(Long teamId) {
-        try {
-            heroServiceClient.manipulateHumanBeingToTeam(teamId);
-        } catch (Exception e) {
-            throw new CustomBadRequestException(e.getMessage());
         }
     }
 }

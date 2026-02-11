@@ -12,9 +12,9 @@ public interface HumanBeingService {
 
     HumanBeingResponse getHumanBeing(Long id);
 
-    HumanBeingResponse updateHumanBeing(Long id, HumanBeingRequest requestDto);
+    HumanBeingResponse updateHumanBeing(Long id, HumanBeingRequest requestDto) throws Exception;
 
-    HumanBeingResponse addHumanBeing(HumanBeingRequest requestDto);
+    HumanBeingResponse addHumanBeing(HumanBeingRequest requestDto) throws Exception;
 
     void deleteHumanBeing(Long id);
 
