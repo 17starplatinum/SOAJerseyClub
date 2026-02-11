@@ -1,0 +1,597 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+
+    <http:listener-config name="HTTPListenerconfig" doc:name="HTTP Listener config" basePath="/api/v1">
+        <http:listener-connection host="0.0.0.0" port="15478" protocol="HTTPS">
+            <tls:context>
+                <tls:key-store type="jks"
+                               path="mule-keystore.jks"
+                               alias="mule-esb"
+                               keyPassword="changeit"
+                               password="changeit"/>
+            </tls:context>
+        </http:listener-connection>
+    </http:listener-config>
+
+    <tls:context name="HumanBeingTrustContext">
+        <tls:trust-store path="mule-truststore.jks" type="jks" password="changeit"/>
+    </tls:context>
+
+    <http:request-config name="HumanBeingHttpsRequestConfig">
+	    <http:request-connection host="localhost"
+	                             port="8181"
+	                             protocol="HTTPS"
+	                             tlsContext="HumanBeingTrustContext"/>
+	
+	    <!-- <http:response-validator>
+	        <http:success-status-code-validator values="0..999"/>
+	    </http:response-validator> -->
+	</http:request-config>
+
+
+	<wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config">
+        <wsc:connection wsdlLocation="https://localhost:8181/ws/human-beings?wsdl"
+                        service="HumanBeingWebService"
+                        port="HumanBeingWebServicePort"
+                        address="https://localhost:8181/ws/human-beings">
+
+            <wsc:custom-transport-configuration>
+                <wsc:http-transport-configuration requesterConfig="HumanBeingHttpsRequestConfig"/>
+            </wsc:custom-transport-configuration>
+
+        </wsc:connection>
+    </wsc:config>
+
+    <flow name="corsPreflight">
+        <http:listener doc:name="CORS Preflight (OPTIONS)"
+                       config-ref="HTTPListenerconfig"
+                       path="/*"
+                       allowedMethods="OPTIONS">
+            <http:response statusCode="204">
+                <http:headers><![CDATA[#[output application/java
+---
+{
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "content-type,authorization",
+  "Access-Control-Max-Age": "86400"
+}]]]></http:headers>
+            </http:response>
+        </http:listener>
+
+        <ee:transform doc:name="Empty body">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+null]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+
+    <flow name="getHumanBeings">
+        <http:listener doc:name="Listener"
+                       config-ref="HTTPListenerconfig"
+                       path="/human-beings"
+                       allowedMethods="GET">
+            <http:response>
+                <http:headers><![CDATA[#[output application/java
+---
+{
+  "Access-Control-Allow-Origin" : "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "content-type,authorization",
+  "Content-Type": "application/json"
+}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[output application/java
+---
+{
+  "Access-Control-Allow-Origin" : "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "content-type,authorization",
+  "Content-Type": "application/json"
+}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+
+        <ee:transform doc:name="Query to SOAP XML">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns ns0 https://itmo.ru/humanbeings/service
+---
+{
+  ns0#getHumanBeings: {
+    queryRequest: {
+      sortParameters: {
+        (attributes.queryParams.*sort map ((item) -> sortParameter: item))
+      },
+      filterParameters: {
+        (attributes.queryParams.*filter map ((item) -> filterParameter: item))
+      },
+      page: (attributes.queryParams.page as Number default 1) as Number,
+      pageSize: (attributes.queryParams.pageSize as Number default 10) as Number
+    }
+  }
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <wsc:consume operation="getHumanBeings"
+                     config-ref="Web_Service_Consumer_Config"
+                     doc:name="Consume SOAP"/>
+
+        <ee:transform doc:name="SOAP XML to JSON">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+ns ns0 https://itmo.ru/humanbeings/service
+var pageResp = payload.body.ns0#getHumanBeingsResponse.return
+var items = pageResp.humanBeingGetResponseDtos.*humanBeingGetResponseDto default []
+---
+{
+  humanBeingGetResponseDtos: items map (item) -> {
+    id: item.id as Number,
+    name: item.name,
+    coordinates: {
+      x: if (item.coordinates.x != null) item.coordinates.x as Number else null,
+      y: item.coordinates.y as Number
+    },
+    creationDate: item.creationDate,
+    realHero: if (item.realHero != null) item.realHero as Boolean else null,
+    hasToothpick: if (item.hasToothpick != null) item.hasToothpick as Boolean else null,
+    impactSpeed: item.impactSpeed as Number,
+    weaponType: item.weaponType,
+    mood: item.mood,
+    car: if (item.car != null and item.car != {}) {
+      cool: if (item.car.cool != null) item.car.cool as Boolean else null,
+      color: item.car.color,
+      model: item.car.model
+    } else null,
+    teamId: if (item.teamId != null) item.teamId as Number else null
+  },
+  page: if (pageResp.page != null) pageResp.page as Number else null,
+  pageSize: if (pageResp.pageSize != null) pageResp.pageSize as Number else null,
+  totalPages: if (pageResp.totalPages != null) pageResp.totalPages as Number else null,
+  totalCount: if (pageResp.totalCount != null) pageResp.totalCount as Number else null
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <error-handler ref="GlobalErrorHandler"/>
+    </flow>
+
+    <flow name="addHumanBeing">
+        <http:listener doc:name="Listener"
+                       config-ref="HTTPListenerconfig"
+                       path="/human-beings"
+                       allowedMethods="POST">
+            <http:response>
+                <http:headers><![CDATA[#[output application/java
+---
+{
+  "Access-Control-Allow-Origin" : "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "content-type,authorization",
+  "Content-Type": "application/json"
+}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[output application/java
+---
+{
+  "Access-Control-Allow-Origin" : "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "content-type,authorization",
+  "Content-Type": "application/json"
+}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+
+        <ee:transform doc:name="JSON to SOAP XML">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns ns0 https://itmo.ru/humanbeings/service
+---
+{
+  ns0#addHumanBeing: {
+    humanBeingRequest: {
+      name: payload.name,
+      coordinates: {
+        x: payload.coordinates.x as Number,
+        y: payload.coordinates.y as Number
+      },
+      realHero: payload.realHero as Boolean,
+      hasToothpick: payload.hasToothpick as Boolean,
+      impactSpeed: payload.impactSpeed as Number,
+      weaponType: payload.weaponType,
+      mood: payload.mood,
+      teamId: if (payload.teamId != null) payload.teamId as Number else null,
+      (if (payload.car? and payload.car != null) car: {
+        cool: payload.car.cool as Boolean,
+        color: payload.car.color,
+        model: payload.car.model
+      } else {})
+    }
+  }
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <wsc:consume operation="addHumanBeing"
+                     config-ref="Web_Service_Consumer_Config"
+                     doc:name="Consume SOAP"/>
+
+        <ee:transform doc:name="SOAP XML to JSON">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+ns ns0 https://itmo.ru/humanbeings/service
+var item = payload.body.ns0#addHumanBeingResponse.return
+---
+{
+  id: item.id as Number,
+  name: item.name,
+  coordinates: {
+    x: if (item.coordinates.x != null) item.coordinates.x as Number else null,
+    y: item.coordinates.y as Number
+  },
+  creationDate: item.creationDate,
+  realHero: if (item.realHero != null) item.realHero as Boolean else null,
+  hasToothpick: if (item.hasToothpick != null) item.hasToothpick as Boolean else null,
+  impactSpeed: item.impactSpeed as Number,
+  weaponType: item.weaponType,
+  mood: item.mood,
+  car: if (item.car != null and item.car != {}) {
+    cool: if (item.car.cool != null) item.car.cool as Boolean else null,
+    color: item.car.color,
+    model: item.car.model
+  } else null,
+  teamId: if (item.teamId != null) item.teamId as Number else null
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <error-handler ref="GlobalErrorHandler"/>
+    </flow>
+
+    <flow name="getHumanBeing">
+        <http:listener doc:name="Listener"
+                       config-ref="HTTPListenerconfig"
+                       path="/human-beings/{id}"
+                       allowedMethods="GET">
+            <http:response>
+                <http:headers><![CDATA[#[output application/java
+---
+{
+  "Access-Control-Allow-Origin" : "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "content-type,authorization",
+  "Content-Type": "application/json"
+}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[output application/java
+---
+{
+  "Access-Control-Allow-Origin" : "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "content-type,authorization",
+  "Content-Type": "application/json"
+}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+
+        <ee:transform doc:name="Map ID to SOAP">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns ns0 https://itmo.ru/humanbeings/service
+---
+{
+  ns0#getHumanBeing: {
+    id: attributes.uriParams.id as Number
+  }
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <wsc:consume operation="getHumanBeing"
+                     config-ref="Web_Service_Consumer_Config"
+                     doc:name="Consume SOAP"/>
+
+        <ee:transform doc:name="SOAP XML to JSON">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+ns ns0 https://itmo.ru/humanbeings/service
+var item = payload.body.ns0#getHumanBeingResponse.return
+---
+{
+  id: item.id as Number,
+  name: item.name,
+  coordinates: {
+    x: if (item.coordinates.x != null) item.coordinates.x as Number else null,
+    y: item.coordinates.y as Number
+  },
+  creationDate: item.creationDate,
+  realHero: if (item.realHero != null) item.realHero as Boolean else null,
+  hasToothpick: if (item.hasToothpick != null) item.hasToothpick as Boolean else null,
+  impactSpeed: item.impactSpeed as Number,
+  weaponType: item.weaponType,
+  mood: item.mood,
+  car: if (item.car != null and item.car != {}) {
+    cool: if (item.car.cool != null) item.car.cool as Boolean else null,
+    color: item.car.color,
+    model: item.car.model
+  } else null,
+  teamId: if (item.teamId != null) item.teamId as Number else null
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <error-handler ref="GlobalErrorHandler"/>
+    </flow>
+
+    <flow name="updateHumanBeing">
+        <http:listener doc:name="Listener"
+                       config-ref="HTTPListenerconfig"
+                       path="/human-beings/{id}"
+                       allowedMethods="PUT">
+            <http:response>
+                <http:headers><![CDATA[#[output application/java
+---
+{
+  "Access-Control-Allow-Origin" : "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "content-type,authorization",
+  "Content-Type": "application/json"
+}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[output application/java
+---
+{
+  "Access-Control-Allow-Origin" : "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "content-type,authorization",
+  "Content-Type": "application/json"
+}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+
+        <ee:transform doc:name="JSON to SOAP XML">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns ns0 https://itmo.ru/humanbeings/service
+---
+{
+  ns0#updateHumanBeing: {
+    id: attributes.uriParams.id as Number,
+    humanBeingRequest: {
+      name: payload.name,
+      coordinates: {
+        x: payload.coordinates.x as Number,
+        y: payload.coordinates.y as Number
+      },
+      realHero: payload.realHero as Boolean,
+      hasToothpick: payload.hasToothpick as Boolean,
+      impactSpeed: payload.impactSpeed as Number,
+      weaponType: payload.weaponType,
+      mood: payload.mood,
+      teamId: if (payload.teamId != null) payload.teamId as Number else null,
+      (if (payload.car? and payload.car != null) car: {
+        cool: payload.car.cool as Boolean,
+        color: payload.car.color,
+        model: payload.car.model
+      } else {})
+    }
+  }
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <wsc:consume operation="updateHumanBeing"
+                     config-ref="Web_Service_Consumer_Config"
+                     doc:name="Consume SOAP"/>
+
+        <ee:transform doc:name="SOAP XML to JSON">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+ns ns0 https://itmo.ru/humanbeings/service
+var item = payload.body.ns0#updateHumanBeingResponse.return
+---
+{
+  id: item.id as Number,
+  name: item.name,
+  coordinates: {
+    x: if (item.coordinates.x != null) item.coordinates.x as Number else null,
+    y: item.coordinates.y as Number
+  },
+  creationDate: item.creationDate,
+  realHero: if (item.realHero != null) item.realHero as Boolean else null,
+  hasToothpick: if (item.hasToothpick != null) item.hasToothpick as Boolean else null,
+  impactSpeed: item.impactSpeed as Number,
+  weaponType: item.weaponType,
+  mood: item.mood,
+  car: if (item.car != null and item.car != {}) {
+    cool: if (item.car.cool != null) item.car.cool as Boolean else null,
+    color: item.car.color,
+    model: item.car.model
+  } else null,
+  teamId: if (item.teamId != null) item.teamId as Number else null
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <error-handler ref="GlobalErrorHandler"/>
+    </flow>
+
+    <flow name="deleteHumanBeing">
+        <http:listener doc:name="Listener"
+                       config-ref="HTTPListenerconfig"
+                       path="/human-beings/{id}"
+                       allowedMethods="DELETE">
+            <http:response statusCode="204">
+                <http:headers><![CDATA[#[output application/java
+---
+{
+  "Access-Control-Allow-Origin" : "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "content-type,authorization"
+}]]]></http:headers>
+            </http:response>
+
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[output application/java
+---
+{
+  "Access-Control-Allow-Origin" : "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "content-type,authorization",
+  "Content-Type": "application/json"
+}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+
+        <ee:transform doc:name="Map ID to SOAP">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns ns0 https://itmo.ru/humanbeings/service
+---
+{
+  ns0#deleteHumanBeing: {
+    id: attributes.uriParams.id as Number
+  }
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <wsc:consume operation="deleteHumanBeing"
+                     config-ref="Web_Service_Consumer_Config"
+                     doc:name="Consume SOAP"/>
+
+        <ee:transform doc:name="Empty Response">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+null]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <error-handler ref="GlobalErrorHandler"/>
+    </flow>
+
+    <flow name="getUniqueImpactSpeeds">
+        <http:listener doc:name="Listener"
+                       config-ref="HTTPListenerconfig"
+                       path="/human-beings/unique-speeds"
+                       allowedMethods="GET">
+            <http:response>
+                <http:headers><![CDATA[#[output application/java
+---
+{
+  "Access-Control-Allow-Origin" : "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "content-type,authorization",
+  "Content-Type": "application/json"
+}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[output application/java
+---
+{
+  "Access-Control-Allow-Origin" : "*",
+  "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+  "Access-Control-Allow-Headers": "content-type,authorization",
+  "Content-Type": "application/json"
+}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+
+        <ee:transform doc:name="Empty request to SOAP">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+ns ns0 https://itmo.ru/humanbeings/service
+---
+{
+  ns0#getUniqueImpactSpeeds: {}
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <wsc:consume operation="getUniqueImpactSpeeds"
+                     config-ref="Web_Service_Consumer_Config"
+                     doc:name="Consume SOAP"/>
+
+        <ee:transform doc:name="SOAP XML to JSON">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+ns ns0 https://itmo.ru/humanbeings/service
+var resp = payload.body.ns0#getUniqueImpactSpeedsResponse.return
+---
+{
+  uniqueSpeeds: (resp.*uniqueImpactSpeeds.*impactSpeed map ($ as Number)) default []
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <error-handler ref="GlobalErrorHandler"/>
+    </flow>
+
+    <error-handler name="GlobalErrorHandler">
+        <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" type="ANY">
+				<ee:transform doc:name="Transform Message">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+var soapErrorPayload = error.errorMessage.payload default null
+var faultDetail = soapErrorPayload.cause.cause.cause.errorMessage.payload.Envelope.Body.Fault.detail default null
+
+---
+if (faultDetail != null)
+	{
+        "code": faultDetail.humanBeingServiceFault.code,
+		"message": faultDetail.humanBeingServiceFault.message,
+  		"time": faultDetail.humanBeingServiceFault.timestamp
+	}
+else
+	{
+		"code": 500,
+		"message": "Unexpected error",
+  		"time": now()
+	}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</on-error-propagate>
+    </error-handler>
+</mule>
