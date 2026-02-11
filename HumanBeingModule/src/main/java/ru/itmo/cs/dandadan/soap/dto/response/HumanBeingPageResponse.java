@@ -4,7 +4,6 @@ import jakarta.xml.bind.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.itmo.cs.dandadan.dto.response.HumanBeingResponse;
 
 import java.util.List;
 
@@ -16,7 +15,7 @@ public class HumanBeingPageResponse {
 
     @XmlElement(name = "humanBeingGetResponseDto")
     @XmlElementWrapper(name = "humanBeingGetResponseDtos")
-    private List<HumanBeingResponse> humanBeingGetResponseDtos;
+    private List<HumanBeingResponseSoap> humanBeingGetResponseDtos;
 
     @XmlElement(name = "page")
     private Integer page;

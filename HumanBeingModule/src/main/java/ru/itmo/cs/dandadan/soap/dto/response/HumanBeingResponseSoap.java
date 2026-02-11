@@ -19,7 +19,6 @@ import ru.itmo.cs.dandadan.validation.annotation.ValidImpactSpeed;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 
-
 @JsonPropertyOrder({
         "id",
         "creationDate",
@@ -34,21 +33,25 @@ import java.time.ZonedDateTime;
         "car"
 })
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "SoapHumanBeingResponseType")
+@XmlType(name = "SoapHumanBeingResponseType", propOrder = {
+        "id", "creationDate", "name", "coordinates",
+        "realHero", "hasToothpick", "impactSpeed",
+        "weaponType", "teamId", "mood", "car"
+})
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class HumanBeingResponseSoap implements Serializable {
+
     @Positive
     @NotNull
     @XmlElement(name = "id", required = true)
     private Long id;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    @XmlElement(name = "creationDate")
+    @XmlElement(name = "creationDate", nillable = true)
     @XmlJavaTypeAdapter(ZonedDateTimeAdapter.class)
     private ZonedDateTime creationDate;
 

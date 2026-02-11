@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,6 +15,7 @@ import lombok.Setter;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "UniqueSpeedResponseType")
 public class UniqueSpeedResponseSoap {
-    @XmlElement(required = true)
-    private int[] uniqueImpactSpeeds;
+    @XmlElement(name = "impactSpeed", required = true)
+    @XmlElementWrapper(name = "uniqueImpactSpeeds")
+    private List<Integer> uniqueImpactSpeeds;
 }

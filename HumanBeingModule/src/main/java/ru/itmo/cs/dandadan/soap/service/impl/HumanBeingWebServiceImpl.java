@@ -22,7 +22,9 @@ import ru.itmo.cs.dandadan.soap.mapper.SoapDtoMapper;
 import ru.itmo.cs.dandadan.soap.service.api.HumanBeingWebService;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @WebService(
         serviceName = "HumanBeingWebService",
@@ -59,8 +61,13 @@ public class HumanBeingWebServiceImpl implements HumanBeingWebService {
                     sortParams, filterParams, page, pageSize
             );
 
+            List<HumanBeingResponseSoap> soapItems = resultPage.getHumanBeingGetResponseDtos()
+                    .stream()
+                    .map(soapDtoMapper::fromInternalResponse)
+                    .collect(Collectors.toList());
+
             HumanBeingPageResponse humanBeingPageResponse = new HumanBeingPageResponse();
-            humanBeingPageResponse.setHumanBeingGetResponseDtos(resultPage.getHumanBeingGetResponseDtos());
+            humanBeingPageResponse.setHumanBeingGetResponseDtos(soapItems);
             humanBeingPageResponse.setPage(resultPage.getPage());
             humanBeingPageResponse.setPageSize(resultPage.getPageSize());
             humanBeingPageResponse.setTotalPages(resultPage.getTotalPages());
@@ -193,9 +200,10 @@ public class HumanBeingWebServiceImpl implements HumanBeingWebService {
     public UniqueSpeedResponseSoap getUniqueImpactSpeeds() throws HumanBeingServiceFault {
         try {
             UniqueSpeedResponseSoap responseSoap = new UniqueSpeedResponseSoap();
-            responseSoap.setUniqueImpactSpeeds(
+            List<Integer> uniqueImpactSpeeds = Arrays.stream(
                     humanBeingService.getUniqueImpactSpeeds().getUniqueSpeeds()
-            );
+            ).boxed().collect(Collectors.toList());
+            responseSoap.setUniqueImpactSpeeds(uniqueImpactSpeeds);
             return responseSoap;
         } catch (Exception e) {
             throw new HumanBeingServiceFault(
