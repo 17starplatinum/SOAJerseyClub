@@ -16,6 +16,7 @@ import java.time.Instant;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@XmlRootElement(name = "humanBeingServiceFault", namespace = "https://itmo.ru/humanbeings/service")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class HumanBeingServiceFaultInfo {
 
