@@ -86,14 +86,10 @@ public class TeamService {
         Team team = teamRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Team not found with id=" + id));
 
-        try {
-            List<HumanBeingFullResponse> teamMembers = humanBeingServiceClient.getHumanBeingsByTeamId(id);
-            for (HumanBeingFullResponse human : teamMembers) {
-                human.setTeamId(null);
-                humanBeingServiceClient.updateHumanBeing(human.getId(), human);
-            }
-        } catch (RuntimeException e) {
-            throw new RuntimeException("Upstream service unavailable: " + e.getMessage(), e);
+        List<HumanBeingFullResponse> teamMembers = humanBeingServiceClient.getHumanBeingsByTeamId(id);
+        for (HumanBeingFullResponse human : teamMembers) {
+            human.setTeamId(null);
+            humanBeingServiceClient.updateHumanBeing(human.getId(), human);
         }
 
         teamRepository.delete(team);
