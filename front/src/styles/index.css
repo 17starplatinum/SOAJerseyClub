@@ -1,0 +1,32 @@
+@import 'variables.css';
+
+:root {
+    line-height: var(--line-height-base);
+    font-weight: 400;
+    color: rgba(0, 0, 0, 0.87);
+    background: repeating-linear-gradient(45deg, var(--color-background-primary), var(--color-background-primary) 70px, var(--color-background-secondary) 70px, var(--color-background-secondary) 140px);
+    font-synthesis: none;
+    font-family: var(--font-family-primary);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scrollbar-color: var(--color-background-primary) var(--color-secondary);
+}
+
+body {
+    overflow-y: auto;
+    height: 100vh;
+    scrollbar-gutter: stable;
+    font-size: var(--font-size-general);
+}
+
+.animate__animated.animate__fadeInDown,
+.animate__animated.animate__fadeOutUp {
+    --animate-duration: 0.3s;
+    animation-duration: var(--animate-duration);
+}
+
+.custom-swal {
+    border: var(--border-width) var(--border-style) var(--color-black);
+    border-radius: var(--border-radius);
+}
